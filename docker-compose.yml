@@ -1,20 +1,5 @@
 # Archivo: docker-compose.yml
-
-version: '3.8'
-
 services:
-  # Servicio de la Base de Datos PostgreSQL
-  db:
-    image: postgres:15-alpine
-    container_name: pos_db
-    restart: unless-stopped
-    env_file:
-      - ./.env # Carga las variables desde el archivo .env
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   # Servicio del Backend de Java
   backend:
     container_name: pos_backend
@@ -25,8 +10,6 @@ services:
       - ./.env # Pasa las variables de entorno a la aplicación Spring Boot
     ports:
       - "8080:8080"
-    depends_on:
-      - db # Se asegura de que la base de datos se inicie antes que el backend
 
   # Servicio del Frontend de React/Nginx
   frontend:
@@ -38,7 +21,3 @@ services:
       - "5173:80" # Mapea el puerto 80 del contenedor al 5173 de tu máquina
     depends_on:
       - backend # Se asegura de que el backend se inicie antes que el frontend
-
-# Volumen nombrado para persistir los datos de la base de datos
-volumes:
-  postgres_data:
