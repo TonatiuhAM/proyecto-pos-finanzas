@@ -1,0 +1,13 @@
+# Archivo: docker-compose.override.yml
+# Este archivo extiende y sobrescribe docker-compose.yml SOLO para desarrollo local.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: build  # <--- AÑADE ESTA LÍNEA
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    command: ./mvnw spring-boot:run

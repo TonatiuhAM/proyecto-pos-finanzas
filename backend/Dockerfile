@@ -31,4 +31,4 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 # Comando para ejecutar la aplicación cuando el contenedor se inicie
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]
