@@ -325,3 +325,297 @@ CREATE TABLE ordenes_workspace (
     REFERENCES historial_precios(id)
 );
 ```
+
+### Para primer diseño de inventario
+
+Actúa como un desarrollador experto en frontend utilizando React, TypeScript, Vite y la librería `axios`. Tu objetivo es crear un componente completo y funcional para una página de "Gestión de Inventarios" que se conecte con una API de Spring Boot ya existente.
+
+**Contexto y Arquitectura del Proyecto:**
+
+1.  **Conexión con la API:**
+
+    - Toda la comunicación con el backend se debe centralizar en un archivo de servicio: `src/services/inventarioService.ts`.
+    - Este servicio utilizará una instancia de `axios` configurada con una `baseURL` de `/api`. No es necesario incluir `http://localhost:8080` en las URLs de las peticiones, ya que un proxy de Nginx en Docker se encarga de la redirección.
+    - La API ya expone endpoints RESTful para el CRUD de inventarios en `/api/inventarios`.
+
+2.  **Manejo de Datos y Tipado:**
+
+    - El backend devuelve DTOs para las peticiones `GET`. Debes crear las interfaces de TypeScript correspondientes para asegurar un tipado fuerte en todo el componente (ej. `InventarioDTO`).
+    - Las peticiones `POST` y `PUT` para crear o actualizar un registro de inventario esperan un JSON con objetos anidados para las relaciones, como se muestra: `{ "producto": { "id": "uuid" }, "ubicacion": { "id": "uuid" }, ... }`.
+
+3.  **Estilo y Diseño:**
+    - Utiliza clases de CSS simples y descriptivas (ej. `inventario-container`, `inventario-table`, `btn-primary`).
+    - El diseño general debe seguir la estructura y estilo del código guía que se proporcionará más abajo.
+
+**Requerimientos del Componente `Inventario.tsx`:**
+
+1.  **Estado:** Usa el hook `useState` para manejar la lista de registros del inventario, el estado de los formularios y la visibilidad de los modales.
+2.  **Carga de Datos:** Usa el hook `useEffect` para llamar al servicio y obtener todos los registros del inventario cuando el componente se monte por primera vez.
+3.  **Visualización:**
+    - Renderiza los datos en una tabla (`<table>`).
+    - La tabla debe tener columnas para: ID, Producto, Ubicación, Cantidad (Pz), Cantidad Mínima, Cantidad Máxima y una columna de **Acciones**.
+4.  **Formulario de Creación/Edición:**
+    - Incluye un botón "Añadir Nuevo Inventario".
+    - Al hacer clic en "Añadir" o "Editar", debe aparecer un formulario (preferiblemente en un **modal/popup** para una mejor experiencia de usuario).
+    - El formulario debe contener campos para todas las propiedades de un registro de inventario.
+    - **Importante:** Los campos para "Producto" y "Ubicación" deben ser menús desplegables (`<select>`). Estos desplegables se deben poblar haciendo peticiones `GET` a sus respectivos endpoints (`/api/productos` y `/api/ubicaciones`) cuando el formulario se carga.
+5.  **Funcionalidad CRUD:**
+    - **Crear:** El formulario de "Añadir" debe hacer una petición `POST` al backend.
+    - **Editar:** El botón "Editar" de cada fila debe abrir el formulario modal, precargado con los datos de ese registro. Al guardar, debe hacer una petición `PUT`.
+    - **Eliminar:** El botón "Eliminar" debe pedir confirmación y luego hacer una petición `DELETE`.
+    - Después de cada operación exitosa (Crear, Editar, Eliminar), la tabla de inventarios se debe **actualizar automáticamente** para reflejar los cambios.
+
+--- MI CÓDIGO GUÍA DE DISEÑO ---
+
+```tsx
+import React, from 'react';
+import './InventarioScreen.css';
+
+// Definimos el tipo de dato para un producto del inventario
+type Producto = {
+  id: number;
+  nombre: string;
+  cantidad: number;
+  categoria: string;
+  proveedor: string;
+  ubicacion: string;
+  precioVenta: number;
+  precioCompra: number;
+  estado: 'activo' | 'inactivo';
+};
+
+// Datos de ejemplo para la tabla
+const productosDeEjemplo: Producto[] = [
+  { id: 1, nombre: 'Laptop Pro 15"', cantidad: 25, categoria: 'Electrónica', proveedor: 'TechCorp', ubicacion: 'Almacén A', precioVenta: 1500.00, precioCompra: 1200.00, estado: 'activo' },
+  { id: 2, nombre: 'Teclado Mecánico RGB', cantidad: 50, categoria: 'Accesorios', proveedor: 'GamerGear', ubicacion: 'Estante B-2', precioVenta: 120.50, precioCompra: 85.00, estado: 'activo' },
+  { id: 3, nombre: 'Monitor UltraWide 34"', cantidad: 15, categoria: 'Monitores', proveedor: 'DisplayInc', ubicacion: 'Almacén A', precioVenta: 799.99, precioCompra: 650.00, estado: 'activo' },
+  { id: 4, nombre: 'Silla Ergonómica', cantidad: 30, categoria: 'Mobiliario', proveedor: 'OfficeComfort', ubicacion: 'Bodega C', precioVenta: 350.00, precioCompra: 280.00, estado: 'inactivo' },
+];
+
+const InventarioScreen: React.FC = () => {
+
+  // Lógica para manejar la apertura del modal (a implementar)
+  const handleCrearNuevoProducto = () => {
+    // NOTA: Aquí se implementaría la lógica para abrir el modal/dialogo.
+    alert('Abriendo diálogo para crear un nuevo producto...');
+  };
+
+  // Lógica para editar un producto
+  const handleEditar = (id: number) => {
+    alert(`Editando producto con ID: ${id}`);
+  };
+
+  // Lógica para eliminar (cambiar estado) un producto
+  const handleEliminar = (id: number) => {
+    // NOTA: Como indica el diseño, esto no borra el registro,
+    // solo cambia su estado de 'activo' a 'inactivo'.
+    alert(`Cambiando estado del producto con ID: ${id} a inactivo.`);
+  };
+
+
+  return (
+    <div className="inventory-page">
+      <button className="back-to-home-btn">Regresar a Inicio</button>
+
+      <div className="inventory-container">
+        <header className="inventory-header">
+          <h1 className="inventory-title">MANEJO DE INVENTARIO</h1>
+          <button
+            className="create-product-btn"
+            onClick={handleCrearNuevoProducto}
+          >
+            CREAR NUEVO PRODUCTO
+          </button>
+        </header>
+
+        <main className="inventory-table-container">
+          <table className="inventory-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Categoría</th>
+                <th>Proveedor</th>
+                <th>Ubicación</th>
+                <th>Precio venta</th>
+                <th>Precio Compra</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productosDeEjemplo.map((producto) => (
+                <tr key={producto.id} className={producto.estado === 'inactivo' ? 'inactive-row' : ''}>
+                  <td>{producto.nombre}</td>
+                  <td>{producto.cantidad}</td>
+                  <td>{producto.categoria}</td>
+                  <td>{producto.proveedor}</td>
+                  <td>{producto.ubicacion}</td>
+                  <td>{`$${producto.precioVenta.toFixed(2)}`}</td>
+                  <td>{`$${producto.precioCompra.toFixed(2)}`}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button className="action-btn edit-btn" onClick={() => handleEditar(producto.id)}>
+                        Editar
+                      </button>
+                      <button className="action-btn delete-btn" onClick={() => handleEliminar(producto.id)}>
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default InventarioScreen;
+```
+
+```css
+/* Estilos generales para la página */
+.inventory-page {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background-color: #f4f5f7;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinea el botón de regreso a la izquierda */
+  min-height: 100vh;
+}
+
+/* Botón para regresar a Inicio */
+.back-to-home-btn {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: background-color 0.2s;
+}
+
+.back-to-home-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* Contenedor principal del inventario */
+.inventory-container {
+  background-color: #ffffff;
+  border: 1px solid #dfe1e6;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 1400px; /* Ancho máximo para el contenedor */
+  margin: 0 auto; /* Centra el contenedor si la página es más ancha */
+  box-sizing: border-box;
+}
+
+/* Cabecera del contenedor */
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.inventory-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #172b4d;
+  margin: 0;
+}
+
+/* Botón para crear nuevo producto */
+.create-product-btn {
+  background-color: #0052cc;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-product-btn:hover {
+  background-color: #0065ff;
+}
+
+/* Contenedor y estilos de la tabla */
+.inventory-table-container {
+  overflow-x: auto; /* Permite scroll horizontal en pantallas pequeñas */
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse; /* Une los bordes de las celdas */
+}
+
+.inventory-table th,
+.inventory-table td {
+  border: 1px solid #dfe1e6;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  color: #42526e;
+}
+
+.inventory-table thead th {
+  background-color: #f9fafb; /* Un fondo muy sutil para la cabecera */
+  font-weight: 600;
+  color: #172b4d;
+}
+
+/* Estilo para filas marcadas como inactivas */
+.inventory-table tr.inactive-row {
+  background-color: #fafafa;
+  color: #999999;
+}
+
+.inventory-table tr.inactive-row td {
+  color: #999999;
+}
+
+/* Contenedor para los botones de acción para alinearlos correctamente */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem; /* Espacio entre botones */
+}
+
+/* Estilo base para los botones de acción en la tabla */
+.action-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  background-color: #f4f4f4;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #e9e9e9;
+  border-color: #bbbbbb;
+}
+
+/* Botón específico de eliminar (podría tener un color distintivo) */
+.delete-btn {
+  /* En el diseño no se ve rojo, pero es una convención común */
+  /* background-color: #fce8e6; */
+  /* color: #c52929; */
+  /* border-color: #f8c8c4; */
+}
+
+.delete-btn:hover {
+  /* background-color: #f7d5d2; */
+  /* border-color: #f0b2ad; */
+}
+```
