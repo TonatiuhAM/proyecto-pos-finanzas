@@ -7,20 +7,22 @@ import jakarta.persistence.*;
 public class Productos {
 
     @Id
-    // UUID se asignará manualmente antes de persistir
     private String id;
 
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name = "categorias_productos_id", nullable = false)
-    private String categoriasProductosId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categorias_productos_id", nullable = false)
+    private CategoriasProductos categoriasProductos;
 
-    @Column(name = "proveedor_id", nullable = false)
-    private String proveedorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proveedor_id", nullable = false)
+    private Personas proveedor;
 
-    @Column(name = "estados_id", nullable = false)
-    private String estadosId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estados_id", nullable = false)
+    private Estados estados;
 
     // Constructor
     public Productos() {
@@ -51,27 +53,27 @@ public class Productos {
         this.nombre = nombre;
     }
 
-    public String getCategoriaProductosId() {
-        return categoriasProductosId;
+    public CategoriasProductos getCategoriasProductos() {
+        return categoriasProductos;
     }
 
-    public void setCategoriaProductosId(String categoriaProductosId) {
-        this.categoriasProductosId = categoriaProductosId;
+    public void setCategoriasProductos(CategoriasProductos categoriasProductos) {
+        this.categoriasProductos = categoriasProductos;
     }
 
-    public String getProveedorId() {
-        return proveedorId;
+    public Personas getProveedor() {
+        return proveedor;
     }
 
-    public void setProveedorId(String proveedorId) {
-        this.proveedorId = proveedorId;
+    public void setProveedor(Personas proveedor) {
+        this.proveedor = proveedor;
     }
 
-    public String getEstadosId() {
-        return estadosId;
+    public Estados getEstados() {
+        return estados;
     }
 
-    public void setEstadosId(String estadosId) {
-        this.estadosId = estadosId;
+    public void setEstados(Estados estados) {
+        this.estados = estados;
     }
 }

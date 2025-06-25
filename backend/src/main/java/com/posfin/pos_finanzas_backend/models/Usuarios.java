@@ -1,10 +1,6 @@
 package com.posfin.pos_finanzas_backend.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuarios")
@@ -21,11 +17,13 @@ public class Usuarios {
     @Column(name = "telefono", nullable = false)
     private String telefono;
 
-    @Column(name = "roles_id", nullable = false)
-    private String rolesId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "roles_id", nullable = false)
+    private Roles roles;
 
-    @Column(name = "estados_id", nullable = false)
-    private String estadosId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estados_id", nullable = false)
+    private Estados estados;
 
     // Constructor
     public Usuarios() {
@@ -72,19 +70,19 @@ public class Usuarios {
         this.telefono = telefono;
     }
 
-    public String getRolesId() {
-        return rolesId;
+    public Roles getRoles() {
+        return roles;
     }
 
-    public void setRolesId(String rolesId) {
-        this.rolesId = rolesId;
+    public void setRoles(Roles roles) {
+        this.roles = roles;
     }
 
-    public String getEstadosId() {
-        return estadosId;
+    public Estados getEstados() {
+        return estados;
     }
 
-    public void setEstadosId(String estadosId) {
-        this.estadosId = estadosId;
+    public void setEstados(Estados estados) {
+        this.estados = estados;
     }
 }
