@@ -200,4 +200,76 @@ public class OrdenesWorkspaceController {
         ordenesWorkspaceRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateOrdenWorkspace(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<OrdenesWorkspace> ordenOptional = ordenesWorkspaceRepository.findById(id);
+        if (ordenOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        OrdenesWorkspace ordenExistente = ordenOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("cantidadPz")) {
+            Number cantidadPzValue = (Number) updates.get("cantidadPz");
+            ordenExistente.setCantidadPz(new BigDecimal(cantidadPzValue.toString()));
+        }
+        if (updates.containsKey("cantidadKg")) {
+            Number cantidadKgValue = (Number) updates.get("cantidadKg");
+            ordenExistente.setCantidadKg(new BigDecimal(cantidadKgValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con Workspaces
+        if (updates.containsKey("workspace")) {
+            Map<String, String> workspaceMap = (Map<String, String>) updates.get("workspace");
+            String workspaceId = workspaceMap.get("id");
+            Optional<Workspaces> workspaceOpt = workspacesRepository.findById(workspaceId);
+            if (workspaceOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Workspace con ID " + workspaceId + " no existe.");
+            }
+            ordenExistente.setWorkspace(workspaceOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("producto")) {
+            Map<String, String> productoMap = (Map<String, String>) updates.get("producto");
+            String productoId = productoMap.get("id");
+            Optional<Productos> productoOpt = productosRepository.findById(productoId);
+            if (productoOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productoId + " no existe.");
+            }
+            ordenExistente.setProducto(productoOpt.get());
+        }
+
+        // 5. Lógica para actualizar la relación con HistorialPrecios
+        if (updates.containsKey("historialPrecio")) {
+            Map<String, String> historialPrecioMap = (Map<String, String>) updates.get("historialPrecio");
+            String historialPrecioId = historialPrecioMap.get("id");
+            Optional<HistorialPrecios> historialPrecioOpt = historialPreciosRepository.findById(historialPrecioId);
+            if (historialPrecioOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El Historial de Precio con ID " + historialPrecioId + " no existe.");
+            }
+            ordenExistente.setHistorialPrecio(historialPrecioOpt.get());
+        }
+
+        // 6. Guardar y devolver
+        OrdenesWorkspace ordenActualizada = ordenesWorkspaceRepository.save(ordenExistente);
+
+        // Crear DTO para respuesta
+        OrdenesWorkspaceDTO dto = new OrdenesWorkspaceDTO();
+        dto.setId(ordenActualizada.getId());
+        dto.setCantidadPz(ordenActualizada.getCantidadPz());
+        dto.setCantidadKg(ordenActualizada.getCantidadKg());
+        dto.setWorkspaceId(ordenActualizada.getWorkspace().getId());
+        dto.setWorkspaceNombre(ordenActualizada.getWorkspace().getNombre());
+        dto.setProductoId(ordenActualizada.getProducto().getId());
+        dto.setProductoNombre(ordenActualizada.getProducto().getNombre());
+        dto.setHistorialPrecioId(ordenActualizada.getHistorialPrecio().getId());
+        dto.setPrecio(ordenActualizada.getHistorialPrecio().getPrecio());
+
+        return ResponseEntity.ok(dto);
+    }
 }

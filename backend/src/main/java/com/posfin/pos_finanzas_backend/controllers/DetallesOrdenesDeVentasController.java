@@ -193,4 +193,76 @@ public class DetallesOrdenesDeVentasController {
         detallesOrdenesDeVentasRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateDetalleOrdenDeVenta(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<DetallesOrdenesDeVentas> detalleOptional = detallesOrdenesDeVentasRepository.findById(id);
+        if (detalleOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        DetallesOrdenesDeVentas detalleExistente = detalleOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("cantidadPz")) {
+            Number cantidadPzValue = (Number) updates.get("cantidadPz");
+            detalleExistente.setCantidadPz(new BigDecimal(cantidadPzValue.toString()));
+        }
+        if (updates.containsKey("cantidadKg")) {
+            Number cantidadKgValue = (Number) updates.get("cantidadKg");
+            detalleExistente.setCantidadKg(new BigDecimal(cantidadKgValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con OrdenesDeVentas
+        if (updates.containsKey("ordenDeVenta")) {
+            Map<String, String> ordenDeVentaMap = (Map<String, String>) updates.get("ordenDeVenta");
+            String ordenDeVentaId = ordenDeVentaMap.get("id");
+            Optional<OrdenesDeVentas> ordenDeVentaOpt = ordenesDeVentasRepository.findById(ordenDeVentaId);
+            if (ordenDeVentaOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: La Orden de Venta con ID " + ordenDeVentaId + " no existe.");
+            }
+            detalleExistente.setOrdenDeVenta(ordenDeVentaOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("producto")) {
+            Map<String, String> productoMap = (Map<String, String>) updates.get("producto");
+            String productoId = productoMap.get("id");
+            Optional<Productos> productoOpt = productosRepository.findById(productoId);
+            if (productoOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productoId + " no existe.");
+            }
+            detalleExistente.setProducto(productoOpt.get());
+        }
+
+        // 5. Lógica para actualizar la relación con HistorialPrecios
+        if (updates.containsKey("historialPrecio")) {
+            Map<String, String> historialPrecioMap = (Map<String, String>) updates.get("historialPrecio");
+            String historialPrecioId = historialPrecioMap.get("id");
+            Optional<HistorialPrecios> historialPrecioOpt = historialPreciosRepository.findById(historialPrecioId);
+            if (historialPrecioOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El Historial de Precio con ID " + historialPrecioId + " no existe.");
+            }
+            detalleExistente.setHistorialPrecio(historialPrecioOpt.get());
+        }
+
+        // 6. Guardar y devolver
+        DetallesOrdenesDeVentas detalleActualizado = detallesOrdenesDeVentasRepository.save(detalleExistente);
+
+        // Crear DTO para respuesta
+        DetallesOrdenesDeVentasDTO dto = new DetallesOrdenesDeVentasDTO();
+        dto.setId(detalleActualizado.getId());
+        dto.setCantidadPz(detalleActualizado.getCantidadPz());
+        dto.setCantidadKg(detalleActualizado.getCantidadKg());
+        dto.setOrdenDeVentaId(detalleActualizado.getOrdenDeVenta().getId());
+        dto.setProductoId(detalleActualizado.getProducto().getId());
+        dto.setProductoNombre(detalleActualizado.getProducto().getNombre());
+        dto.setHistorialPrecioId(detalleActualizado.getHistorialPrecio().getId());
+        dto.setPrecio(detalleActualizado.getHistorialPrecio().getPrecio());
+
+        return ResponseEntity.ok(dto);
+    }
 }

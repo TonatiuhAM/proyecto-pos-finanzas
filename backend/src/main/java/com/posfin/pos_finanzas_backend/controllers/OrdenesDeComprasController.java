@@ -195,4 +195,62 @@ public class OrdenesDeComprasController {
         ordenesDeComprasRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateOrdenDeCompra(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<OrdenesDeCompras> ordenOptional = ordenesDeComprasRepository.findById(id);
+        if (ordenOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        OrdenesDeCompras ordenExistente = ordenOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("totalCompra")) {
+            Number totalCompraValue = (Number) updates.get("totalCompra");
+            ordenExistente.setTotalCompra(new BigDecimal(totalCompraValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con Personas
+        if (updates.containsKey("persona")) {
+            Map<String, String> personaMap = (Map<String, String>) updates.get("persona");
+            String personaId = personaMap.get("id");
+            Optional<Personas> personaOpt = personasRepository.findById(personaId);
+            if (personaOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: La Persona con ID " + personaId + " no existe.");
+            }
+            ordenExistente.setPersona(personaOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Estados
+        if (updates.containsKey("estado")) {
+            Map<String, String> estadoMap = (Map<String, String>) updates.get("estado");
+            String estadoId = estadoMap.get("id");
+            Optional<Estados> estadoOpt = estadosRepository.findById(estadoId);
+            if (estadoOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Estado con ID " + estadoId + " no existe.");
+            }
+            ordenExistente.setEstado(estadoOpt.get());
+        }
+
+        // 5. Guardar y devolver
+        OrdenesDeCompras ordenActualizada = ordenesDeComprasRepository.save(ordenExistente);
+
+        // Crear DTO para respuesta
+        OrdenesDeComprasDTO dto = new OrdenesDeComprasDTO();
+        dto.setId(ordenActualizada.getId());
+        dto.setFechaOrden(ordenActualizada.getFechaOrden());
+        dto.setTotalCompra(ordenActualizada.getTotalCompra());
+        dto.setPersonaId(ordenActualizada.getPersona().getId());
+        dto.setPersonaNombre(ordenActualizada.getPersona().getNombre());
+        dto.setPersonaApellidoPaterno(ordenActualizada.getPersona().getApellidoPaterno());
+        dto.setPersonaApellidoMaterno(ordenActualizada.getPersona().getApellidoMaterno());
+        dto.setPersonaTelefono(ordenActualizada.getPersona().getTelefono());
+        dto.setPersonaEmail(ordenActualizada.getPersona().getEmail());
+        dto.setEstadoId(ordenActualizada.getEstado().getId());
+        dto.setEstadoNombre(ordenActualizada.getEstado().getEstado());
+
+        return ResponseEntity.ok(dto);
+    }
 }

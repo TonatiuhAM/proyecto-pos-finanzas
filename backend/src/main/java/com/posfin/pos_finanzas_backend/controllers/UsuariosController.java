@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -95,6 +96,54 @@ public class UsuariosController {
         }
         usuariosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateUsuario(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<Usuarios> usuarioOptional = usuariosRepository.findById(id);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Usuarios usuarioExistente = usuarioOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("nombre")) {
+            usuarioExistente.setNombre((String) updates.get("nombre"));
+        }
+        if (updates.containsKey("contrasena")) {
+            usuarioExistente.setContrasena((String) updates.get("contrasena"));
+        }
+        if (updates.containsKey("telefono")) {
+            usuarioExistente.setTelefono((String) updates.get("telefono"));
+        }
+
+        // 3. Lógica para actualizar la relación con Roles
+        if (updates.containsKey("roles")) {
+            Map<String, String> rolesMap = (Map<String, String>) updates.get("roles");
+            String rolesId = rolesMap.get("id");
+            Optional<Roles> rolesOpt = rolesRepository.findById(rolesId);
+            if (rolesOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Rol con ID " + rolesId + " no existe.");
+            }
+            usuarioExistente.setRoles(rolesOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Estados
+        if (updates.containsKey("estados")) {
+            Map<String, String> estadosMap = (Map<String, String>) updates.get("estados");
+            String estadosId = estadosMap.get("id");
+            Optional<Estados> estadosOpt = estadosRepository.findById(estadosId);
+            if (estadosOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Estado con ID " + estadosId + " no existe.");
+            }
+            usuarioExistente.setEstados(estadosOpt.get());
+        }
+
+        // 5. Guardar y devolver
+        Usuarios usuarioActualizado = usuariosRepository.save(usuarioExistente);
+        UsuariosDTO dto = convertToDTO(usuarioActualizado);
+        return ResponseEntity.ok(dto);
     }
 
     // Método auxiliar para convertir Usuarios a UsuariosDTO

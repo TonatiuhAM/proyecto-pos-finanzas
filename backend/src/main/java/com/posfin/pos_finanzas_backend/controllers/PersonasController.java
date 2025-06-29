@@ -168,6 +168,65 @@ public class PersonasController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdatePersona(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<Personas> personaOptional = personasRepository.findById(id);
+        if (personaOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Personas personaExistente = personaOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("nombre")) {
+            personaExistente.setNombre((String) updates.get("nombre"));
+        }
+        if (updates.containsKey("apellidoPaterno")) {
+            personaExistente.setApellidoPaterno((String) updates.get("apellidoPaterno"));
+        }
+        if (updates.containsKey("apellidoMaterno")) {
+            personaExistente.setApellidoMaterno((String) updates.get("apellidoMaterno"));
+        }
+        if (updates.containsKey("rfc")) {
+            personaExistente.setRfc((String) updates.get("rfc"));
+        }
+        if (updates.containsKey("telefono")) {
+            personaExistente.setTelefono((String) updates.get("telefono"));
+        }
+        if (updates.containsKey("email")) {
+            personaExistente.setEmail((String) updates.get("email"));
+        }
+
+        // 3. Lógica para actualizar la relación con Estados
+        if (updates.containsKey("estados")) {
+            Map<String, String> estadosMap = (Map<String, String>) updates.get("estados");
+            String estadosId = estadosMap.get("id");
+            Optional<Estados> estadosOpt = estadosRepository.findById(estadosId);
+            if (estadosOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Estado con ID " + estadosId + " no existe.");
+            }
+            personaExistente.setEstados(estadosOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con CategoriaPersonas
+        if (updates.containsKey("categoriaPersonas")) {
+            Map<String, String> categoriaPersonasMap = (Map<String, String>) updates.get("categoriaPersonas");
+            String categoriaPersonasId = categoriaPersonasMap.get("id");
+            Optional<CategoriaPersonas> categoriaPersonasOpt = categoriaPersonasRepository
+                    .findById(categoriaPersonasId);
+            if (categoriaPersonasOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: La Categoría de Persona con ID " + categoriaPersonasId + " no existe.");
+            }
+            personaExistente.setCategoriaPersonas(categoriaPersonasOpt.get());
+        }
+
+        // 5. Guardar y devolver
+        Personas personaActualizada = personasRepository.save(personaExistente);
+        PersonasDTO dto = convertToDTO(personaActualizada);
+        return ResponseEntity.ok(dto);
+    }
+
     // Método auxiliar para convertir Personas a PersonasDTO
     private PersonasDTO convertToDTO(Personas persona) {
         PersonasDTO dto = new PersonasDTO();

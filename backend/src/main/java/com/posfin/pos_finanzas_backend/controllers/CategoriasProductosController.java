@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categorias-productos")
@@ -51,5 +52,26 @@ public class CategoriasProductosController {
         }
         categoriasProductosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateCategoriaProducto(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<CategoriasProductos> categoriaProductoOptional = categoriasProductosRepository.findById(id);
+        if (categoriaProductoOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        CategoriasProductos categoriaProductoExistente = categoriaProductoOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("categoria")) {
+            categoriaProductoExistente.setCategoria((String) updates.get("categoria"));
+        }
+
+        // 3. Guardar y devolver
+        CategoriasProductos categoriaProductoActualizada = categoriasProductosRepository
+                .save(categoriaProductoExistente);
+        return ResponseEntity.ok(categoriaProductoActualizada);
     }
 }

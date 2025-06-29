@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -51,5 +52,25 @@ public class TipoMovimientosController {
         }
         tipoMovimientosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateTipoMovimiento(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<TipoMovimientos> tipoMovimientoOptional = tipoMovimientosRepository.findById(id);
+        if (tipoMovimientoOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        TipoMovimientos tipoMovimientoExistente = tipoMovimientoOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("movimiento")) {
+            tipoMovimientoExistente.setMovimiento((String) updates.get("movimiento"));
+        }
+
+        // 3. Guardar y devolver
+        TipoMovimientos tipoMovimientoActualizado = tipoMovimientosRepository.save(tipoMovimientoExistente);
+        return ResponseEntity.ok(tipoMovimientoActualizado);
     }
 }

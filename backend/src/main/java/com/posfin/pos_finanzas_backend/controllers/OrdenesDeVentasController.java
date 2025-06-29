@@ -220,4 +220,77 @@ public class OrdenesDeVentasController {
         ordenesDeVentasRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateOrdenDeVenta(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<OrdenesDeVentas> ordenOptional = ordenesDeVentasRepository.findById(id);
+        if (ordenOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        OrdenesDeVentas ordenExistente = ordenOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("totalVenta")) {
+            Number totalVentaValue = (Number) updates.get("totalVenta");
+            ordenExistente.setTotalVenta(new BigDecimal(totalVentaValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con Personas
+        if (updates.containsKey("persona")) {
+            Map<String, String> personaMap = (Map<String, String>) updates.get("persona");
+            String personaId = personaMap.get("id");
+            Optional<Personas> personaOpt = personasRepository.findById(personaId);
+            if (personaOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: La Persona con ID " + personaId + " no existe.");
+            }
+            ordenExistente.setPersona(personaOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Usuarios
+        if (updates.containsKey("usuario")) {
+            Map<String, String> usuarioMap = (Map<String, String>) updates.get("usuario");
+            String usuarioId = usuarioMap.get("id");
+            Optional<Usuarios> usuarioOpt = usuariosRepository.findById(usuarioId);
+            if (usuarioOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Usuario con ID " + usuarioId + " no existe.");
+            }
+            ordenExistente.setUsuario(usuarioOpt.get());
+        }
+
+        // 5. Lógica para actualizar la relación con MetodosPago
+        if (updates.containsKey("metodoPago")) {
+            Map<String, String> metodoPagoMap = (Map<String, String>) updates.get("metodoPago");
+            String metodoPagoId = metodoPagoMap.get("id");
+            Optional<MetodosPago> metodoPagoOpt = metodosPagoRepository.findById(metodoPagoId);
+            if (metodoPagoOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El Método de Pago con ID " + metodoPagoId + " no existe.");
+            }
+            ordenExistente.setMetodoPago(metodoPagoOpt.get());
+        }
+
+        // 6. Guardar y devolver
+        OrdenesDeVentas ordenActualizada = ordenesDeVentasRepository.save(ordenExistente);
+
+        // Crear DTO para respuesta
+        OrdenesDeVentasDTO dto = new OrdenesDeVentasDTO();
+        dto.setId(ordenActualizada.getId());
+        dto.setFechaOrden(ordenActualizada.getFechaOrden());
+        dto.setTotalVenta(ordenActualizada.getTotalVenta());
+        dto.setPersonaId(ordenActualizada.getPersona().getId());
+        dto.setPersonaNombre(ordenActualizada.getPersona().getNombre());
+        dto.setPersonaApellidoPaterno(ordenActualizada.getPersona().getApellidoPaterno());
+        dto.setPersonaApellidoMaterno(ordenActualizada.getPersona().getApellidoMaterno());
+        dto.setPersonaTelefono(ordenActualizada.getPersona().getTelefono());
+        dto.setPersonaEmail(ordenActualizada.getPersona().getEmail());
+        dto.setUsuarioId(ordenActualizada.getUsuario().getId());
+        dto.setUsuarioNombre(ordenActualizada.getUsuario().getNombre());
+        dto.setUsuarioTelefono(ordenActualizada.getUsuario().getTelefono());
+        dto.setMetodoPagoId(ordenActualizada.getMetodoPago().getId());
+        dto.setMetodoPagoNombre(ordenActualizada.getMetodoPago().getMetodoPago());
+
+        return ResponseEntity.ok(dto);
+    }
 }

@@ -157,4 +157,45 @@ public class HistorialPreciosController {
         historialPreciosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateHistorialPrecio(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<HistorialPrecios> historialOptional = historialPreciosRepository.findById(id);
+        if (historialOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        HistorialPrecios historialExistente = historialOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("precio")) {
+            Number precioValue = (Number) updates.get("precio");
+            historialExistente.setPrecio(new BigDecimal(precioValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("productos")) {
+            Map<String, String> productosMap = (Map<String, String>) updates.get("productos");
+            String productosId = productosMap.get("id");
+            Optional<Productos> productosOpt = productosRepository.findById(productosId);
+            if (productosOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productosId + " no existe.");
+            }
+            historialExistente.setProductos(productosOpt.get());
+        }
+
+        // 4. Guardar y devolver
+        HistorialPrecios historialActualizado = historialPreciosRepository.save(historialExistente);
+
+        // Crear DTO para respuesta
+        HistorialPreciosDTO dto = new HistorialPreciosDTO();
+        dto.setId(historialActualizado.getId());
+        dto.setPrecio(historialActualizado.getPrecio());
+        dto.setFechaDeRegistro(historialActualizado.getFechaDeRegistro());
+        dto.setProductosId(historialActualizado.getProductos().getId());
+        dto.setProductosNombre(historialActualizado.getProductos().getNombre());
+
+        return ResponseEntity.ok(dto);
+    }
 }

@@ -193,4 +193,76 @@ public class DetallesOrdenesDeComprasController {
         detallesOrdenesDeComprasRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateDetalleOrdenDeCompra(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<DetallesOrdenesDeCompras> detalleOptional = detallesOrdenesDeComprasRepository.findById(id);
+        if (detalleOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        DetallesOrdenesDeCompras detalleExistente = detalleOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("cantidadPz")) {
+            Number cantidadPzValue = (Number) updates.get("cantidadPz");
+            detalleExistente.setCantidadPz(new BigDecimal(cantidadPzValue.toString()));
+        }
+        if (updates.containsKey("cantidadKg")) {
+            Number cantidadKgValue = (Number) updates.get("cantidadKg");
+            detalleExistente.setCantidadKg(new BigDecimal(cantidadKgValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con OrdenesDeCompras
+        if (updates.containsKey("ordenDeCompra")) {
+            Map<String, String> ordenDeCompraMap = (Map<String, String>) updates.get("ordenDeCompra");
+            String ordenDeCompraId = ordenDeCompraMap.get("id");
+            Optional<OrdenesDeCompras> ordenDeCompraOpt = ordenesDeComprasRepository.findById(ordenDeCompraId);
+            if (ordenDeCompraOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: La Orden de Compra con ID " + ordenDeCompraId + " no existe.");
+            }
+            detalleExistente.setOrdenDeCompra(ordenDeCompraOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("producto")) {
+            Map<String, String> productoMap = (Map<String, String>) updates.get("producto");
+            String productoId = productoMap.get("id");
+            Optional<Productos> productoOpt = productosRepository.findById(productoId);
+            if (productoOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productoId + " no existe.");
+            }
+            detalleExistente.setProducto(productoOpt.get());
+        }
+
+        // 5. Lógica para actualizar la relación con HistorialCostos
+        if (updates.containsKey("historialCosto")) {
+            Map<String, String> historialCostoMap = (Map<String, String>) updates.get("historialCosto");
+            String historialCostoId = historialCostoMap.get("id");
+            Optional<HistorialCostos> historialCostoOpt = historialCostosRepository.findById(historialCostoId);
+            if (historialCostoOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El Historial de Costo con ID " + historialCostoId + " no existe.");
+            }
+            detalleExistente.setHistorialCosto(historialCostoOpt.get());
+        }
+
+        // 6. Guardar y devolver
+        DetallesOrdenesDeCompras detalleActualizado = detallesOrdenesDeComprasRepository.save(detalleExistente);
+
+        // Crear DTO para respuesta
+        DetallesOrdenesDeComprasDTO dto = new DetallesOrdenesDeComprasDTO();
+        dto.setId(detalleActualizado.getId());
+        dto.setCantidadPz(detalleActualizado.getCantidadPz());
+        dto.setCantidadKg(detalleActualizado.getCantidadKg());
+        dto.setOrdenDeCompraId(detalleActualizado.getOrdenDeCompra().getId());
+        dto.setProductoId(detalleActualizado.getProducto().getId());
+        dto.setProductoNombre(detalleActualizado.getProducto().getNombre());
+        dto.setHistorialCostoId(detalleActualizado.getHistorialCosto().getId());
+        dto.setCosto(detalleActualizado.getHistorialCosto().getCosto());
+
+        return ResponseEntity.ok(dto);
+    }
 }

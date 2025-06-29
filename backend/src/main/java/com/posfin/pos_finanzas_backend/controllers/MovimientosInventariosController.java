@@ -240,4 +240,91 @@ public class MovimientosInventariosController {
         movimientosInventariosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateMovimientoInventario(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<MovimientosInventarios> movimientoOptional = movimientosInventariosRepository.findById(id);
+        if (movimientoOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        MovimientosInventarios movimientoExistente = movimientoOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("cantidad")) {
+            Number cantidadValue = (Number) updates.get("cantidad");
+            movimientoExistente.setCantidad(new BigDecimal(cantidadValue.toString()));
+        }
+        if (updates.containsKey("claveMovimiento")) {
+            movimientoExistente.setClaveMovimiento((String) updates.get("claveMovimiento"));
+        }
+
+        // 3. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("producto")) {
+            Map<String, String> productoMap = (Map<String, String>) updates.get("producto");
+            String productoId = productoMap.get("id");
+            Optional<Productos> productoOpt = productosRepository.findById(productoId);
+            if (productoOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productoId + " no existe.");
+            }
+            movimientoExistente.setProducto(productoOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Ubicaciones
+        if (updates.containsKey("ubicacion")) {
+            Map<String, String> ubicacionMap = (Map<String, String>) updates.get("ubicacion");
+            String ubicacionId = ubicacionMap.get("id");
+            Optional<Ubicaciones> ubicacionOpt = ubicacionesRepository.findById(ubicacionId);
+            if (ubicacionOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: La Ubicación con ID " + ubicacionId + " no existe.");
+            }
+            movimientoExistente.setUbicacion(ubicacionOpt.get());
+        }
+
+        // 5. Lógica para actualizar la relación con TipoMovimientos
+        if (updates.containsKey("tipoMovimiento")) {
+            Map<String, String> tipoMovimientoMap = (Map<String, String>) updates.get("tipoMovimiento");
+            String tipoMovimientoId = tipoMovimientoMap.get("id");
+            Optional<TipoMovimientos> tipoMovimientoOpt = tipoMovimientosRepository.findById(tipoMovimientoId);
+            if (tipoMovimientoOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El Tipo de Movimiento con ID " + tipoMovimientoId + " no existe.");
+            }
+            movimientoExistente.setTipoMovimiento(tipoMovimientoOpt.get());
+        }
+
+        // 6. Lógica para actualizar la relación con Usuarios
+        if (updates.containsKey("usuario")) {
+            Map<String, String> usuarioMap = (Map<String, String>) updates.get("usuario");
+            String usuarioId = usuarioMap.get("id");
+            Optional<Usuarios> usuarioOpt = usuariosRepository.findById(usuarioId);
+            if (usuarioOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Usuario con ID " + usuarioId + " no existe.");
+            }
+            movimientoExistente.setUsuario(usuarioOpt.get());
+        }
+
+        // 7. Guardar y devolver
+        MovimientosInventarios movimientoActualizado = movimientosInventariosRepository.save(movimientoExistente);
+
+        // Crear DTO para respuesta
+        MovimientosInventariosDTO dto = new MovimientosInventariosDTO();
+        dto.setId(movimientoActualizado.getId());
+        dto.setCantidad(movimientoActualizado.getCantidad());
+        dto.setFechaMovimiento(movimientoActualizado.getFechaMovimiento());
+        dto.setClaveMovimiento(movimientoActualizado.getClaveMovimiento());
+        dto.setProductoId(movimientoActualizado.getProducto().getId());
+        dto.setProductoNombre(movimientoActualizado.getProducto().getNombre());
+        dto.setUbicacionId(movimientoActualizado.getUbicacion().getId());
+        dto.setUbicacionNombre(movimientoActualizado.getUbicacion().getNombre());
+        dto.setUbicacionDescripcion(movimientoActualizado.getUbicacion().getUbicacion());
+        dto.setTipoMovimientoId(movimientoActualizado.getTipoMovimiento().getId());
+        dto.setTipoMovimientoNombre(movimientoActualizado.getTipoMovimiento().getMovimiento());
+        dto.setUsuarioId(movimientoActualizado.getUsuario().getId());
+        dto.setUsuarioNombre(movimientoActualizado.getUsuario().getNombre());
+        dto.setUsuarioTelefono(movimientoActualizado.getUsuario().getTelefono());
+
+        return ResponseEntity.ok(dto);
+    }
 }

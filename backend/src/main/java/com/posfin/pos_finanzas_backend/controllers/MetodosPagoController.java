@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -51,5 +52,25 @@ public class MetodosPagoController {
         }
         metodosPagoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateMetodoPago(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<MetodosPago> metodoPagoOptional = metodosPagoRepository.findById(id);
+        if (metodoPagoOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        MetodosPago metodoPagoExistente = metodoPagoOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("metodoPago")) {
+            metodoPagoExistente.setMetodoPago((String) updates.get("metodoPago"));
+        }
+
+        // 3. Guardar y devolver
+        MetodosPago metodoPagoActualizado = metodosPagoRepository.save(metodoPagoExistente);
+        return ResponseEntity.ok(metodoPagoActualizado);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -49,5 +50,24 @@ public class WorkspacesController {
         }
         workspacesRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateWorkspace(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<Workspaces> workspaceOptional = workspacesRepository.findById(id);
+        if (workspaceOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Workspaces workspaceExistente = workspaceOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("nombre")) {
+            workspaceExistente.setNombre((String) updates.get("nombre"));
+        }
+
+        // 3. Guardar y devolver
+        Workspaces workspaceActualizado = workspacesRepository.save(workspaceExistente);
+        return ResponseEntity.ok(workspaceActualizado);
     }
 }

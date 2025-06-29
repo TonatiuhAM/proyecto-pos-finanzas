@@ -15,3 +15,7 @@
 ### NOTAS IMPORTANTES
 
 - Hace triggers para que cuando se haga una venta se actualice el inventario
+
+## TO-DO
+
+- [ ] Verificar la integridad de la base de datos

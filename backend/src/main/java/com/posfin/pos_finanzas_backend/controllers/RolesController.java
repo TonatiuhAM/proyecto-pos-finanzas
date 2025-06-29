@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -50,5 +51,24 @@ public class RolesController {
         }
         rolesRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateRole(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<Roles> roleOptional = rolesRepository.findById(id);
+        if (roleOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Roles roleExistente = roleOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("roles")) {
+            roleExistente.setRoles((String) updates.get("roles"));
+        }
+
+        // 3. Guardar y devolver
+        Roles roleActualizado = rolesRepository.save(roleExistente);
+        return ResponseEntity.ok(roleActualizado);
     }
 }

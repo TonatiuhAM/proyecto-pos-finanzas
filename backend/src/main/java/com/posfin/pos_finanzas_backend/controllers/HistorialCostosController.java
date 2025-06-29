@@ -157,4 +157,45 @@ public class HistorialCostosController {
         historialCostosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateHistorialCosto(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<HistorialCostos> historialOptional = historialCostosRepository.findById(id);
+        if (historialOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        HistorialCostos historialExistente = historialOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("costo")) {
+            Number costoValue = (Number) updates.get("costo");
+            historialExistente.setCosto(new BigDecimal(costoValue.toString()));
+        }
+
+        // 3. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("productos")) {
+            Map<String, String> productosMap = (Map<String, String>) updates.get("productos");
+            String productosId = productosMap.get("id");
+            Optional<Productos> productosOpt = productosRepository.findById(productosId);
+            if (productosOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productosId + " no existe.");
+            }
+            historialExistente.setProductos(productosOpt.get());
+        }
+
+        // 4. Guardar y devolver
+        HistorialCostos historialActualizado = historialCostosRepository.save(historialExistente);
+
+        // Crear DTO para respuesta
+        HistorialCostosDTO dto = new HistorialCostosDTO();
+        dto.setId(historialActualizado.getId());
+        dto.setCosto(historialActualizado.getCosto());
+        dto.setFechaDeRegistro(historialActualizado.getFechaDeRegistro());
+        dto.setProductosId(historialActualizado.getProductos().getId());
+        dto.setProductosNombre(historialActualizado.getProductos().getNombre());
+
+        return ResponseEntity.ok(dto);
+    }
 }

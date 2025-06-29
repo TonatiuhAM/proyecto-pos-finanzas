@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -118,5 +119,57 @@ public class InventoryController {
         }
         inventarioRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateInventario(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<Inventarios> inventarioOptional = inventarioRepository.findById(id);
+        if (inventarioOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Inventarios inventarioExistente = inventarioOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("cantidadPz")) {
+            inventarioExistente.setCantidadPz((Integer) updates.get("cantidadPz"));
+        }
+        if (updates.containsKey("cantidadKg")) {
+            Number kgValue = (Number) updates.get("cantidadKg");
+            inventarioExistente.setCantidadKg(kgValue != null ? kgValue.intValue() : null);
+        }
+        if (updates.containsKey("cantidadMinima")) {
+            inventarioExistente.setCantidadMinima((Integer) updates.get("cantidadMinima"));
+        }
+        if (updates.containsKey("cantidadMaxima")) {
+            inventarioExistente.setCantidadMaxima((Integer) updates.get("cantidadMaxima"));
+        }
+
+        // 3. Lógica para actualizar la relación con Productos
+        if (updates.containsKey("producto")) {
+            Map<String, String> productoMap = (Map<String, String>) updates.get("producto");
+            String productoId = productoMap.get("id");
+            Optional<Productos> productoOpt = productosRepository.findById(productoId);
+            if (productoOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: El Producto con ID " + productoId + " no existe.");
+            }
+            inventarioExistente.setProducto(productoOpt.get());
+        }
+
+        // 4. Lógica para actualizar la relación con Ubicaciones
+        if (updates.containsKey("ubicacion")) {
+            Map<String, String> ubicacionMap = (Map<String, String>) updates.get("ubicacion");
+            String ubicacionId = ubicacionMap.get("id");
+            Optional<Ubicaciones> ubicacionOpt = ubicacionesRepository.findById(ubicacionId);
+            if (ubicacionOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Error: La Ubicación con ID " + ubicacionId + " no existe.");
+            }
+            inventarioExistente.setUbicacion(ubicacionOpt.get());
+        }
+
+        // 5. Guardar y devolver
+        Inventarios inventarioActualizado = inventarioRepository.save(inventarioExistente);
+        return ResponseEntity.ok(inventarioActualizado);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categoria_personas")
@@ -51,5 +52,25 @@ public class CategoriaPersonasController {
         }
         categoriaPersonasRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdateCategoriaPersona(@PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+        // 1. Buscar la entidad existente
+        Optional<CategoriaPersonas> categoriaPersonaOptional = categoriaPersonasRepository.findById(id);
+        if (categoriaPersonaOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        CategoriaPersonas categoriaPersonaExistente = categoriaPersonaOptional.get();
+
+        // 2. Actualizar campos simples
+        if (updates.containsKey("categoria")) {
+            categoriaPersonaExistente.setCategoria((String) updates.get("categoria"));
+        }
+
+        // 3. Guardar y devolver
+        CategoriaPersonas categoriaPersonaActualizada = categoriaPersonasRepository.save(categoriaPersonaExistente);
+        return ResponseEntity.ok(categoriaPersonaActualizada);
     }
 }
