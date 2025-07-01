@@ -619,3 +619,14 @@ export default InventarioScreen;
   /* border-color: #f0b2ad; */
 }
 ```
+
+### Para corregir la primera versión de la interfaz
+
+Vamos a corregir algunas partes que no me gustan.
+
+- [x] En la página de Login, no muestres ya las credenciales de prueba que pusiste hasta abajo ("admin"), solo deja la página de login normal.
+- [ ] Los Workspaces en su interfaz no muestran los nombres de los workspaces que estan en la base de datos, solo muestran la palabra temporal.
+- [ ] Quita los iconos de lso workspace, solo quiero el nombre del workspace y si esta ocupado o disponible.
+- [ ] El botón de eliminación de Workspace efimeros no funciona, marca error: "Error al limpiar cuentas temporales" y al volver a presionar en "Reintentar" no hace nada, en este caso tengo un workspace temporal que se deberia de borrar tanto de la UI como de la base de datos.
+- [x] Me gustaria que los botones que representan a los workspace (En la pestaña de Workspace) se pusieran de color verde cuando disponibles, rojo cuando ocupados, azul cuando se solicita la cuenta.
+- [x] En esa misma página de los workspaces, en la parte superiro, en vez de mostrar el botón de cerra sesión (Elimina ese boton de esa pagina) debe mostrar un botón el cual dice "Limpiar cuentas", que lo qeu hace hasta el momento (placeholder) es eliminar los workspaces que esten marcados como efimeros. Dejando los permannetes, ya que esos no se pueden borrar tan fácil.

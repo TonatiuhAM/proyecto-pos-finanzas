@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { LoginCredentials, UsuarioDTO, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types';
+import type { LoginCredentials, UsuarioDTO, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
 
 // Configuración base de axios
 const api = axios.create({

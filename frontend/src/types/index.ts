@@ -22,8 +22,8 @@ export interface Workspace {
 }
 
 export interface WorkspaceStatus {
-  workspaceId: string;
-  workspaceName: string;
+  id: string;
+  nombre: string;
   estado: 'disponible' | 'ocupado' | 'cuenta';
   cantidadOrdenes: number;
   permanente?: boolean;

@@ -107,6 +107,37 @@
   display: none;
 }
 
+.workspace-screen__clear-btn {
+  gap: var(--md-spacing-sm);
+  color: var(--md-error);
+  transition: all 0.3s ease;
+}
+
+.workspace-screen__clear-btn:hover {
+  background-color: rgba(244, 67, 54, 0.08);
+  color: var(--md-error);
+}
+
+.workspace-screen__clear-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.workspace-screen__clear-text {
+  display: none;
+}
+
+/* Desktop: Show button text */
+@media (min-width: 769px) {
+  .workspace-screen__clear-text {
+    display: inline;
+  }
+  
+  .workspace-screen__logout-text {
+    display: inline;
+  }
+}
+
 /* Main Content */
 .workspace-screen__content {
   flex: 1;
@@ -233,11 +264,13 @@
 /* Card Header */
 .workspace-screen__card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--md-spacing-md);
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: var(--md-spacing-md);
 }
 
+/* Card Icon - Removed for simpler design */
+/*
 .workspace-screen__card-icon {
   width: 48px;
   height: 48px;
@@ -254,6 +287,7 @@
   width: 24px;
   height: 24px;
 }
+*/
 
 /* Status Indicators */
 .workspace-screen__card-status {
@@ -271,18 +305,48 @@
 }
 
 .workspace-screen__card-status--success {
-  background-color: var(--md-success-container);
-  color: var(--md-success);
+  background-color: #E8F5E8;
+  color: #2E7D2E;
 }
 
 .workspace-screen__card-status--error {
-  background-color: var(--md-error-container);
-  color: var(--md-error);
+  background-color: #FFEBEE;
+  color: #C62828;
 }
 
 .workspace-screen__card-status--warning {
-  background-color: #FFF4E6;
-  color: #E65100;
+  background-color: #E3F2FD;
+  color: #1565C0;
+}
+
+/* Card color variations based on status */
+.workspace-screen__card--success {
+  border-left: 4px solid #4CAF50;
+  background-color: rgba(76, 175, 80, 0.08);
+}
+
+.workspace-screen__card--success:hover:not(:disabled) {
+  background-color: rgba(76, 175, 80, 0.12);
+  border-color: #4CAF50;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+}
+
+.workspace-screen__card--error {
+  border-left: 4px solid #F44336;
+  background-color: rgba(244, 67, 54, 0.08);
+}
+
+.workspace-screen__card--error:hover:not(:disabled) {
+  background-color: rgba(244, 67, 54, 0.12);
+}
+
+.workspace-screen__card--warning {
+  border-left: 4px solid #2196F3;
+  background-color: rgba(33, 150, 243, 0.08);
+}
+
+.workspace-screen__card--warning:hover:not(:disabled) {
+  background-color: rgba(33, 150, 243, 0.12);
 }
 
 /* Card Content */
@@ -291,6 +355,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--md-spacing-sm);
+  text-align: center;
 }
 
 .workspace-screen__card-title {
@@ -542,6 +607,10 @@
   }
 
   .workspace-screen__logout-text {
+    display: inline;
+  }
+
+  .workspace-screen__clear-text {
     display: inline;
   }
 

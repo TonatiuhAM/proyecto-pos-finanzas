@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { workspaceService } from '../services/apiService';
-import type { WorkspaceStatus } from '../types';
+import type { WorkspaceStatus } from '../types/index';
 import './WorkspaceScreen.css';
 
 interface WorkspaceScreenProps {
-  onLogout: () => void;
   onWorkspaceSelect: (workspaceId: string) => void;
   onBackToMainMenu?: () => void;
 }
 
 const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({ 
-  onLogout, 
   onWorkspaceSelect, 
   onBackToMainMenu 
 }) => {
@@ -123,6 +121,26 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     }
   };
 
+  const handleClearAccounts = async () => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar todos los workspaces temporales? Esta acción no se puede deshacer.')) {
+      try {
+        // Filtrar workspaces temporales (no permanentes)
+        const temporaryWorkspaces = workspaces.filter(ws => !ws.permanente);
+        
+        // Eliminar cada workspace temporal
+        for (const workspace of temporaryWorkspaces) {
+          await workspaceService.delete(workspace.id);
+        }
+        
+        // Recargar la lista
+        await loadWorkspaces();
+      } catch (error) {
+        setError('Error al limpiar cuentas temporales');
+        console.error('Error clearing temporary workspaces:', error);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="workspace-screen workspace-screen--loading">
@@ -171,14 +189,14 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
               <span>Nuevo Workspace</span>
             </button>
             <button
-              onClick={onLogout}
-              className="md-button md-button--text workspace-screen__logout-btn"
-              aria-label="Cerrar sesión"
+              onClick={handleClearAccounts}
+              className="md-button md-button--text workspace-screen__clear-btn"
+              aria-label="Limpiar cuentas temporales"
             >
-              <svg className="workspace-screen__logout-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+              <svg className="workspace-screen__clear-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
               </svg>
-              <span className="workspace-screen__logout-text">Salir</span>
+              <span className="workspace-screen__clear-text">Limpiar Cuentas</span>
             </button>
           </div>
         </div>
@@ -227,18 +245,13 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
               
               return (
                 <button
-                  key={workspace.workspaceId}
-                  onClick={() => isAvailable && onWorkspaceSelect(workspace.workspaceId)}
+                  key={workspace.id}
+                  onClick={() => isAvailable && onWorkspaceSelect(workspace.id)}
                   disabled={!isAvailable}
                   className={`workspace-screen__card workspace-screen__card--${statusInfo.color} ${!isAvailable ? 'workspace-screen__card--disabled' : ''}`}
-                  aria-label={`Workspace ${workspace.workspaceName} - ${statusInfo.text}`}
+                  aria-label={`Workspace ${workspace.nombre} - ${statusInfo.text}`}
                 >
                   <div className="workspace-screen__card-header">
-                    <div className="workspace-screen__card-icon">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
-                      </svg>
-                    </div>
                     <div className={`workspace-screen__card-status workspace-screen__card-status--${statusInfo.color}`}>
                       {statusInfo.icon}
                       <span className="md-label-medium">{statusInfo.text}</span>
@@ -247,7 +260,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   
                   <div className="workspace-screen__card-content">
                     <h3 className="md-title-large workspace-screen__card-title">
-                      {workspace.workspaceName}
+                      {workspace.nombre}
                     </h3>
                     <div className="workspace-screen__card-meta">
                       <span className="md-body-small">

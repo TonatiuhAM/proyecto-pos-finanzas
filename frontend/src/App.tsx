@@ -3,7 +3,7 @@ import LoginScreen from './components/LoginScreen';
 import MainMenu from './components/MainMenu';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import Inventario from './components/Inventario';
-import type { UsuarioDTO } from './types';
+import type { UsuarioDTO } from './types/index';
 import './App.css';
 
 type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'finanzas';
@@ -65,7 +65,6 @@ function App() {
       if (!currentUser) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
         <WorkspaceScreen 
-          onLogout={handleLogout}
           onWorkspaceSelect={handleWorkspaceSelect}
           onBackToMainMenu={handleBackToMainMenu}
         />

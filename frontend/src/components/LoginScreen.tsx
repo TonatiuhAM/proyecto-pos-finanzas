@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { authService } from '../services/apiService';
-import type { UsuarioDTO } from '../types';
+import type { UsuarioDTO } from '../types/index';
 import './LoginScreen.css';
 
 interface LoginScreenProps {
@@ -147,23 +147,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
               <span>{isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}</span>
             </button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="login-screen__demo">
-            <div className="login-screen__demo-divider">
-              <span className="md-body-small">Credenciales de prueba</span>
-            </div>
-            <div className="login-screen__demo-grid">
-              <div className="login-screen__demo-item">
-                <span className="md-label-medium">Usuario:</span>
-                <span className="md-body-medium">admin</span>
-              </div>
-              <div className="login-screen__demo-item">
-                <span className="md-label-medium">Contraseña:</span>
-                <span className="md-body-medium">admin123</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}

@@ -5,16 +5,18 @@ public class WorkspaceStatusDTO {
     private String nombre;
     private String estado; // "disponible", "ocupado", "cuenta"
     private int cantidadOrdenes;
+    private Boolean permanente;
 
     // Constructor
     public WorkspaceStatusDTO() {
     }
 
-    public WorkspaceStatusDTO(String id, String nombre, String estado, int cantidadOrdenes) {
+    public WorkspaceStatusDTO(String id, String nombre, String estado, int cantidadOrdenes, Boolean permanente) {
         this.id = id;
         this.nombre = nombre;
         this.estado = estado;
         this.cantidadOrdenes = cantidadOrdenes;
+        this.permanente = permanente;
     }
 
     // Getters y Setters
@@ -48,5 +50,13 @@ public class WorkspaceStatusDTO {
 
     public void setCantidadOrdenes(int cantidadOrdenes) {
         this.cantidadOrdenes = cantidadOrdenes;
+    }
+
+    public Boolean getPermanente() {
+        return permanente;
+    }
+
+    public void setPermanente(Boolean permanente) {
+        this.permanente = permanente;
     }
 }

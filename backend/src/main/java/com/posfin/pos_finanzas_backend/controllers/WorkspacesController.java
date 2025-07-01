@@ -134,7 +134,8 @@ public class WorkspacesController {
                     workspace.getId(),
                     workspace.getNombre(),
                     estado,
-                    (int) cantidadOrdenes);
+                    (int) cantidadOrdenes,
+                    workspace.getPermanente());
         }).collect(Collectors.toList());
     }
 
