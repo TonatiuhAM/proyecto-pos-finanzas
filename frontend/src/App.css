@@ -1,19 +1,125 @@
-#root {
-  max-width: 1280px;
+/* App Component Styles */
+.App {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Header responsivo mejorado */
+.app-header {
+  background-color: var(--md-surface-container);
+  border-bottom: 1px solid var(--md-outline-variant);
+  box-shadow: var(--md-elevation-1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header__content {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--md-spacing-md) var(--md-spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--md-spacing-md);
+  min-height: 64px;
+}
+
+.app-header__back-btn {
+  gap: var(--md-spacing-sm);
+}
+
+.app-header__back-icon,
+.app-header__logout-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.app-header__title {
+  color: var(--md-on-surface);
+  margin: 0;
+  font-weight: 500;
+  flex: 1;
   text-align: center;
 }
 
+.app-header__logout-btn {
+  gap: var(--md-spacing-sm);
+  color: var(--md-error);
+}
+
+.app-header__logout-btn:hover {
+  background-color: var(--md-error-container);
+}
+
+/* Responsividad del header */
+@media (max-width: 768px) {
+  .app-header__content {
+    padding: var(--md-spacing-md);
+    flex-wrap: wrap;
+  }
+  
+  .app-header__back-text,
+  .app-header__logout-text {
+    display: none;
+  }
+  
+  .app-header__back-btn,
+  .app-header__logout-btn {
+    min-width: 48px;
+    padding: var(--md-spacing-md);
+  }
+  
+  .app-header__title {
+    font-size: var(--md-title-medium);
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header__content {
+    padding: var(--md-spacing-sm) var(--md-spacing-md);
+    min-height: 56px;
+  }
+  
+  .app-header__title {
+    font-size: var(--md-body-large);
+  }
+}
+
+/* Mejoras para el layout de inventario */
+.inventory-layout {
+  min-height: calc(100vh - 64px);
+  background-color: var(--md-surface);
+}
+
+.inventory-layout__content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--md-spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .inventory-layout {
+    min-height: calc(100vh - 56px);
+  }
+  
+  .inventory-layout__content {
+    padding: var(--md-spacing-md);
+  }
+}
+
+/* Legacy styles for compatibility */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }

@@ -155,7 +155,6 @@ const Inventario: React.FC = () => {
 
   return (
     <div className="inventory-page">
-      <button className="back-to-home-btn">Regresar a Inicio</button>
 
       <div className="inventory-container">
         <header className="inventory-header">

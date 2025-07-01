@@ -6,9 +6,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrdenesWorkspaceRepository extends JpaRepository<OrdenesWorkspace, String> {
-    // Aquí puedes definir métodos personalizados para interactuar con la base de
-    // datos
-    // relacionados con las órdenes de workspace, si es necesario.
-    // Por ejemplo, podrías agregar métodos para buscar por workspace, producto,
-    // etc.
+    // Método para contar órdenes por workspace ID
+    long countByWorkspaceId(String workspaceId);
+
+    // Método para encontrar órdenes por workspace ID
+    java.util.List<OrdenesWorkspace> findByWorkspaceId(String workspaceId);
 }

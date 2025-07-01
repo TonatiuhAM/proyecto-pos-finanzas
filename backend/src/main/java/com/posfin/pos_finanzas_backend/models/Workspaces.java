@@ -15,6 +15,9 @@ public class Workspaces {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
+    @Column(name = "permanente", nullable = false)
+    private Boolean permanente = false;
+
     // Constructor
     public Workspaces() {
     }
@@ -42,5 +45,13 @@ public class Workspaces {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public Boolean getPermanente() {
+        return permanente;
+    }
+
+    public void setPermanente(Boolean permanente) {
+        this.permanente = permanente;
     }
 }

@@ -1,11 +1,71 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Material Design 3 Colors */
+  --md-primary: #6750A4;
+  --md-primary-container: #EADDFF;
+  --md-secondary: #625B71;
+  --md-secondary-container: #E8DEF8;
+  --md-tertiary: #7D5260;
+  --md-tertiary-container: #FFD8E4;
+  --md-surface: #FFFBFE;
+  --md-surface-variant: #F7F2FA;
+  --md-surface-container: #F3EDF7;
+  --md-surface-container-low: #F7F2FA;
+  --md-surface-container-high: #ECE6F0;
+  --md-surface-container-highest: #E6E0E9;
+  --md-on-surface: #1C1B1F;
+  --md-on-surface-variant: #49454F;
+  --md-outline: #79747E;
+  --md-outline-variant: #CAC4D0;
+  --md-error: #BA1A1A;
+  --md-error-container: #FFDAD6;
+  --md-success: #146C2E;
+  --md-success-container: #A6F2BB;
+  
+  /* Typography scale */
+  --md-display-large: 3.5rem;
+  --md-display-medium: 2.8rem;
+  --md-display-small: 2.25rem;
+  --md-headline-large: 2rem;
+  --md-headline-medium: 1.75rem;
+  --md-headline-small: 1.5rem;
+  --md-title-large: 1.375rem;
+  --md-title-medium: 1rem;
+  --md-title-small: 0.875rem;
+  --md-body-large: 1rem;
+  --md-body-medium: 0.875rem;
+  --md-body-small: 0.75rem;
+  --md-label-large: 0.875rem;
+  --md-label-medium: 0.75rem;
+  --md-label-small: 0.6875rem;
+
+  /* Spacing */
+  --md-spacing-xs: 0.25rem;
+  --md-spacing-sm: 0.5rem;
+  --md-spacing-md: 1rem;
+  --md-spacing-lg: 1.5rem;
+  --md-spacing-xl: 2rem;
+  --md-spacing-xxl: 3rem;
+
+  /* Elevation */
+  --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+  --md-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30);
+  --md-elevation-4: 0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px 0px rgba(0, 0, 0, 0.30);
+  --md-elevation-5: 0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px 0px rgba(0, 0, 0, 0.30);
+
+  /* Border radius */
+  --md-border-radius-xs: 0.25rem;
+  --md-border-radius-sm: 0.5rem;
+  --md-border-radius-md: 0.75rem;
+  --md-border-radius-lg: 1rem;
+  --md-border-radius-xl: 1.5rem;
+  --md-border-radius-full: 50%;
+
+  font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--md-on-surface);
+  background-color: var(--md-surface);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,56 +73,331 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#root {
+  min-height: 100vh;
+  width: 100%;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+/* Material Design Button Base */
+.md-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: 40px;
+  padding: var(--md-spacing-sm) var(--md-spacing-lg);
+  border: none;
+  border-radius: var(--md-border-radius-lg);
   font-family: inherit;
-  background-color: #1a1a1a;
+  font-size: var(--md-label-large);
+  font-weight: 500;
+  line-height: 1.25;
+  text-transform: none;
+  letter-spacing: 0.1px;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  overflow: hidden;
+  text-decoration: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.md-button:disabled {
+  pointer-events: none;
+  opacity: 0.38;
+}
+
+/* Material Design Ripple Effect */
+.md-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: inherit;
+}
+
+.md-button:hover::before {
+  opacity: 0.08;
+}
+
+.md-button:focus::before {
+  opacity: 0.12;
+}
+
+.md-button:active::before {
+  opacity: 0.16;
+}
+
+/* Button Variants */
+.md-button--filled {
+  background-color: var(--md-primary);
+  color: white;
+  box-shadow: var(--md-elevation-1);
+}
+
+.md-button--filled:hover {
+  box-shadow: var(--md-elevation-2);
+}
+
+.md-button--outlined {
+  background-color: transparent;
+  color: var(--md-primary);
+  border: 1px solid var(--md-outline);
+}
+
+.md-button--text {
+  background-color: transparent;
+  color: var(--md-primary);
+  padding: var(--md-spacing-sm) var(--md-spacing-md);
+}
+
+.md-button--tonal {
+  background-color: var(--md-secondary-container);
+  color: var(--md-on-surface);
+}
+
+/* Card Component */
+.md-card {
+  background-color: var(--md-surface-container);
+  border-radius: var(--md-border-radius-md);
+  box-shadow: var(--md-elevation-1);
+  overflow: hidden;
+  transition: box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.md-card:hover {
+  box-shadow: var(--md-elevation-2);
+}
+
+.md-card--clickable {
+  cursor: pointer;
+}
+
+.md-card--clickable:hover {
+  box-shadow: var(--md-elevation-3);
+}
+
+/* Typography */
+.md-display-large { font-size: var(--md-display-large); font-weight: 400; line-height: 1.12; }
+.md-display-medium { font-size: var(--md-display-medium); font-weight: 400; line-height: 1.16; }
+.md-display-small { font-size: var(--md-display-small); font-weight: 400; line-height: 1.22; }
+.md-headline-large { font-size: var(--md-headline-large); font-weight: 400; line-height: 1.25; }
+.md-headline-medium { font-size: var(--md-headline-medium); font-weight: 400; line-height: 1.29; }
+.md-headline-small { font-size: var(--md-headline-small); font-weight: 400; line-height: 1.33; }
+.md-title-large { font-size: var(--md-title-large); font-weight: 500; line-height: 1.27; }
+.md-title-medium { font-size: var(--md-title-medium); font-weight: 500; line-height: 1.5; }
+.md-title-small { font-size: var(--md-title-small); font-weight: 500; line-height: 1.43; }
+.md-body-large { font-size: var(--md-body-large); font-weight: 400; line-height: 1.5; }
+.md-body-medium { font-size: var(--md-body-medium); font-weight: 400; line-height: 1.43; }
+.md-body-small { font-size: var(--md-body-small); font-weight: 400; line-height: 1.33; }
+.md-label-large { font-size: var(--md-label-large); font-weight: 500; line-height: 1.43; }
+.md-label-medium { font-size: var(--md-label-medium); font-weight: 500; line-height: 1.33; }
+.md-label-small { font-size: var(--md-label-small); font-weight: 500; line-height: 1.45; }
+
+/* Responsive Touch Targets */
+@media (max-width: 768px) {
+  .md-button {
+    min-height: 48px;
+    padding: var(--md-spacing-md) var(--md-spacing-xl);
   }
-  a:hover {
-    color: #747bff;
+  
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+/* Focus styles */
+.md-focus-ring {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Mejoras adicionales para dispositivos táctiles */
+@media (max-width: 768px) {
+  /* Asegurar que todos los elementos interactivos tengan un tamaño mínimo táctil */
+  button, 
+  input[type="submit"], 
+  input[type="button"], 
+  input[type="reset"],
+  a,
+  [role="button"],
+  .clickable {
+    min-height: 48px;
+    min-width: 48px;
+    position: relative;
+  }
+  
+  /* Mejorar el padding de elementos pequeños para facilitar el toque */
+  button:not(.md-button) {
+    padding: var(--md-spacing-md) var(--md-spacing-lg);
+  }
+  
+  /* Espaciado adicional entre elementos interactivos */
+  .action-buttons {
+    gap: var(--md-spacing-md) !important;
+  }
+  
+  /* Hacer que los select y input sean más fáciles de usar en móviles */
+  select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
+    min-height: 56px;
+    font-size: 16px; /* Previene zoom en iOS */
+    padding: var(--md-spacing-md);
+  }
+  
+  /* Mejorar el tamaño de fuente base en móviles */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Mejorar spacing entre elementos en móviles */
+  .inventory-container,
+  .main-menu__content,
+  .workspace-screen__content {
+    padding: var(--md-spacing-lg) var(--md-spacing-md) !important;
+  }
+}
+
+/* Mejoras para tablets */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .main-menu__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--md-spacing-lg);
+  }
+  
+  .main-menu__card {
+    min-height: 140px;
+  }
+  
+  /* Hacer que las tablas sean más cómodas en tablets */
+  .inventory-table th,
+  .inventory-table td {
+    padding: var(--md-spacing-lg);
+    font-size: var(--md-body-large);
+  }
+}
+
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 380px) {
+  .main-menu__card {
+    min-height: 120px;
+    padding: var(--md-spacing-md);
+  }
+  
+  .main-menu__card-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .main-menu__card-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .inventory-container {
+    margin: var(--md-spacing-xs) !important;
+    padding: var(--md-spacing-md) !important;
+  }
+}
+
+/* Mejoras para interacciones táctiles avanzadas */
+@media (hover: none) and (pointer: coarse) {
+  /* Solo aplicar en dispositivos táctiles sin hover */
+  .main-menu__card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  .md-button:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
+  }
+  
+  .action-btn:active {
+    transform: scale(0.94);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Soporte para orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .main-menu__content {
+    padding: var(--md-spacing-md) var(--md-spacing-lg);
+  }
+  
+  .main-menu__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--md-spacing-md);
+  }
+  
+  .main-menu__card {
+    min-height: 100px;
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .main-menu__card-arrow {
+    display: flex;
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Modo de alto contraste mejorado */
+@media (prefers-contrast: high) {
+  .main-menu__card,
+  .md-button,
+  .inventory-table {
+    border: 2px solid currentColor;
+  }
+  
+  .main-menu__card:focus,
+  .md-button:focus,
+  button:focus,
+  input:focus,
+  select:focus {
+    outline: 3px solid var(--md-primary);
+    outline-offset: 2px;
   }
 }

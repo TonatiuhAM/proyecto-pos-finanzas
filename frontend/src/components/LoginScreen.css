@@ -1,0 +1,386 @@
+/* Login Screen Container */
+.login-screen {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--md-spacing-lg);
+  overflow: hidden;
+}
+
+/* Background */
+.login-screen__background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-tertiary) 100%);
+  z-index: -2;
+}
+
+.login-screen__background-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  z-index: -1;
+}
+
+/* Main Container */
+.login-screen__container {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-xl);
+}
+
+/* Header */
+.login-screen__header {
+  text-align: center;
+  color: white;
+}
+
+.login-screen__logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--md-spacing-lg);
+}
+
+.login-screen__logo-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--md-border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--md-elevation-3);
+}
+
+.login-screen__logo-icon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.login-screen__title {
+  margin: 0 0 var(--md-spacing-sm) 0;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.login-screen__subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Login Card */
+.login-screen__card {
+  background-color: var(--md-surface);
+  border-radius: var(--md-border-radius-xl);
+  box-shadow: var(--md-elevation-5);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.login-screen__card-header {
+  padding: var(--md-spacing-xl) var(--md-spacing-xl) var(--md-spacing-lg);
+  text-align: center;
+  border-bottom: 1px solid var(--md-outline-variant);
+}
+
+.login-screen__card-header h2 {
+  margin: 0 0 var(--md-spacing-sm) 0;
+  color: var(--md-on-surface);
+}
+
+.login-screen__card-header p {
+  margin: 0;
+  color: var(--md-on-surface-variant);
+}
+
+/* Form */
+.login-screen__form {
+  padding: var(--md-spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-lg);
+}
+
+/* Form Fields */
+.login-screen__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-sm);
+}
+
+.login-screen__label {
+  color: var(--md-on-surface);
+  font-weight: 500;
+}
+
+.login-screen__input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-screen__input-icon {
+  position: absolute;
+  left: var(--md-spacing-md);
+  width: 20px;
+  height: 20px;
+  color: var(--md-on-surface-variant);
+  z-index: 1;
+}
+
+.login-screen__input {
+  width: 100%;
+  height: 56px;
+  padding: var(--md-spacing-md) var(--md-spacing-md) var(--md-spacing-md) 48px;
+  border: 1px solid var(--md-outline);
+  border-radius: var(--md-border-radius-sm);
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  outline: none;
+}
+
+.login-screen__input:focus {
+  border-color: var(--md-primary);
+  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.12);
+}
+
+.login-screen__input:disabled {
+  background-color: var(--md-surface-variant);
+  color: var(--md-on-surface-variant);
+  border-color: var(--md-outline-variant);
+  cursor: not-allowed;
+}
+
+.login-screen__input::placeholder {
+  color: var(--md-on-surface-variant);
+  opacity: 0.7;
+}
+
+/* Error Message */
+.login-screen__error {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+  padding: var(--md-spacing-md);
+  background-color: var(--md-error-container);
+  color: var(--md-error);
+  border-radius: var(--md-border-radius-sm);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+}
+
+.login-screen__error-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Submit Button */
+.login-screen__submit-btn {
+  width: 100%;
+  height: 56px;
+  gap: var(--md-spacing-sm);
+  font-weight: 500;
+  text-transform: none;
+  box-shadow: var(--md-elevation-1);
+}
+
+.login-screen__submit-btn:hover {
+  box-shadow: var(--md-elevation-2);
+}
+
+.login-screen__submit-btn:disabled {
+  background-color: var(--md-surface-variant);
+  color: var(--md-on-surface-variant);
+  box-shadow: none;
+}
+
+.login-screen__loading-icon {
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Demo Credentials */
+.login-screen__demo {
+  padding: var(--md-spacing-lg) var(--md-spacing-xl);
+  background-color: var(--md-surface-variant);
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.login-screen__demo-divider {
+  text-align: center;
+  margin-bottom: var(--md-spacing-md);
+  position: relative;
+}
+
+.login-screen__demo-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--md-outline-variant);
+  z-index: 1;
+}
+
+.login-screen__demo-divider span {
+  background-color: var(--md-surface-variant);
+  padding: 0 var(--md-spacing-md);
+  color: var(--md-on-surface-variant);
+  position: relative;
+  z-index: 2;
+}
+
+.login-screen__demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--md-spacing-md);
+}
+
+.login-screen__demo-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-xs);
+  text-align: center;
+}
+
+.login-screen__demo-item span:first-child {
+  color: var(--md-on-surface-variant);
+}
+
+.login-screen__demo-item span:last-child {
+  color: var(--md-on-surface);
+  font-weight: 500;
+  background-color: var(--md-surface);
+  padding: var(--md-spacing-sm);
+  border-radius: var(--md-border-radius-xs);
+  border: 1px solid var(--md-outline-variant);
+}
+
+/* Footer */
+.login-screen__footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.login-screen__footer p {
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-screen {
+    padding: var(--md-spacing-md);
+  }
+
+  .login-screen__container {
+    max-width: 100%;
+    gap: var(--md-spacing-lg);
+  }
+
+  .login-screen__logo-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .login-screen__logo-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .login-screen__card-header,
+  .login-screen__form {
+    padding: var(--md-spacing-lg);
+  }
+
+  .login-screen__demo {
+    padding: var(--md-spacing-md) var(--md-spacing-lg);
+  }
+
+  .login-screen__demo-grid {
+    grid-template-columns: 1fr;
+    gap: var(--md-spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-screen {
+    padding: var(--md-spacing-sm);
+  }
+
+  .login-screen__card-header,
+  .login-screen__form {
+    padding: var(--md-spacing-md);
+  }
+
+  .login-screen__input {
+    height: 48px;
+    font-size: var(--md-body-medium);
+  }
+
+  .login-screen__submit-btn {
+    height: 48px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .login-screen__input {
+    border-width: 2px;
+  }
+
+  .login-screen__input:focus {
+    border-width: 3px;
+  }
+
+  .login-screen__error {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .login-screen__input,
+  .login-screen__submit-btn {
+    transition: none;
+  }
+
+  .login-screen__loading-icon {
+    animation: none;
+  }
+}
+
+/* Touch enhancements */
+@media (max-width: 768px) {
+  .login-screen__input,
+  .login-screen__submit-btn {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+}
