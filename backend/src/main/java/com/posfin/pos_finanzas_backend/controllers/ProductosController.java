@@ -5,10 +5,12 @@ import com.posfin.pos_finanzas_backend.models.CategoriasProductos;
 import com.posfin.pos_finanzas_backend.models.Personas;
 import com.posfin.pos_finanzas_backend.models.Estados;
 import com.posfin.pos_finanzas_backend.dtos.ProductosDTO;
+import com.posfin.pos_finanzas_backend.dtos.ProductoCreacionDTO;
 import com.posfin.pos_finanzas_backend.repositories.ProductosRepository;
 import com.posfin.pos_finanzas_backend.repositories.CategoriasProductosRepository;
 import com.posfin.pos_finanzas_backend.repositories.PersonasRepository;
 import com.posfin.pos_finanzas_backend.repositories.EstadosRepository;
+import com.posfin.pos_finanzas_backend.services.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,9 @@ public class ProductosController {
 
     @Autowired
     private EstadosRepository estadosRepository;
+
+    @Autowired
+    private ProductoService productoService;
 
     @GetMapping
     public List<ProductosDTO> getAllProductos() {
@@ -78,6 +83,16 @@ public class ProductosController {
             return ResponseEntity.ok(convertToDTO(savedProducto));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/completo")
+    public ResponseEntity<?> createProductoCompleto(@RequestBody ProductoCreacionDTO productoCreacionDTO) {
+        try {
+            ProductosDTO nuevoProducto = productoService.crearProductoCompleto(productoCreacionDTO);
+            return ResponseEntity.ok(nuevoProducto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al crear el producto: " + e.getMessage());
         }
     }
 
@@ -129,6 +144,16 @@ public class ProductosController {
         }
         productosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/desactivar")
+    public ResponseEntity<?> desactivarProducto(@PathVariable String id) {
+        try {
+            ProductosDTO productoDesactivado = productoService.desactivarProducto(id);
+            return ResponseEntity.ok(productoDesactivado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al desactivar el producto: " + e.getMessage());
+        }
     }
 
     @PatchMapping("/{id}")

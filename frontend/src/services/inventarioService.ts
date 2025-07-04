@@ -43,14 +43,47 @@ export interface ProductoDTO {
   categoriasProductosCategoria?: string;
   proveedorId?: string;
   proveedorNombre?: string;
+  proveedorApellidoPaterno?: string;
+  proveedorApellidoMaterno?: string;
   estadosId?: string;
   estadosEstado?: string;
+  precioVentaActual?: number;
+  precioCompraActual?: number;
+  cantidadInventario?: number;
 }
 
 export interface UbicacionDTO {
   id: string;
+  nombre: string;
   ubicacion: string;
   descripcion?: string;
+}
+
+export interface CategoriaDTO {
+  id: string;
+  categoria: string;
+}
+
+export interface ProveedorDTO {
+  id: string;
+  nombre: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+}
+
+// Interface para crear un producto completo
+export interface ProductoCreacionRequest {
+  nombre: string;
+  categoriasProductosId: string;
+  proveedorId: string;
+  precioVenta: number;
+  precioCompra: number;
+  unidadMedida: string; // "piezas" o "kilogramos"
+  stockInicial: number;
+  ubicacionId: string;
+  stockMinimo: number;
+  stockMaximo: number;
+  usuarioId: string;
 }
 
 // Servicios para inventarios
@@ -93,6 +126,36 @@ export const inventarioService = {
   // Obtener ubicaciones para dropdown
   getAllUbicaciones: async (): Promise<UbicacionDTO[]> => {
     const response = await api.get<UbicacionDTO[]>('/ubicaciones');
+    return response.data;
+  },
+
+  // Obtener categorías para dropdown
+  getAllCategorias: async (): Promise<CategoriaDTO[]> => {
+    const response = await api.get<CategoriaDTO[]>('/categorias-productos');
+    return response.data;
+  },
+
+  // Obtener proveedores para dropdown (personas que son proveedores)
+  getAllProveedores: async (): Promise<ProveedorDTO[]> => {
+    const response = await api.get<ProveedorDTO[]>('/personas');
+    return response.data;
+  },
+
+  // Crear producto completo con inventario inicial
+  createProductoCompleto: async (producto: ProductoCreacionRequest): Promise<ProductoDTO> => {
+    const response = await api.post<ProductoDTO>('/productos/completo', producto);
+    return response.data;
+  },
+
+  // Desactivar producto
+  desactivarProducto: async (id: string): Promise<ProductoDTO> => {
+    const response = await api.patch<ProductoDTO>(`/productos/${id}/desactivar`);
+    return response.data;
+  },
+
+  // Actualizar producto
+  updateProducto: async (id: string, producto: Partial<ProductoDTO>): Promise<ProductoDTO> => {
+    const response = await api.put<ProductoDTO>(`/productos/${id}`, producto);
     return response.data;
   },
 };

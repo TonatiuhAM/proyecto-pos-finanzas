@@ -1,5 +1,7 @@
 package com.posfin.pos_finanzas_backend.dtos;
 
+import java.math.BigDecimal;
+
 public class ProductosDTO {
     private String id;
     private String nombre;
@@ -17,6 +19,13 @@ public class ProductosDTO {
     // Campos aplanados de la relación con Estados
     private String estadosId;
     private String estadosEstado;
+
+    // Campos para precios y costos más recientes
+    private BigDecimal precioVentaActual;
+    private BigDecimal precioCompraActual;
+
+    // Campos para inventario (cantidad actual)
+    private Integer cantidadInventario;
 
     // Constructor
     public ProductosDTO() {
@@ -101,5 +110,29 @@ public class ProductosDTO {
 
     public void setEstadosEstado(String estadosEstado) {
         this.estadosEstado = estadosEstado;
+    }
+
+    public BigDecimal getPrecioVentaActual() {
+        return precioVentaActual;
+    }
+
+    public void setPrecioVentaActual(BigDecimal precioVentaActual) {
+        this.precioVentaActual = precioVentaActual;
+    }
+
+    public BigDecimal getPrecioCompraActual() {
+        return precioCompraActual;
+    }
+
+    public void setPrecioCompraActual(BigDecimal precioCompraActual) {
+        this.precioCompraActual = precioCompraActual;
+    }
+
+    public Integer getCantidadInventario() {
+        return cantidadInventario;
+    }
+
+    public void setCantidadInventario(Integer cantidadInventario) {
+        this.cantidadInventario = cantidadInventario;
     }
 }
