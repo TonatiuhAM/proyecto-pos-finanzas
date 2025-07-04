@@ -52,7 +52,8 @@ public class ProductoService {
     @Transactional
     public ProductosDTO crearProductoCompleto(ProductoCreacionDTO dto) {
         // 1. Validar que todas las entidades relacionadas existan
-        Optional<CategoriasProductos> categoria = categoriasProductosRepository.findById(dto.getCategoriasProductosId());
+        Optional<CategoriasProductos> categoria = categoriasProductosRepository
+                .findById(dto.getCategoriasProductosId());
         Optional<Personas> proveedor = personasRepository.findById(dto.getProveedorId());
         Optional<Ubicaciones> ubicacion = ubicacionesRepository.findById(dto.getUbicacionId());
         Optional<Usuarios> usuario = usuariosRepository.findById(dto.getUsuarioId());
@@ -74,18 +75,19 @@ public class ProductoService {
         Optional<Estados> estadoActivo = estadosRepository.findAll().stream()
                 .filter(estado -> "Activo".equalsIgnoreCase(estado.getEstado()))
                 .findFirst();
-        
+
         if (estadoActivo.isEmpty()) {
             throw new RuntimeException("Estado 'Activo' no encontrado en la base de datos");
         }
 
-        // Buscar el tipo de movimiento "Creación" - asumiendo que existe uno con ese nombre
+        // Buscar el tipo de movimiento "Creación" - asumiendo que existe uno con ese
+        // nombre
         Optional<TipoMovimientos> tipoCreacion = tipoMovimientosRepository.findAll().stream()
-                .filter(tipo -> "Creación".equalsIgnoreCase(tipo.getMovimiento()) || 
-                               "Creacion".equalsIgnoreCase(tipo.getMovimiento()) ||
-                               "Inicial".equalsIgnoreCase(tipo.getMovimiento()))
+                .filter(tipo -> "Creación".equalsIgnoreCase(tipo.getMovimiento()) ||
+                        "Creacion".equalsIgnoreCase(tipo.getMovimiento()) ||
+                        "Inicial".equalsIgnoreCase(tipo.getMovimiento()))
                 .findFirst();
-        
+
         if (tipoCreacion.isEmpty()) {
             throw new RuntimeException("Tipo de movimiento 'Creación' no encontrado en la base de datos");
         }
@@ -96,7 +98,7 @@ public class ProductoService {
         nuevoProducto.setCategoriasProductos(categoria.get());
         nuevoProducto.setProveedor(proveedor.get());
         nuevoProducto.setEstados(estadoActivo.get());
-        
+
         Productos productoGuardado = productosRepository.save(nuevoProducto);
 
         // 3. Crear y guardar el historial de precios
@@ -117,7 +119,7 @@ public class ProductoService {
         Inventarios nuevoInventario = new Inventarios();
         nuevoInventario.setProducto(productoGuardado);
         nuevoInventario.setUbicacion(ubicacion.get());
-        
+
         // Asignar la cantidad según la unidad de medida
         if ("piezas".equalsIgnoreCase(dto.getUnidadMedida())) {
             nuevoInventario.setCantidadPz(dto.getStockInicial());
@@ -126,7 +128,7 @@ public class ProductoService {
             nuevoInventario.setCantidadKg(dto.getStockInicial());
             nuevoInventario.setCantidadPz(0);
         }
-        
+
         nuevoInventario.setCantidadMinima(dto.getStockMinimo());
         nuevoInventario.setCantidadMaxima(dto.getStockMaximo());
         inventarioRepository.save(nuevoInventario);
@@ -157,7 +159,7 @@ public class ProductoService {
         Optional<Estados> estadoInactivo = estadosRepository.findAll().stream()
                 .filter(estado -> "Inactivo".equalsIgnoreCase(estado.getEstado()))
                 .findFirst();
-        
+
         if (estadoInactivo.isEmpty()) {
             throw new RuntimeException("Estado 'Inactivo' no encontrado en la base de datos");
         }
@@ -169,7 +171,8 @@ public class ProductoService {
         return convertToDTO(productoActualizado);
     }
 
-    // Método auxiliar para convertir Productos a ProductosDTO con información adicional
+    // Método auxiliar para convertir Productos a ProductosDTO con información
+    // adicional
     private ProductosDTO convertToDTO(Productos producto) {
         ProductosDTO dto = new ProductosDTO();
         dto.setId(producto.getId());
