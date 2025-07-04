@@ -1,343 +1,262 @@
 import React, { useState, useEffect } from 'react';
-import './Inventario.css';
+import './InventarioModerno.css';
 import { inventarioService } from '../services/inventarioService';
-import type { 
-  InventarioDTO, 
-  CreateInventarioRequest, 
-  ProductoDTO, 
-  UbicacionDTO 
-} from '../services/inventarioService';
+import ModalCrearProducto from './ModalCrearProducto';
+import ModalEditarProducto from './ModalEditarProducto';
+import type { ProductoDTO } from '../services/inventarioService';
 
 const Inventario: React.FC = () => {
   // Estados principales
-  const [inventarios, setInventarios] = useState<InventarioDTO[]>([]);
   const [productos, setProductos] = useState<ProductoDTO[]>([]);
-  const [ubicaciones, setUbicaciones] = useState<UbicacionDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados del modal
-  const [showModal, setShowModal] = useState(false);
-  const [editingInventario, setEditingInventario] = useState<InventarioDTO | null>(null);
-  const [formData, setFormData] = useState<CreateInventarioRequest>({
-    cantidadPz: 0,
-    cantidadKg: 0,
-    cantidadMinima: 0,
-    cantidadMaxima: 0,
-    producto: { id: '' },
-    ubicacion: { id: '' }
-  });
+  // Estados de los modales
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductoDTO | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
-    loadData();
+    loadProductos();
   }, []);
 
-  const loadData = async () => {
+  const loadProductos = async () => {
     try {
       setLoading(true);
-      const [inventariosData, productosData, ubicacionesData] = await Promise.all([
-        inventarioService.getAllInventarios(),
-        inventarioService.getAllProductos(),
-        inventarioService.getAllUbicaciones()
-      ]);
-      
-      setInventarios(inventariosData);
+      const productosData = await inventarioService.getAllProductos();
       setProductos(productosData);
-      setUbicaciones(ubicacionesData);
       setError(null);
     } catch (err) {
-      setError('Error al cargar los datos');
-      console.error('Error loading data:', err);
+      setError('Error al cargar los productos');
+      console.error('Error loading productos:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Abrir modal para crear nuevo inventario
+  // Abrir modal para crear nuevo producto
   const handleCrearNuevo = () => {
-    setEditingInventario(null);
-    setFormData({
-      cantidadPz: 0,
-      cantidadKg: 0,
-      cantidadMinima: 0,
-      cantidadMaxima: 0,
-      producto: { id: '' },
-      ubicacion: { id: '' }
-    });
-    setShowModal(true);
+    setShowCreateModal(true);
   };
 
-  // Abrir modal para editar inventario
-  const handleEditar = (inventario: InventarioDTO) => {
-    setEditingInventario(inventario);
-    setFormData({
-      cantidadPz: inventario.cantidadPz || 0,
-      cantidadKg: inventario.cantidadKg || 0,
-      cantidadMinima: inventario.cantidadMinima,
-      cantidadMaxima: inventario.cantidadMaxima,
-      producto: { id: inventario.productoId },
-      ubicacion: { id: inventario.ubicacionId }
-    });
-    setShowModal(true);
+  // Abrir modal para editar producto
+  const handleEditarProducto = (producto: ProductoDTO) => {
+    setSelectedProduct(producto);
+    setShowEditModal(true);
   };
 
-  // Eliminar inventario
-  const handleEliminar = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este registro de inventario?')) {
+  // Desactivar producto
+  const handleDesactivarProducto = async (id: string, nombre: string) => {
+    if (window.confirm(`¿Estás seguro de que deseas desactivar el producto "${nombre}"?`)) {
       try {
-        await inventarioService.deleteInventario(id);
-        await loadData(); // Recargar datos
+        await inventarioService.desactivarProducto(id);
+        await loadProductos(); // Recargar datos
+        setError(null);
       } catch (err) {
-        setError('Error al eliminar el inventario');
-        console.error('Error deleting inventario:', err);
+        setError('Error al desactivar el producto');
+        console.error('Error deactivating product:', err);
       }
     }
   };
 
-  // Manejar cambios en el formulario
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'productoId') {
-      setFormData(prev => ({
-        ...prev,
-        producto: { id: value }
-      }));
-    } else if (name === 'ubicacionId') {
-      setFormData(prev => ({
-        ...prev,
-        ubicacion: { id: value }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: name.includes('cantidad') ? parseInt(value) || 0 : value
-      }));
-    }
+  // Manejar éxito en creación/edición
+  const handleModalSuccess = () => {
+    loadProductos();
   };
 
-  // Guardar inventario (crear o actualizar)
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.producto.id || !formData.ubicacion.id) {
-      setError('Debe seleccionar un producto y una ubicación');
-      return;
-    }
-
-    try {
-      if (editingInventario) {
-        await inventarioService.updateInventario(editingInventario.id, formData);
-      } else {
-        await inventarioService.createInventario(formData);
-      }
-      
-      setShowModal(false);
-      await loadData(); // Recargar datos
-      setError(null);
-    } catch (err) {
-      setError('Error al guardar el inventario');
-      console.error('Error saving inventario:', err);
-    }
+  // Función para formatear precio
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined || price === null) return 'N/A';
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN'
+    }).format(price);
   };
 
-  // Cerrar modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingInventario(null);
-    setError(null);
+  // Función para obtener clase CSS del estado
+  const getStatusClass = (estado: string | undefined) => {
+    if (!estado) return 'status-unknown';
+    switch (estado.toLowerCase()) {
+      case 'activo':
+        return 'status-active';
+      case 'inactivo':
+        return 'status-inactive';
+      case 'agotado':
+        return 'status-out-of-stock';
+      default:
+        return 'status-unknown';
+    }
   };
 
   if (loading) {
-    return <div className="loading">Cargando inventarios...</div>;
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Cargando productos...</p>
+      </div>
+    );
   }
 
   return (
     <div className="inventory-page">
-
       <div className="inventory-container">
         <header className="inventory-header">
-          <h1 className="inventory-title">GESTIÓN DE INVENTARIOS</h1>
-          <button
-            className="create-product-btn"
-            onClick={handleCrearNuevo}
-          >
-            AÑADIR NUEVO INVENTARIO
-          </button>
+          <div className="header-content">
+            <div className="header-title">
+              <h1 className="inventory-title">GESTIÓN DE PRODUCTOS</h1>
+              <p className="inventory-subtitle">
+                Administra tu catálogo de productos con precios, inventario y proveedores
+              </p>
+            </div>
+            <button
+              className="create-product-btn"
+              onClick={handleCrearNuevo}
+            >
+              <span className="btn-icon">+</span>
+              CREAR NUEVO PRODUCTO
+            </button>
+          </div>
         </header>
 
         {error && (
           <div className="error-message">
+            <span className="error-icon">⚠️</span>
             {error}
           </div>
         )}
 
         <main className="inventory-table-container">
-          <table className="inventory-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Producto</th>
-                <th>Ubicación</th>
-                <th>Cantidad (Pz)</th>
-                <th>Cantidad (Kg)</th>
-                <th>Cantidad Mínima</th>
-                <th>Cantidad Máxima</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventarios.map((inventario) => (
-                <tr key={inventario.id}>
-                  <td>{inventario.id.substring(0, 8)}...</td>
-                  <td>{inventario.productoNombre}</td>
-                  <td>{inventario.ubicacionNombre}</td>
-                  <td>{inventario.cantidadPz || 'N/A'}</td>
-                  <td>{inventario.cantidadKg || 'N/A'}</td>
-                  <td>{inventario.cantidadMinima}</td>
-                  <td>{inventario.cantidadMaxima}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button 
-                        className="action-btn edit-btn" 
-                        onClick={() => handleEditar(inventario)}
-                      >
-                        Editar
-                      </button>
-                      <button 
-                        className="action-btn delete-btn" 
-                        onClick={() => handleEliminar(inventario.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
+          <div className="table-wrapper">
+            <table className="inventory-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Proveedor</th>
+                  <th>Precio Compra</th>
+                  <th>Precio Venta</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {productos.map((producto) => (
+                  <tr key={producto.id} className="table-row">
+                    <td className="product-name-cell">
+                      <div className="product-info">
+                        <span className="product-name">{producto.nombre}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="category-badge">
+                        {producto.categoriasProductosCategoria || 'Sin categoría'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="supplier-info">
+                        <span className="supplier-name">
+                          {producto.proveedorNombre || 'Sin proveedor'}
+                          {producto.proveedorApellidoPaterno && ` ${producto.proveedorApellidoPaterno}`}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="price-value">
+                        {formatPrice(producto.precioCompraActual)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="price-value">
+                        {formatPrice(producto.precioVentaActual)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="stock-info">
+                        <span className={`stock-value ${(producto.cantidadInventario || 0) <= 10 ? 'low-stock' : ''}`}>
+                          {producto.cantidadInventario || 0}
+                        </span>
+                        <span className="stock-unit">unidades</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${getStatusClass(producto.estadosEstado)}`}>
+                        {producto.estadosEstado || 'No definido'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          className="action-btn edit-btn" 
+                          onClick={() => handleEditarProducto(producto)}
+                          title="Editar producto"
+                        >
+                          <span className="btn-icon">✏️</span>
+                          Editar
+                        </button>
+                        {producto.estadosEstado !== 'inactivo' && (
+                          <button 
+                            className="action-btn deactivate-btn" 
+                            onClick={() => handleDesactivarProducto(producto.id, producto.nombre)}
+                            title="Desactivar producto"
+                          >
+                            <span className="btn-icon">🚫</span>
+                            Desactivar
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {inventarios.length === 0 && (
-            <div className="no-data">
-              No hay registros de inventario disponibles.
-            </div>
-          )}
+            {productos.length === 0 && (
+              <div className="no-data">
+                <div className="no-data-icon">📦</div>
+                <h3>No hay productos registrados</h3>
+                <p>Comienza creando tu primer producto con el botón "Crear Nuevo Producto"</p>
+              </div>
+            )}
+          </div>
         </main>
-      </div>
 
-      {/* Modal para crear/editar inventario */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>{editingInventario ? 'Editar Inventario' : 'Crear Nuevo Inventario'}</h2>
-              <button className="close-btn" onClick={handleCloseModal}>×</button>
+        {/* Estadísticas rápidas */}
+        <div className="quick-stats">
+          <div className="stat-card">
+            <div className="stat-value">{productos.length}</div>
+            <div className="stat-label">Total Productos</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">
+              {productos.filter(p => p.estadosEstado === 'activo').length}
             </div>
-            
-            <form onSubmit={handleSubmit} className="inventory-form">
-              <div className="form-group">
-                <label htmlFor="productoId">Producto *</label>
-                <select
-                  id="productoId"
-                  name="productoId"
-                  value={formData.producto.id}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Seleccione un producto</option>
-                  {productos.map((producto) => (
-                    <option key={producto.id} value={producto.id}>
-                      {producto.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="ubicacionId">Ubicación *</label>
-                <select
-                  id="ubicacionId"
-                  name="ubicacionId"
-                  value={formData.ubicacion.id}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Seleccione una ubicación</option>
-                  {ubicaciones.map((ubicacion) => (
-                    <option key={ubicacion.id} value={ubicacion.id}>
-                      {ubicacion.ubicacion}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="cantidadPz">Cantidad (Piezas)</label>
-                  <input
-                    type="number"
-                    id="cantidadPz"
-                    name="cantidadPz"
-                    value={formData.cantidadPz || ''}
-                    onChange={handleInputChange}
-                    min="0"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="cantidadKg">Cantidad (Kg)</label>
-                  <input
-                    type="number"
-                    id="cantidadKg"
-                    name="cantidadKg"
-                    value={formData.cantidadKg || ''}
-                    onChange={handleInputChange}
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="cantidadMinima">Cantidad Mínima *</label>
-                  <input
-                    type="number"
-                    id="cantidadMinima"
-                    name="cantidadMinima"
-                    value={formData.cantidadMinima}
-                    onChange={handleInputChange}
-                    min="0"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="cantidadMaxima">Cantidad Máxima *</label>
-                  <input
-                    type="number"
-                    id="cantidadMaxima"
-                    name="cantidadMaxima"
-                    value={formData.cantidadMaxima}
-                    onChange={handleInputChange}
-                    min="0"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={handleCloseModal}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-save">
-                  {editingInventario ? 'Actualizar' : 'Crear'}
-                </button>
-              </div>
-            </form>
+            <div className="stat-label">Activos</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value">
+              {productos.filter(p => (p.cantidadInventario || 0) <= 10).length}
+            </div>
+            <div className="stat-label">Stock Bajo</div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Modal para crear producto */}
+      <ModalCrearProducto
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      {/* Modal para editar producto */}
+      <ModalEditarProducto
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={handleModalSuccess}
+        producto={selectedProduct}
+      />
     </div>
   );
 };
