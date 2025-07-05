@@ -1,8 +1,19 @@
 import axios from 'axios';
 import type { LoginCredentials, UsuarioDTO, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
 
-// Obtener la URL del backend desde las variables de entorno
-const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// Obtener la URL del backend dinámicamente en el cliente
+const getBackendUrl = () => {
+  // En producción, la API está en el mismo host, pero en un subdominio o ruta diferente.
+  // Asumimos que el frontend se sirve desde un dominio y el backend desde otro.
+  // La URL del backend de producción se proporciona directamente.
+  if (import.meta.env.PROD) {
+    return 'https://sc-pos-finanzas-backend.azuremicroservices.io';
+  }
+  // En desarrollo, usamos la URL del proxy de Vite.
+  return window.location.origin;
+};
+
+const backendUrl = getBackendUrl();
 
 // Configuración base de axios
 const api = axios.create({
