@@ -1,5 +1,3 @@
-import React from 'react';
-
 const TestComponent = () => {
   return (
     <div style={{ padding: '20px', background: 'lightblue' }}>

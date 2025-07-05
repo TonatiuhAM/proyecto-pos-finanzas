@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { LoginCredentials, UsuarioDTO, LoginResponse, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
+import type { LoginCredentials, LoginResponse, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
 
 // Obtener la URL del backend dinámicamente en el cliente
 const getBackendUrl = () => {
