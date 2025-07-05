@@ -14,6 +14,11 @@ export interface UsuarioDTO {
   estadosEstado?: string;
 }
 
+export interface LoginResponse {
+  usuario: UsuarioDTO;
+  token: string;
+}
+
 // Tipos para workspaces
 export interface Workspace {
   id: string;

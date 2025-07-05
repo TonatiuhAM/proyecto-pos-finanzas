@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { LoginCredentials, UsuarioDTO, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
+import type { LoginCredentials, UsuarioDTO, LoginResponse, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
 
 // Obtener la URL del backend dinámicamente en el cliente
 const getBackendUrl = () => {
@@ -23,10 +23,40 @@ const api = axios.create({
   },
 });
 
+// Interceptor para añadir el token JWT a todas las peticiones
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
+// Interceptor para manejar respuestas de error (token expirado, etc.)
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Servicios de autenticación
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<UsuarioDTO> {
+  async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await api.post('/auth/login', credentials);
+    
+    // Guardar el token en localStorage
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
+    
     return response.data;
   },
 };

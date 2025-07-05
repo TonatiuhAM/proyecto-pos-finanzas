@@ -36,8 +36,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      const usuario = await authService.login(credentials);
-      onLoginSuccess(usuario);
+      const loginResponse = await authService.login(credentials);
+      onLoginSuccess(loginResponse.usuario);
     } catch (error: any) {
       if (error.response?.data) {
         setError(typeof error.response.data === 'string' ? error.response.data : 'Error de autenticación');
