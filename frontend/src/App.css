@@ -4,6 +4,8 @@
   min-height: 100vh;
 }
 
+/* Comentario para forzar despliegue */
+
 /* Header responsivo mejorado */
 .app-header {
   background-color: var(--md-surface-container);

@@ -1,7 +1,14 @@
 import axios from 'axios';
 
-// Obtener la URL del backend desde las variables de entorno
-const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// Obtener la URL del backend dinámicamente en el cliente
+const getBackendUrl = () => {
+  if (import.meta.env.PROD) {
+    return 'https://sc-pos-finanzas-backend.azuremicroservices.io';
+  }
+  return window.location.origin;
+};
+
+const backendUrl = getBackendUrl();
 
 // Configuración base de axios
 const api = axios.create({
@@ -10,6 +17,30 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Interceptor para añadir el token JWT a todas las peticiones
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
+// Interceptor para manejar respuestas de error (token expirado, etc.)
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Interfaces TypeScript basadas en el DTO del backend
 export interface InventarioDTO {
