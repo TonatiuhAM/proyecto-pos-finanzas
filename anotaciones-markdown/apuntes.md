@@ -14,8 +14,8 @@
 
 ### NOTAS IMPORTANTES
 
-- Hace triggers para que cuando se haga una venta se actualice el inventario
+Ahora, cada vez que le pidas algo a Copilot Chat, debes referenciar este archivo.
 
-## TO-DO
+Implementa la funcionalidad para que los usuarios puedan crear, ver y eliminar categorías de productos. Antes de empezar, por favor, sigue estrictamente las directrices del archivo instrucciones-ia.md y actualiza el tasks.md con tu plan."
 
-- [ ] Verificar la integridad de la base de datos
+Al hacer esto, le das a Copilot un contexto claro y un conjunto de reglas a seguir, lo que reduce drásticamente los errores y te da a ti el control total del proceso.

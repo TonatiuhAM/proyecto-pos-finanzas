@@ -173,7 +173,7 @@ public class ProductoService {
 
     // Método auxiliar para convertir Productos a ProductosDTO con información
     // adicional
-    private ProductosDTO convertToDTO(Productos producto) {
+    public ProductosDTO convertToDTO(Productos producto) {
         ProductosDTO dto = new ProductosDTO();
         dto.setId(producto.getId());
         dto.setNombre(producto.getNombre());
@@ -196,6 +196,34 @@ public class ProductoService {
         if (producto.getEstados() != null) {
             dto.setEstadosId(producto.getEstados().getId());
             dto.setEstadosEstado(producto.getEstados().getEstado());
+        }
+
+        // Obtener el precio de venta más reciente
+        Optional<HistorialPrecios> precioActual = historialPreciosRepository.findLatestByProducto(producto);
+        if (precioActual.isPresent()) {
+            dto.setPrecioVentaActual(precioActual.get().getPrecio());
+        } else {
+            dto.setPrecioVentaActual(BigDecimal.ZERO); // Valor por defecto
+        }
+
+        // Obtener el costo de compra más reciente
+        Optional<HistorialCostos> costoActual = historialCostosRepository.findLatestByProducto(producto);
+        if (costoActual.isPresent()) {
+            dto.setPrecioCompraActual(costoActual.get().getCosto());
+        } else {
+            dto.setPrecioCompraActual(BigDecimal.ZERO); // Valor por defecto
+        }
+
+        // Obtener datos de inventario
+        Optional<Inventarios> inventario = inventarioRepository.findByProducto(producto);
+        if (inventario.isPresent()) {
+            Inventarios inv = inventario.get();
+            // Calcular stock total (piezas + kg)
+            int stockTotal = (inv.getCantidadPz() != null ? inv.getCantidadPz() : 0) +
+                    (inv.getCantidadKg() != null ? inv.getCantidadKg() : 0);
+            dto.setCantidadInventario(stockTotal);
+        } else {
+            dto.setCantidadInventario(0); // Valor por defecto
         }
 
         return dto;
