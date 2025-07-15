@@ -63,8 +63,13 @@ const InventarioModerno: React.FC<InventarioModernoProps> = ({ usuarioId = "defa
         inventarioService.getAllProveedores()
       ]);
       
+      // Filtrar solo productos activos
+      const productosActivos = productosData.filter(producto => 
+        producto.estadosEstado?.toLowerCase() === 'activo'
+      );
+      
       setInventarios(inventariosData);
-      setProductos(productosData);
+      setProductos(productosActivos);
       setUbicaciones(ubicacionesData);
       setCategorias(categoriasData);
       setProveedores(proveedoresData);

@@ -25,7 +25,11 @@ const Inventario: React.FC = () => {
     try {
       setLoading(true);
       const productosData = await inventarioService.getAllProductos();
-      setProductos(productosData);
+      // Filtrar solo productos activos
+      const productosActivos = productosData.filter(producto => 
+        producto.estadosEstado?.toLowerCase() === 'activo'
+      );
+      setProductos(productosActivos);
       setError(null);
     } catch (err) {
       setError('Error al cargar los productos');
@@ -48,15 +52,25 @@ const Inventario: React.FC = () => {
 
   // Desactivar producto
   const handleDesactivarProducto = async (id: string, nombre: string) => {
+    console.log('🚀 handleDesactivarProducto called with:', { id, nombre });
+    
     if (window.confirm(`¿Estás seguro de que deseas desactivar el producto "${nombre}"?`)) {
+      console.log('✅ User confirmed deactivation');
       try {
-        await inventarioService.desactivarProducto(id);
+        console.log('🔄 Calling inventarioService.desactivarProducto...');
+        const result = await inventarioService.desactivarProducto(id);
+        console.log('✅ Deactivation successful:', result);
+        
+        console.log('🔄 Reloading products...');
         await loadProductos(); // Recargar datos
+        console.log('✅ Products reloaded');
         setError(null);
       } catch (err) {
+        console.error('❌ Error deactivating product:', err);
         setError('Error al desactivar el producto');
-        console.error('Error deactivating product:', err);
       }
+    } else {
+      console.log('❌ User cancelled deactivation');
     }
   };
 
@@ -99,34 +113,25 @@ const Inventario: React.FC = () => {
   }
 
   return (
-    <div className="inventory-page">
-      <div className="inventory-container">
-        <header className="inventory-header">
-          <div className="header-content">
-            <div className="header-title">
-              <h1 className="inventory-title">GESTIÓN DE PRODUCTOS</h1>
-              <p className="inventory-subtitle">
-                Administra tu catálogo de productos con precios, inventario y proveedores
-              </p>
-            </div>
-            <button
-              className="create-product-btn"
-              onClick={handleCrearNuevo}
-            >
-              <span className="btn-icon">+</span>
-              CREAR NUEVO PRODUCTO
-            </button>
-          </div>
-        </header>
+    <div className="inventory-content">
+      {error && (
+        <div className="error-message">
+          <span className="error-icon">⚠️</span>
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className="error-message">
-            <span className="error-icon">⚠️</span>
-            {error}
-          </div>
-        )}
+      <div className="inventory-controls">
+        <button
+          className="create-product-btn"
+          onClick={handleCrearNuevo}
+        >
+          <span className="btn-icon">+</span>
+          CREAR NUEVO PRODUCTO
+        </button>
+      </div>
 
-        <main className="inventory-table-container">
+      <main className="inventory-table-container">
           <div className="table-wrapper">
             <table className="inventory-table">
               <thead>
@@ -230,7 +235,10 @@ const Inventario: React.FC = () => {
           </div>
           <div className="stat-card">
             <div className="stat-value">
-              {productos.filter(p => p.estadosEstado === 'activo').length}
+              {productos.filter(p => {
+                const estado = p.estadosEstado?.toLowerCase() || '';
+                return estado === 'activo' || estado === 'active';
+              }).length}
             </div>
             <div className="stat-label">Activos</div>
           </div>
@@ -241,24 +249,23 @@ const Inventario: React.FC = () => {
             <div className="stat-label">Stock Bajo</div>
           </div>
         </div>
+
+        {/* Modal para crear producto */}
+        <ModalCrearProducto
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+
+        {/* Modal para editar producto */}
+        <ModalEditarProducto
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={handleModalSuccess}
+          producto={selectedProduct}
+        />
       </div>
+    );
+  };
 
-      {/* Modal para crear producto */}
-      <ModalCrearProducto
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSuccess={handleModalSuccess}
-      />
-
-      {/* Modal para editar producto */}
-      <ModalEditarProducto
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onSuccess={handleModalSuccess}
-        producto={selectedProduct}
-      />
-    </div>
-  );
-};
-
-export default Inventario;
+  export default Inventario;

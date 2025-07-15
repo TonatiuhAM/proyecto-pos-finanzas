@@ -831,3 +831,35 @@ button:focus,
     --md-outline-variant: #49454f;
   }
 }
+
+/* ===== INVENTORY CONTENT STYLES ===== */
+.inventory-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--md-spacing-lg);
+}
+
+.inventory-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--md-spacing-xl);
+  padding: 0 var(--md-spacing-md);
+}
+
+/* Responsive adjustments for inventory content */
+@media (max-width: 768px) {
+  .inventory-content {
+    padding: var(--md-spacing-md);
+  }
+  
+  .inventory-controls {
+    justify-content: center;
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .inventory-content {
+    padding: var(--md-spacing-xs);
+  }
+}

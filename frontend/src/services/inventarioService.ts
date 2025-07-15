@@ -74,6 +74,14 @@ export interface ProveedorDTO {
   apellidoMaterno?: string;
 }
 
+export interface UsuarioDTO {
+  id: string;
+  nombreUsuario: string;
+  nombre?: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+}
+
 // Interface para crear un producto completo
 export interface ProductoCreacionRequest {
   nombre: string;
@@ -144,6 +152,21 @@ export const inventarioService = {
     return response.data;
   },
 
+  // Obtener usuarios para dropdown
+  getAllUsuarios: async (): Promise<UsuarioDTO[]> => {
+    const response = await api.get<UsuarioDTO[]>('/usuarios');
+    return response.data;
+  },
+
+  // Obtener el primer usuario disponible (solución temporal)
+  getFirstAvailableUser: async (): Promise<string> => {
+    const usuarios = await inventarioService.getAllUsuarios();
+    if (usuarios.length === 0) {
+      throw new Error('No hay usuarios disponibles en el sistema');
+    }
+    return usuarios[0].id;
+  },
+
   // Crear producto completo con inventario inicial
   createProductoCompleto: async (producto: ProductoCreacionRequest): Promise<ProductoDTO> => {
     const response = await api.post<ProductoDTO>('/productos/completo', producto);
@@ -152,8 +175,16 @@ export const inventarioService = {
 
   // Desactivar producto
   desactivarProducto: async (id: string): Promise<ProductoDTO> => {
-    const response = await api.patch<ProductoDTO>(`/productos/${id}/desactivar`);
-    return response.data;
+    console.log('🌐 API Call: PATCH /productos/' + id + '/desactivar');
+    console.log('🌐 Backend URL:', `${backendUrl}/api`);
+    try {
+      const response = await api.patch<ProductoDTO>(`/productos/${id}/desactivar`);
+      console.log('✅ API Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ API Error:', error);
+      throw error;
+    }
   },
 
   // Actualizar producto

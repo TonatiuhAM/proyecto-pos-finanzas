@@ -108,6 +108,68 @@
   }
 }
 
+/* Inventory Screen Styles */
+.inventory-screen {
+  min-height: 100vh;
+  background-color: var(--md-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.inventory-screen__header {
+  background-color: var(--md-surface-container);
+  border-bottom: 1px solid var(--md-outline-variant);
+  box-shadow: var(--md-elevation-1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.inventory-screen__header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--md-spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--md-spacing-lg);
+}
+
+.inventory-screen__nav {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-spacing-lg);
+  flex: 1;
+}
+
+.inventory-screen__back-btn {
+  gap: var(--md-spacing-sm);
+  flex-shrink: 0;
+}
+
+.inventory-screen__back-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.inventory-screen__title-section h1 {
+  margin: 0 0 var(--md-spacing-xs) 0;
+  color: var(--md-on-surface);
+}
+
+.inventory-screen__title-section p {
+  margin: 0;
+  color: var(--md-on-surface-variant);
+}
+
+.inventory-screen__main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--md-spacing-lg);
+  width: 100%;
+}
+
 /* Legacy styles for compatibility */
 .logo {
   height: 6em;
