@@ -4,12 +4,16 @@ import com.posfin.pos_finanzas_backend.models.Productos;
 import com.posfin.pos_finanzas_backend.models.CategoriasProductos;
 import com.posfin.pos_finanzas_backend.models.Personas;
 import com.posfin.pos_finanzas_backend.models.Estados;
+import com.posfin.pos_finanzas_backend.models.HistorialPrecios;
+import com.posfin.pos_finanzas_backend.models.HistorialCostos;
 import com.posfin.pos_finanzas_backend.dtos.ProductosDTO;
 import com.posfin.pos_finanzas_backend.dtos.ProductoCreacionDTO;
 import com.posfin.pos_finanzas_backend.repositories.ProductosRepository;
 import com.posfin.pos_finanzas_backend.repositories.CategoriasProductosRepository;
 import com.posfin.pos_finanzas_backend.repositories.PersonasRepository;
 import com.posfin.pos_finanzas_backend.repositories.EstadosRepository;
+import com.posfin.pos_finanzas_backend.repositories.HistorialPreciosRepository;
+import com.posfin.pos_finanzas_backend.repositories.HistorialCostosRepository;
 import com.posfin.pos_finanzas_backend.services.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,17 +42,23 @@ public class ProductosController {
     @Autowired
     private ProductoService productoService;
 
+    @Autowired
+    private HistorialPreciosRepository historialPreciosRepository;
+
+    @Autowired
+    private HistorialCostosRepository historialCostosRepository;
+
     @GetMapping
     public List<ProductosDTO> getAllProductos() {
         return productosRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(productoService::convertToDTO)
                 .collect(java.util.stream.Collectors.toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductosDTO> getProductoById(@PathVariable String id) {
         Optional<Productos> optionalProducto = productosRepository.findById(id);
-        return optionalProducto.map(producto -> ResponseEntity.ok(convertToDTO(producto)))
+        return optionalProducto.map(producto -> ResponseEntity.ok(productoService.convertToDTO(producto)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -80,7 +90,7 @@ public class ProductosController {
             // Guardar
             Productos savedProducto = productosRepository.save(producto);
 
-            return ResponseEntity.ok(convertToDTO(savedProducto));
+            return ResponseEntity.ok(productoService.convertToDTO(savedProducto));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -97,7 +107,7 @@ public class ProductosController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductosDTO> updateProducto(@PathVariable String id,
+    public ResponseEntity<?> updateProducto(@PathVariable String id,
             @RequestBody Map<String, Object> requestBody) {
         try {
             Optional<Productos> optionalProducto = productosRepository.findById(id);
@@ -107,33 +117,95 @@ public class ProductosController {
 
             Productos producto = optionalProducto.get();
 
-            // Obtener datos del request
-            String nombre = (String) requestBody.get("nombre");
-            String categoriasProductosId = (String) requestBody.get("categoriasProductosId");
-            String proveedorId = (String) requestBody.get("proveedorId");
-            String estadosId = (String) requestBody.get("estadosId");
-
-            // Buscar las entidades relacionadas
-            Optional<CategoriasProductos> categoria = categoriasProductosRepository.findById(categoriasProductosId);
-            Optional<Personas> proveedor = personasRepository.findById(proveedorId);
-            Optional<Estados> estado = estadosRepository.findById(estadosId);
-
-            if (!categoria.isPresent() || !proveedor.isPresent() || !estado.isPresent()) {
-                return ResponseEntity.badRequest().build();
+            // Actualizar nombre si viene en el request
+            if (requestBody.containsKey("nombre")) {
+                String nombre = (String) requestBody.get("nombre");
+                producto.setNombre(nombre);
             }
 
-            // Actualizar el producto
-            producto.setNombre(nombre);
-            producto.setCategoriasProductos(categoria.get());
-            producto.setProveedor(proveedor.get());
-            producto.setEstados(estado.get());
+            // Actualizar categoría solo si viene en el request
+            if (requestBody.containsKey("categoriasProductosId")) {
+                String categoriasProductosId = (String) requestBody.get("categoriasProductosId");
+                if (categoriasProductosId != null) {
+                    Optional<CategoriasProductos> categoria = categoriasProductosRepository
+                            .findById(categoriasProductosId);
+                    if (!categoria.isPresent()) {
+                        return ResponseEntity.badRequest().body("Categoría no encontrada: " + categoriasProductosId);
+                    }
+                    producto.setCategoriasProductos(categoria.get());
+                }
+            }
 
-            // Guardar
+            // Actualizar proveedor solo si viene en el request
+            if (requestBody.containsKey("proveedorId")) {
+                String proveedorId = (String) requestBody.get("proveedorId");
+                if (proveedorId != null) {
+                    Optional<Personas> proveedor = personasRepository.findById(proveedorId);
+                    if (!proveedor.isPresent()) {
+                        return ResponseEntity.badRequest().body("Proveedor no encontrado: " + proveedorId);
+                    }
+                    producto.setProveedor(proveedor.get());
+                }
+            }
+
+            // Guardar producto
             Productos savedProducto = productosRepository.save(producto);
 
-            return ResponseEntity.ok(convertToDTO(savedProducto));
+            // Actualizar precios si han cambiado
+            if (requestBody.containsKey("precioVenta") || requestBody.containsKey("precioVentaActual")) {
+                Double precioVentaActual = null;
+                if (requestBody.get("precioVenta") != null) {
+                    precioVentaActual = ((Number) requestBody.get("precioVenta")).doubleValue();
+                } else if (requestBody.get("precioVentaActual") != null) {
+                    precioVentaActual = ((Number) requestBody.get("precioVentaActual")).doubleValue();
+                }
+
+                if (precioVentaActual != null) {
+                    // Verificar si el precio ha cambiado
+                    Optional<HistorialPrecios> precioActualOpt = historialPreciosRepository
+                            .findLatestByProducto(savedProducto);
+                    boolean precioHaCambiado = !precioActualOpt.isPresent() ||
+                            !precioActualOpt.get().getPrecio().equals(java.math.BigDecimal.valueOf(precioVentaActual));
+
+                    if (precioHaCambiado) {
+                        HistorialPrecios nuevoPrecio = new HistorialPrecios();
+                        nuevoPrecio.setProductos(savedProducto);
+                        nuevoPrecio.setPrecio(java.math.BigDecimal.valueOf(precioVentaActual));
+                        nuevoPrecio.setFechaDeRegistro(java.time.ZonedDateTime.now());
+                        historialPreciosRepository.save(nuevoPrecio);
+                    }
+                }
+            }
+
+            if (requestBody.containsKey("precioCompra") || requestBody.containsKey("precioCompraActual")) {
+                Double precioCompraActual = null;
+                if (requestBody.get("precioCompra") != null) {
+                    precioCompraActual = ((Number) requestBody.get("precioCompra")).doubleValue();
+                } else if (requestBody.get("precioCompraActual") != null) {
+                    precioCompraActual = ((Number) requestBody.get("precioCompraActual")).doubleValue();
+                }
+
+                if (precioCompraActual != null) {
+                    // Verificar si el costo ha cambiado
+                    Optional<HistorialCostos> costoActualOpt = historialCostosRepository
+                            .findLatestByProducto(savedProducto);
+                    boolean costoHaCambiado = !costoActualOpt.isPresent() ||
+                            !costoActualOpt.get().getCosto().equals(java.math.BigDecimal.valueOf(precioCompraActual));
+
+                    if (costoHaCambiado) {
+                        HistorialCostos nuevoCosto = new HistorialCostos();
+                        nuevoCosto.setProductos(savedProducto);
+                        nuevoCosto.setCosto(java.math.BigDecimal.valueOf(precioCompraActual));
+                        nuevoCosto.setFechaDeRegistro(java.time.ZonedDateTime.now());
+                        historialCostosRepository.save(nuevoCosto);
+                    }
+                }
+            }
+
+            return ResponseEntity.ok(productoService.convertToDTO(savedProducto));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            e.printStackTrace(); // Para debug
+            return ResponseEntity.badRequest().body("Error al actualizar producto: " + e.getMessage());
         }
     }
 
@@ -207,36 +279,7 @@ public class ProductosController {
 
         // 6. Guardar y devolver
         Productos productoActualizado = productosRepository.save(productoExistente);
-        ProductosDTO dto = convertToDTO(productoActualizado);
+        ProductosDTO dto = productoService.convertToDTO(productoActualizado);
         return ResponseEntity.ok(dto);
-    }
-
-    // Método auxiliar para convertir Productos a ProductosDTO
-    private ProductosDTO convertToDTO(Productos producto) {
-        ProductosDTO dto = new ProductosDTO();
-        dto.setId(producto.getId());
-        dto.setNombre(producto.getNombre());
-
-        // Mapear relación con CategoriasProductos
-        if (producto.getCategoriasProductos() != null) {
-            dto.setCategoriasProductosId(producto.getCategoriasProductos().getId());
-            dto.setCategoriasProductosCategoria(producto.getCategoriasProductos().getCategoria());
-        }
-
-        // Mapear relación con Proveedor (Personas)
-        if (producto.getProveedor() != null) {
-            dto.setProveedorId(producto.getProveedor().getId());
-            dto.setProveedorNombre(producto.getProveedor().getNombre());
-            dto.setProveedorApellidoPaterno(producto.getProveedor().getApellidoPaterno());
-            dto.setProveedorApellidoMaterno(producto.getProveedor().getApellidoMaterno());
-        }
-
-        // Mapear relación con Estados
-        if (producto.getEstados() != null) {
-            dto.setEstadosId(producto.getEstados().getId());
-            dto.setEstadosEstado(producto.getEstados().getEstado());
-        }
-
-        return dto;
     }
 }

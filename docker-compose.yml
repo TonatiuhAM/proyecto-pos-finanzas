@@ -14,6 +14,8 @@ services:
   # Servicio del Frontend de React/Nginx
   frontend:
     container_name: pos_frontend
+    environment:
+      - VITE_API_URL=http://localhost:8080 # URL del backend para el frontend
     build:
       context: ./frontend
     restart: unless-stopped
