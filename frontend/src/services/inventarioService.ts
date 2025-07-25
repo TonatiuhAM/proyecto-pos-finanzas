@@ -3,7 +3,7 @@ import axios from 'axios';
 // Obtener la URL del backend dinámicamente en el cliente
 const getBackendUrl = () => {
   if (import.meta.env.PROD) {
-    return 'https://sc-pos-finanzas-backend.azuremicroservices.io';
+    return 'https://pos-finanzas-q2ddz.ondigitalocean.app/api';
   }
   return window.location.origin;
 };

@@ -18,7 +18,7 @@ grep -E '^VITE_' .env .env.local 2>/dev/null || echo "No se encontraron variable
 echo ""
 echo "4. Construcción de la aplicación:"
 echo "   - En desarrollo: usará .env.local (http://localhost:8080/api)"
-echo "   - En producción: usará .env (https://sc-pos-finanzas-backend.azuremicroservices.io/api)"
+echo "   - En producción: usará .env (https://pos-finanzas-q2ddz.ondigitalocean.app/api)"
 
 echo ""
 echo "5. Archivos actualizados:"

@@ -7,7 +7,7 @@ const getBackendUrl = () => {
   // Asumimos que el frontend se sirve desde un dominio y el backend desde otro.
   // La URL del backend de producción se proporciona directamente.
   if (import.meta.env.PROD) {
-    return 'https://sc-pos-finanzas-backend.azuremicroservices.io';
+    return 'https://pos-finanzas-q2ddz.ondigitalocean.app/api';
   }
   // En desarrollo, usamos la URL del proxy de Vite.
   return window.location.origin;
