@@ -1,3 +1,4 @@
+
 package com.posfin.pos_finanzas_backend.config;
 
 import org.springframework.beans.factory.InitializingBean;
