@@ -139,12 +139,79 @@ public class WorkspacesController {
         }).collect(Collectors.toList());
     }
 
+    // ===== ENDPOINTS ESPECÍFICOS PARA PUNTO DE VENTA =====
+
+    /**
+     * Obtiene todas las órdenes de un workspace específico.
+     */
+    @GetMapping("/{id}/ordenes")
+    public ResponseEntity<List<com.posfin.pos_finanzas_backend.dtos.OrdenesWorkspaceDTO>> getOrdenesByWorkspace(
+            @PathVariable String id) {
+        // Verificar que el workspace existe
+        if (!workspacesRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Obtener órdenes del workspace
+        List<com.posfin.pos_finanzas_backend.models.OrdenesWorkspace> ordenes = ordenesWorkspaceRepository
+                .findByWorkspaceId(id);
+
+        // Convertir a DTOs
+        List<com.posfin.pos_finanzas_backend.dtos.OrdenesWorkspaceDTO> ordenesDTO = ordenes.stream()
+                .map(this::convertOrdenToDTO)
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(ordenesDTO);
+    }
+
+    /**
+     * Limpia todas las órdenes de un workspace específico.
+     */
+    @DeleteMapping("/{id}/ordenes")
+    public ResponseEntity<Void> limpiarOrdenesWorkspace(@PathVariable String id) {
+        // Verificar que el workspace existe
+        if (!workspacesRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Obtener y eliminar todas las órdenes del workspace
+        List<com.posfin.pos_finanzas_backend.models.OrdenesWorkspace> ordenes = ordenesWorkspaceRepository
+                .findByWorkspaceId(id);
+        ordenesWorkspaceRepository.deleteAll(ordenes);
+
+        return ResponseEntity.noContent().build();
+    }
+
     // Método auxiliar para convertir Workspaces a WorkspacesDTO
     private WorkspacesDTO convertToDTO(Workspaces workspace) {
         WorkspacesDTO dto = new WorkspacesDTO();
         dto.setId(workspace.getId());
         dto.setNombre(workspace.getNombre());
         dto.setPermanente(workspace.getPermanente());
+        return dto;
+    }
+
+    // Método auxiliar para convertir OrdenesWorkspace a DTO
+    private com.posfin.pos_finanzas_backend.dtos.OrdenesWorkspaceDTO convertOrdenToDTO(
+            com.posfin.pos_finanzas_backend.models.OrdenesWorkspace orden) {
+        com.posfin.pos_finanzas_backend.dtos.OrdenesWorkspaceDTO dto = new com.posfin.pos_finanzas_backend.dtos.OrdenesWorkspaceDTO();
+
+        dto.setId(orden.getId());
+        dto.setCantidadPz(orden.getCantidadPz());
+        dto.setCantidadKg(orden.getCantidadKg());
+
+        // Mapear workspace
+        dto.setWorkspaceId(orden.getWorkspace().getId());
+        dto.setWorkspaceNombre(orden.getWorkspace().getNombre());
+
+        // Mapear producto
+        dto.setProductoId(orden.getProducto().getId());
+        dto.setProductoNombre(orden.getProducto().getNombre());
+
+        // Mapear precio
+        dto.setHistorialPrecioId(orden.getHistorialPrecio().getId());
+        dto.setPrecio(orden.getHistorialPrecio().getPrecio());
+
         return dto;
     }
 }

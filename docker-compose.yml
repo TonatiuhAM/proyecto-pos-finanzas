@@ -15,7 +15,7 @@ services:
   frontend:
     container_name: pos_frontend
     environment:
-      - VITE_API_URL=http://localhost:8080 # URL del backend para el frontend
+      - VITE_API_URL=http://localhost:8080 # URL del backend para el frontend desde el navegador
     build:
       context: ./frontend
     restart: unless-stopped

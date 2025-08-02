@@ -255,6 +255,8 @@
 }
 
 .workspace-screen__card--disabled {
+  /* NOTA: Esta clase ya no se usa - Los usuarios pueden acceder a todos los workspaces */
+  /* Mantenida para compatibilidad pero no se aplica en el componente */
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;

@@ -3,14 +3,16 @@ import LoginScreen from './components/LoginScreen';
 import MainMenu from './components/MainMenu';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import Inventario from './components/Inventario';
+import PuntoDeVenta from './components/PuntoDeVenta';
 import type { UsuarioDTO } from './types/index';
 import './App.css';
 
-type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'finanzas';
+type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'finanzas' | 'punto-de-venta';
 
 function App() {
   const [appState, setAppState] = useState<AppState>('login');
   const [currentUser, setCurrentUser] = useState<UsuarioDTO | null>(null);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
 
   const handleLoginSuccess = (usuario: UsuarioDTO) => {
     setCurrentUser(usuario);
@@ -39,10 +41,14 @@ function App() {
     setAppState('main-menu');
   };
 
-  const handleWorkspaceSelect = (_workspaceId: string) => {
-    // Por ahora, redirigimos al inventario, pero aquí podrías crear 
-    // una pantalla específica de punto de venta para el workspace
-    setAppState('inventario');
+  const handleWorkspaceSelect = (workspaceId: string) => {
+    // Guardar el workspace seleccionado y navegar al punto de venta
+    setSelectedWorkspaceId(workspaceId);
+    setAppState('punto-de-venta');
+  };
+
+  const handleBackToWorkspaces = () => {
+    setAppState('workspaces');
   };
 
   switch (appState) {
@@ -67,6 +73,16 @@ function App() {
         <WorkspaceScreen 
           onWorkspaceSelect={handleWorkspaceSelect}
           onBackToMainMenu={handleBackToMainMenu}
+        />
+      );
+    
+    case 'punto-de-venta':
+      if (!currentUser) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+      return (
+        <PuntoDeVenta
+          workspaceId={selectedWorkspaceId}
+          onBackToWorkspaces={handleBackToWorkspaces}
+          onLogout={handleLogout}
         />
       );
     

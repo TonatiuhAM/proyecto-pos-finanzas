@@ -241,14 +241,14 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
           <div className="workspace-screen__grid">
             {workspaces.map((workspace) => {
               const statusInfo = getStatusInfo(workspace.estado);
-              const isAvailable = workspace.estado === 'disponible';
+              // Los usuarios pueden acceder a cualquier workspace sin importar el estado
+              // El estado es solo informativo
               
               return (
                 <button
                   key={workspace.id}
-                  onClick={() => isAvailable && onWorkspaceSelect(workspace.id)}
-                  disabled={!isAvailable}
-                  className={`workspace-screen__card workspace-screen__card--${statusInfo.color} ${!isAvailable ? 'workspace-screen__card--disabled' : ''}`}
+                  onClick={() => onWorkspaceSelect(workspace.id)}
+                  className={`workspace-screen__card workspace-screen__card--${statusInfo.color}`}
                   aria-label={`Workspace ${workspace.nombre} - ${statusInfo.text}`}
                 >
                   <div className="workspace-screen__card-header">
@@ -274,13 +274,12 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                     </div>
                   </div>
                   
-                  {isAvailable && (
-                    <div className="workspace-screen__card-arrow">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                      </svg>
-                    </div>
-                  )}
+                  {/* Flecha siempre visible - los usuarios pueden acceder a cualquier workspace */}
+                  <div className="workspace-screen__card-arrow">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                  </div>
                 </button>
               );
             })}
