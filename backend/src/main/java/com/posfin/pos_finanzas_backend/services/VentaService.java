@@ -208,10 +208,10 @@ public class VentaService {
     }
 
     private void crearMovimientoInventario(OrdenesWorkspace ordenWorkspace, Usuarios usuario) {
-        // Buscar el tipo de movimiento "venta"
-        Optional<TipoMovimientos> tipoVentaOpt = tipoMovimientosRepository.findByMovimiento("venta");
+        // Buscar el tipo de movimiento "VENTA"
+        Optional<TipoMovimientos> tipoVentaOpt = tipoMovimientosRepository.findByMovimiento("VENTA");
         if (tipoVentaOpt.isEmpty()) {
-            throw new IllegalStateException("Tipo de movimiento 'venta' no encontrado en el sistema");
+            throw new IllegalStateException("Tipo de movimiento 'VENTA' no encontrado en el sistema");
         }
 
         // Obtener la ubicación del inventario

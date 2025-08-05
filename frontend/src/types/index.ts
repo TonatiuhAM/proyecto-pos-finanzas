@@ -109,3 +109,49 @@ export interface Persona {
   telefono?: string;
   email?: string;
 }
+
+// ==================== TIPOS PARA FLUJO DE CUENTA FINAL ====================
+
+// Interface para productos en el ticket de venta
+export interface ProductoTicket {
+  productoId: string;
+  productoNombre: string;
+  cantidadPz: number;
+  cantidadKg: number;
+  precioUnitario: number;
+  totalPorProducto: number;
+}
+
+// Interface para ticket de venta
+export interface TicketVenta {
+  workspaceId: string;
+  workspaceNombre: string;
+  productos: ProductoTicket[];
+  totalGeneral: number;
+  cantidadProductos: number;
+}
+
+// Interface para solicitud de finalizar venta
+export interface FinalizarVentaRequest {
+  metodoPagoId: string;
+  clienteId?: string; // Opcional
+  usuarioId: string;
+}
+
+// Interface para respuesta de venta finalizada
+export interface VentaFinalizada {
+  ventaId: string;
+  workspaceNombre: string;
+  totalVenta: number;
+  fechaVenta: string;
+  metodoPagoNombre: string;
+  usuarioNombre: string;
+  clienteNombre?: string;
+  cantidadProductos: number;
+  mensaje: string;
+}
+
+// Interface para cambiar estado de workspace
+export interface CambiarEstadoWorkspaceRequest {
+  solicitudCuenta: boolean;
+}

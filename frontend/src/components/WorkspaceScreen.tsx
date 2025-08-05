@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { workspaceService } from '../services/apiService';
-import type { WorkspaceStatus } from '../types/index';
+import TicketVenta from './TicketVenta';
+import type { WorkspaceStatus, TicketVenta as TicketVentaType, VentaFinalizada } from '../types/index';
 import './WorkspaceScreen.css';
 
 interface WorkspaceScreenProps {
@@ -19,6 +20,10 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [isPermanent, setIsPermanent] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Estados para el flujo de ticket de venta
+  const [ticketActual, setTicketActual] = useState<TicketVentaType | null>(null);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   const loadWorkspaces = async () => {
     try {
@@ -141,6 +146,35 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     }
   };
 
+  // Función para generar ticket de venta
+  const handleGenerarTicket = async (workspaceId: string) => {
+    try {
+      const ticket = await workspaceService.generarTicket(workspaceId);
+      setTicketActual(ticket);
+      setShowTicketModal(true);
+    } catch (error) {
+      alert('Error al generar el ticket. Por favor, intente nuevamente.');
+      console.error('Error generating ticket:', error);
+    }
+  };
+
+  // Función para manejar venta finalizada
+  const handleVentaFinalizada = (venta: VentaFinalizada) => {
+    setShowTicketModal(false);
+    setTicketActual(null);
+    
+    alert(`🎉 Venta procesada exitosamente!\n\nID: ${venta.ventaId}\nTotal: $${venta.totalVenta.toFixed(2)}\nMétodo: ${venta.metodoPagoNombre}`);
+    
+    // Recargar workspaces para actualizar estados
+    loadWorkspaces();
+  };
+
+  // Función para cerrar modal de ticket
+  const handleCerrarTicket = () => {
+    setShowTicketModal(false);
+    setTicketActual(null);
+  };
+
   if (isLoading) {
     return (
       <div className="workspace-screen workspace-screen--loading">
@@ -241,9 +275,49 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
           <div className="workspace-screen__grid">
             {workspaces.map((workspace) => {
               const statusInfo = getStatusInfo(workspace.estado);
-              // Los usuarios pueden acceder a cualquier workspace sin importar el estado
-              // El estado es solo informativo
+              const esCuenta = workspace.estado === 'cuenta';
               
+              if (esCuenta) {
+                // Para workspaces con estado "cuenta", mostrar botón para generar ticket
+                return (
+                  <div
+                    key={workspace.id}
+                    className={`workspace-screen__card workspace-screen__card--${statusInfo.color} workspace-screen__card--cuenta`}
+                  >
+                    <div className="workspace-screen__card-header">
+                      <div className={`workspace-screen__card-status workspace-screen__card-status--${statusInfo.color}`}>
+                        {statusInfo.icon}
+                        <span className="md-label-medium">{statusInfo.text}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="workspace-screen__card-content">
+                      <h3 className="md-title-large workspace-screen__card-title">
+                        {workspace.nombre}
+                      </h3>
+                      <div className="workspace-screen__card-meta">
+                        <span className="md-body-small">
+                          {workspace.permanente ? 'Permanente' : 'Temporal'}
+                        </span>
+                        <span className="md-body-small">
+                          {workspace.cantidadOrdenes} productos en cuenta
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="workspace-screen__card-actions">
+                      <button
+                        onClick={() => handleGenerarTicket(workspace.id)}
+                        className="md-button md-button--filled workspace-screen__ticket-btn"
+                      >
+                        📋 Generar Ticket
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Para workspaces normales, comportamiento original
               return (
                 <button
                   key={workspace.id}
@@ -363,6 +437,15 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Ticket de Venta */}
+      {showTicketModal && ticketActual && (
+        <TicketVenta
+          ticket={ticketActual}
+          onVentaFinalizada={handleVentaFinalizada}
+          onCerrar={handleCerrarTicket}
+        />
       )}
     </div>
   );

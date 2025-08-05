@@ -1,0 +1,290 @@
+/* Overlay del modal */
+.ticket-venta-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal principal */
+.ticket-venta-modal {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header del ticket */
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #f0f0f0;
+  background-color: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.ticket-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.btn-cerrar:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Contenido del ticket */
+.ticket-content {
+  padding: 20px;
+}
+
+/* Información del workspace */
+.workspace-info {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.workspace-info h3 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+}
+
+.workspace-info p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Lista de productos */
+.productos-lista {
+  margin-bottom: 20px;
+}
+
+.productos-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.producto-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.producto-item:last-child {
+  border-bottom: none;
+}
+
+.producto-nombre {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.producto-cantidad {
+  text-align: center;
+  color: #6c757d;
+}
+
+.producto-precio {
+  text-align: right;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.producto-total {
+  text-align: right;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+/* Resumen del ticket */
+.ticket-resumen {
+  border-top: 2px solid #e9ecef;
+  padding-top: 15px;
+  margin-bottom: 20px;
+}
+
+.resumen-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  color: #495057;
+}
+
+.resumen-item.total {
+  border-top: 1px solid #dee2e6;
+  margin-top: 10px;
+  padding-top: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Acciones del ticket */
+.ticket-acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #1e7e34;
+}
+
+/* Modal de pago */
+.modal-pago {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.modal-pago h4 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+}
+
+.modal-pago select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  background-color: white;
+}
+
+.modal-pago select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.modal-pago-acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ticket-venta-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .ticket-header {
+    padding: 15px;
+  }
+  
+  .ticket-content {
+    padding: 15px;
+  }
+  
+  .productos-header,
+  .producto-item {
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 5px;
+    font-size: 0.85rem;
+  }
+  
+  .ticket-acciones {
+    flex-direction: column;
+  }
+  
+  .modal-pago-acciones {
+    flex-direction: column;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+  }
+}

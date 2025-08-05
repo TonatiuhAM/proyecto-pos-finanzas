@@ -731,3 +731,80 @@
     min-height: 48px;
   }
 }
+
+/* ===== ESTILOS PARA WORKSPACE CON ESTADO "CUENTA" ===== */
+
+/* Tarjeta especial para workspaces que solicitan cuenta */
+.workspace-screen__card--cuenta {
+  cursor: default;
+  border: 2px solid var(--md-warning);
+  background: linear-gradient(135deg, 
+    var(--md-warning-container) 0%, 
+    var(--md-warning-container-light, #fff8e1) 100%);
+}
+
+.workspace-screen__card--cuenta:hover {
+  transform: none;
+  box-shadow: var(--md-elevation-2);
+}
+
+/* Acciones especiales para workspace de cuenta */
+.workspace-screen__card-actions {
+  padding: var(--md-spacing-md);
+  border-top: 1px solid var(--md-outline-variant);
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.workspace-screen__ticket-btn {
+  width: 100%;
+  padding: var(--md-spacing-md) var(--md-spacing-lg);
+  background-color: var(--md-warning);
+  color: var(--md-on-warning);
+  border: none;
+  border-radius: var(--md-border-radius-md);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-spacing-sm);
+}
+
+.workspace-screen__ticket-btn:hover {
+  background-color: var(--md-warning-dark, #f57c00);
+  transform: translateY(-1px);
+  box-shadow: var(--md-elevation-2);
+}
+
+.workspace-screen__ticket-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--md-elevation-1);
+}
+
+/* Animación de pulso para workspaces que solicitan cuenta */
+.workspace-screen__card--cuenta .workspace-screen__card-status--warning {
+  animation: pulseWarning 2s ease-in-out infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive para tarjetas de cuenta */
+@media (max-width: 768px) {
+  .workspace-screen__card--cuenta {
+    border-width: 1px;
+  }
+  
+  .workspace-screen__ticket-btn {
+    padding: var(--md-spacing-sm) var(--md-spacing-md);
+    font-size: 0.85rem;
+  }
+}

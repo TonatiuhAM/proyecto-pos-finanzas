@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { inventarioService } from '../services/inventarioService';
+import { workspaceService } from '../services/apiService';
 import type { ProductoDTO, CategoriaDTO } from '../services/inventarioService';
 import type { ItemCarrito } from '../types';
 import './PuntoDeVenta.css';
@@ -299,38 +300,28 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
     }
 
     try {
-      // Primero guardar la orden actual
-      await guardarOrden();
+      setIsLoading(true);
       
-      // Obtener métodos de pago disponibles
-      const metodosPago = await inventarioService.getMetodosPago();
-      
-      if (metodosPago.length === 0) {
-        alert('No hay métodos de pago configurados en el sistema');
-        return;
+      // Primero guardar la orden actual si hay productos en el carrito
+      if (carrito.length > 0) {
+        console.log('💾 Guardando orden antes de solicitar cuenta...');
+        await guardarOrden();
       }
-
-      // Por ahora usar el primer método de pago disponible
-      const metodoPagoPorDefecto = metodosPago[0];
       
-      // Procesar venta completa
-      const ventaProcesada = await inventarioService.procesarVentaDesdeWorkspace(
-        workspaceIdFinal,
-        metodoPagoPorDefecto.id
-      );
+      // Cambiar estado del workspace a "cuenta"
+      console.log('📋 Solicitando cuenta para workspace:', workspaceIdFinal);
+      await workspaceService.cambiarSolicitudCuenta(workspaceIdFinal, true);
       
-      // Mostrar confirmación de venta
-      alert(`🎉 Venta procesada exitosamente!\n\nID Venta: ${ventaProcesada.id}\nTotal: $${ventaProcesada.total.toFixed(2)}\nMétodo de Pago: ${ventaProcesada.metodoPagoNombre}`);
+      alert('✅ Cuenta solicitada exitosamente. El administrador puede generar el ticket de venta.');
       
-      // Limpiar carrito local
-      setCarrito([]);
-      
-      // Volver a workspaces
+      // Opcional: redirigir a workspaces para que el administrador vea el estado "cuenta"
       onBackToWorkspaces();
       
     } catch (error) {
-      console.error('❌ Error al procesar venta:', error);
-      alert('Error al procesar la venta. Por favor, intente nuevamente.');
+      console.error('❌ Error al solicitar cuenta:', error);
+      alert('Error al solicitar cuenta. Por favor, intente nuevamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 

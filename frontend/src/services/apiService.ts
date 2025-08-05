@@ -1,16 +1,30 @@
 import axios from 'axios';
-import type { LoginCredentials, LoginResponse, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
+import type { 
+  LoginCredentials, 
+  LoginResponse, 
+  WorkspaceStatus, 
+  Workspace, 
+  CreateWorkspaceRequest,
+  TicketVenta,
+  FinalizarVentaRequest,
+  VentaFinalizada,
+  MetodoPago
+} from '../types/index';
 
 // Obtener la URL del backend dinámicamente en el cliente
 const getBackendUrl = () => {
-  // En producción, la API está en el mismo host, pero en un subdominio o ruta diferente.
-  // Asumimos que el frontend se sirve desde un dominio y el backend desde otro.
-  // La URL del backend de producción se proporciona directamente.
-  if (import.meta.env.PROD) {
-    return 'https://pos-finanzas-q2ddz.ondigitalocean.app/api';
+  // En desarrollo con Docker, usar variable de entorno o localhost
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
-  // En desarrollo, usamos la URL del proxy de Vite.
-  return window.location.origin;
+  
+  // En producción real
+  if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+    return 'https://pos-finanzas-q2ddz.ondigitalocean.app';
+  }
+  
+  // Fallback para desarrollo local
+  return 'http://localhost:8080';
 };
 
 const backendUrl = getBackendUrl();
@@ -87,6 +101,33 @@ export const workspaceService = {
 
   async update(id: string, workspace: Partial<Workspace>): Promise<Workspace> {
     const response = await api.put(`/workspaces/${id}`, workspace);
+    return response.data;
+  },
+
+  // ===== SERVICIOS PARA FLUJO DE CUENTA =====
+  
+  async cambiarSolicitudCuenta(id: string, solicitudCuenta: boolean): Promise<WorkspaceStatus> {
+    const response = await api.patch(`/workspaces/${id}/solicitar-cuenta`, {
+      solicitudCuenta: solicitudCuenta
+    });
+    return response.data;
+  },
+
+  async generarTicket(id: string): Promise<TicketVenta> {
+    const response = await api.get(`/workspaces/${id}/ticket`);
+    return response.data;
+  },
+
+  async finalizarVenta(id: string, request: FinalizarVentaRequest): Promise<VentaFinalizada> {
+    const response = await api.post(`/workspaces/${id}/finalizar-venta`, request);
+    return response.data;
+  },
+};
+
+// Servicios para métodos de pago
+export const metodoPagoService = {
+  async getAll(): Promise<MetodoPago[]> {
+    const response = await api.get('/metodos_pago');
     return response.data;
   },
 };
