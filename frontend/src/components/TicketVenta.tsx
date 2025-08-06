@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { workspaceService, metodoPagoService } from '../services/apiService';
 import { inventarioService } from '../services/inventarioService';
+import { useToast } from '../hooks/useToast';
 import type { TicketVenta as TicketVentaData, MetodoPago, FinalizarVentaRequest, VentaFinalizada } from '../types';
 import './TicketVenta.css';
 
@@ -11,6 +12,7 @@ interface TicketVentaProps {
 }
 
 const TicketVenta: React.FC<TicketVentaProps> = ({ ticket, onVentaFinalizada, onCerrar }) => {
+  const toast = useToast();
   const [metodosPago, setMetodosPago] = useState<MetodoPago[]>([]);
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +37,11 @@ const TicketVenta: React.FC<TicketVentaProps> = ({ ticket, onVentaFinalizada, on
 
   const confirmarPago = async () => {
     if (!metodoPagoSeleccionado) {
-      alert('Por favor seleccione un método de pago');
+      toast.showWarning(`⚠️ MÉTODO DE PAGO REQUERIDO
+
+Por favor seleccione un método de pago antes de continuar.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
       return;
     }
 
@@ -56,7 +62,11 @@ const TicketVenta: React.FC<TicketVentaProps> = ({ ticket, onVentaFinalizada, on
 
     } catch (error) {
       console.error('Error al finalizar venta:', error);
-      alert('Error al procesar el pago. Por favor, intente nuevamente.');
+      toast.showError(`❌ ERROR AL PROCESAR PAGO
+
+No se pudo completar la transacción. Intente nuevamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
     } finally {
       setIsLoading(false);
     }
@@ -75,38 +85,37 @@ const TicketVenta: React.FC<TicketVentaProps> = ({ ticket, onVentaFinalizada, on
         <div className="ticket-content">
           <div className="workspace-info">
             <h3>{ticket.workspaceNombre}</h3>
-            <p>ID: {ticket.workspaceId}</p>
           </div>
 
-          <div className="productos-lista">
-            <div className="productos-header">
-              <span>Producto</span>
-              <span>Cantidad</span>
-              <span>Precio Unit.</span>
-              <span>Total</span>
+          <div className="ticket-productos">
+            <h4>Productos en la orden:</h4>
+            <div className="productos-carrito">
+              {ticket.productos.map((producto, index) => (
+                <div key={index} className="carrito-item">
+                  <div className="item-info">
+                    <h4>{producto.productoNombre}</h4>
+                    <div className="item-details">
+                      <span className="cantidad">
+                        {producto.cantidadPz > 0 && `${producto.cantidadPz} piezas`}
+                        {producto.cantidadKg > 0 && `${producto.cantidadKg} kg`}
+                      </span>
+                      <span className="precio-unitario">
+                        ${producto.precioUnitario.toFixed(2)} c/u
+                      </span>
+                    </div>
+                  </div>
+                  <div className="item-total">
+                    ${producto.totalPorProducto.toFixed(2)}
+                  </div>
+                </div>
+              ))}
             </div>
             
-            {ticket.productos.map((producto, index) => (
-              <div key={index} className="producto-item">
-                <span className="producto-nombre">{producto.productoNombre}</span>
-                <span className="producto-cantidad">
-                  {producto.cantidadPz > 0 && `${producto.cantidadPz} pz`}
-                  {producto.cantidadKg > 0 && `${producto.cantidadKg} kg`}
-                </span>
-                <span className="producto-precio">${producto.precioUnitario.toFixed(2)}</span>
-                <span className="producto-total">${producto.totalPorProducto.toFixed(2)}</span>
+            <div className="ticket-total">
+              <div className="total-line">
+                <span className="total-label">Total a pagar:</span>
+                <span className="total-amount">${ticket.totalGeneral.toFixed(2)}</span>
               </div>
-            ))}
-          </div>
-
-          <div className="ticket-resumen">
-            <div className="resumen-item">
-              <span>Productos:</span>
-              <span>{ticket.cantidadProductos}</span>
-            </div>
-            <div className="resumen-item total">
-              <span>Total:</span>
-              <span>${ticket.totalGeneral.toFixed(2)}</span>
             </div>
           </div>
 

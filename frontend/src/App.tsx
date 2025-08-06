@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import LoginScreen from './components/LoginScreen';
 import MainMenu from './components/MainMenu';
 import WorkspaceScreen from './components/WorkspaceScreen';
@@ -6,6 +7,7 @@ import Inventario from './components/Inventario';
 import PuntoDeVenta from './components/PuntoDeVenta';
 import type { UsuarioDTO } from './types/index';
 import './App.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'finanzas' | 'punto-de-venta';
 
@@ -82,7 +84,6 @@ function App() {
         <PuntoDeVenta
           workspaceId={selectedWorkspaceId}
           onBackToWorkspaces={handleBackToWorkspaces}
-          onLogout={handleLogout}
         />
       );
     
@@ -168,4 +169,32 @@ function App() {
   }
 }
 
-export default App;
+function AppWithToast() {
+  return (
+    <>
+      <App />
+      <ToastContainer 
+        position="top-right"
+        autoClose={8000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 99999 }}
+        toastStyle={{
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px',
+          borderRadius: '8px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          minHeight: '80px',
+        }}
+      />
+    </>
+  );
+}
+
+export default AppWithToast;

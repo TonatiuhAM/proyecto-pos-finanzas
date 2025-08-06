@@ -288,3 +288,125 @@
     padding: 10px 20px;
   }
 }
+
+/* ===== NUEVOS ESTILOS PARA DISEÑO TIPO CARRITO ===== */
+
+/* Productos con diseño de carrito */
+.ticket-productos h4 {
+  margin: 0 0 15px 0;
+  color: #1a1a1a;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.productos-carrito {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  margin-bottom: 20px;
+}
+
+.carrito-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.carrito-item:last-child {
+  border-bottom: none;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.item-details {
+  display: flex;
+  gap: 15px;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.cantidad {
+  font-weight: 500;
+}
+
+.precio-unitario {
+  color: #2196F3;
+}
+
+.item-total {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  text-align: right;
+  min-width: 80px;
+}
+
+/* Total destacado */
+.ticket-total {
+  border-top: 2px solid #e0e0e0;
+  padding-top: 15px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #2196F3;
+}
+
+.total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.total-amount {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #2196F3;
+}
+
+/* Responsividad para el nuevo diseño */
+@media (max-width: 480px) {
+  .carrito-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .item-total {
+    align-self: flex-end;
+    font-size: 1.2rem;
+  }
+  
+  .item-details {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .total-line {
+    padding: 12px;
+  }
+  
+  .total-label {
+    font-size: 1.1rem;
+  }
+  
+  .total-amount {
+    font-size: 1.3rem;
+  }
+}

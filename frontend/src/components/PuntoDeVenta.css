@@ -38,6 +38,31 @@
   margin: 0;
 }
 
+/* Botón de regreso destacado */
+.btn-back {
+  background-color: #f44336 !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3) !important;
+}
+
+.btn-back:hover {
+  background-color: #d32f2f !important;
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-back:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3) !important;
+}
+
 /* Main Content */
 .punto-venta__main {
   display: flex;
@@ -123,6 +148,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
+  /* Asegurar que los productos mantengan aspecto cuadrado */
+  grid-auto-rows: minmax(200px, 200px);
 }
 
 .producto-item {
@@ -132,6 +159,14 @@
   cursor: pointer;
   transition: all 0.2s ease;
   background-color: #fff;
+  /* Forzar aspecto cuadrado con altura fija igual al ancho mínimo */
+  height: 200px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .producto-item:hover {
@@ -147,15 +182,31 @@
 
 .producto-info h3 {
   margin: 0 0 0.5rem 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1a1a1a;
+  line-height: 1.3;
+  /* Limitar texto largo para mantener diseño */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .producto-info .stock {
   margin: 0.25rem 0;
   font-size: 0.875rem;
   color: #666;
+  font-weight: 500;
+}
+
+.producto-info .precio {
+  margin: 0.5rem 0 0 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2196F3;
 }
 
 .producto-info .precio {
@@ -363,6 +414,37 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Overlay sutil para operaciones de guardado */
+.saving-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 8000; /* Menor que los toasts (z-index: 9999) */
+}
+
+.saving-indicator {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.saving-indicator p {
+  margin: 0;
+  color: #666;
+  font-weight: 500;
 }
 
 /* Responsive */

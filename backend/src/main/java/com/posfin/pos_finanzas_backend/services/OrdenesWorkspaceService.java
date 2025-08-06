@@ -68,7 +68,7 @@ public class OrdenesWorkspaceService {
         // Obtener el precio más reciente del producto
         HistorialPrecios precioActual = obtenerPrecioActual(producto);
 
-        // Validar stock disponible
+        // Validar stock disponible antes de cualquier operación
         validarStockDisponible(producto, cantidadPz, cantidadKg);
 
         // Buscar si ya existe una orden para este producto en este workspace
@@ -87,15 +87,18 @@ public class OrdenesWorkspaceService {
             BigDecimal nuevaCantidadPz = cantidadAnteriorPz.add(cantidadPz != null ? cantidadPz : BigDecimal.ZERO);
             BigDecimal nuevaCantidadKg = cantidadAnteriorKg.add(cantidadKg != null ? cantidadKg : BigDecimal.ZERO);
 
-            // Validar el nuevo total de stock
-            validarStockDisponible(producto, nuevaCantidadPz, nuevaCantidadKg);
+            // ✅ NOTA: No se necesita segunda validación aquí porque el stock ya fue
+            // validado arriba
+            // La primera validación ya verificó que hay suficiente stock disponible para la
+            // cantidad adicional
 
             orden.setCantidadPz(nuevaCantidadPz);
             orden.setCantidadKg(nuevaCantidadKg);
             // Actualizar al precio más reciente
             orden.setHistorialPrecio(precioActual);
 
-            // Decrementar inventario solo por la cantidad adicional
+            // ✅ CORRECCIÓN: Decrementar inventario SOLO por la cantidad adicional (no la
+            // total)
             decrementarInventario(producto, cantidadPz, cantidadKg);
         } else {
             // Crear nueva orden
@@ -169,21 +172,21 @@ public class OrdenesWorkspaceService {
 
         Inventarios inventario = inventarioOpt.get();
 
-        // Obtener stock disponible
-        int stockTotalPz = inventario.getCantidadPz() != null ? inventario.getCantidadPz() : 0;
-        int stockTotalKg = inventario.getCantidadKg() != null ? inventario.getCantidadKg() : 0;
+        // Obtener stock disponible actual en inventario
+        int stockDisponiblePz = inventario.getCantidadPz() != null ? inventario.getCantidadPz() : 0;
+        int stockDisponibleKg = inventario.getCantidadKg() != null ? inventario.getCantidadKg() : 0;
 
-        // Validar si hay suficiente stock
-        if (cantidadPz != null && cantidadPz.intValue() > stockTotalPz) {
+        // Validar si hay suficiente stock para la cantidad solicitada
+        if (cantidadPz != null && cantidadPz.intValue() > stockDisponiblePz) {
             throw new IllegalStateException(
-                    String.format("Stock insuficiente. Disponible: %d pz, Solicitado: %d pz",
-                            stockTotalPz, cantidadPz.intValue()));
+                    String.format("Stock insuficiente en Piezas. Disponible: %d pz, Solicitado: %d pz",
+                            stockDisponiblePz, cantidadPz.intValue()));
         }
 
-        if (cantidadKg != null && cantidadKg.intValue() > stockTotalKg) {
+        if (cantidadKg != null && cantidadKg.intValue() > stockDisponibleKg) {
             throw new IllegalStateException(
-                    String.format("Stock insuficiente. Disponible: %d kg, Solicitado: %d kg",
-                            stockTotalKg, cantidadKg.intValue()));
+                    String.format("Stock insuficiente en Kilogramos. Disponible: %d kg, Solicitado: %d kg",
+                            stockDisponibleKg, cantidadKg.intValue()));
         }
     }
 

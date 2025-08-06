@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { workspaceService } from '../services/apiService';
 import TicketVenta from './TicketVenta';
-import type { WorkspaceStatus, TicketVenta as TicketVentaType, VentaFinalizada } from '../types/index';
+import { useToast } from '../hooks/useToast';
+import type { WorkspaceStatus, TicketVenta as TicketVentaData, VentaFinalizada } from '../types';
 import './WorkspaceScreen.css';
 
 interface WorkspaceScreenProps {
@@ -13,6 +14,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   onWorkspaceSelect, 
   onBackToMainMenu 
 }) => {
+  const toast = useToast();
   const [workspaces, setWorkspaces] = useState<WorkspaceStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   const [isCreating, setIsCreating] = useState(false);
   
   // Estados para el flujo de ticket de venta
-  const [ticketActual, setTicketActual] = useState<TicketVentaType | null>(null);
+  const [ticketActual, setTicketActual] = useState<TicketVentaData | null>(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
 
   const loadWorkspaces = async () => {
@@ -126,24 +128,36 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     }
   };
 
-  const handleClearAccounts = async () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar todos los workspaces temporales? Esta acción no se puede deshacer.')) {
-      try {
-        // Filtrar workspaces temporales (no permanentes)
-        const temporaryWorkspaces = workspaces.filter(ws => !ws.permanente);
-        
-        // Eliminar cada workspace temporal
-        for (const workspace of temporaryWorkspaces) {
-          await workspaceService.delete(workspace.id);
+    const handleClearAccounts = async () => {
+    toast.showConfirm(
+      '¿Estás seguro de que deseas eliminar todos los workspaces temporales? Esta acción no se puede deshacer.',
+      async () => {
+        try {
+          // Filtrar workspaces temporales (no permanentes)
+          const temporaryWorkspaces = workspaces.filter(ws => !ws.permanente);
+          
+          // Eliminar cada workspace temporal
+          for (const workspace of temporaryWorkspaces) {
+            await workspaceService.delete(workspace.id);
+          }
+          
+          // Recargar la lista
+          toast.showSuccess(`Se eliminaron ${temporaryWorkspaces.length} workspaces temporales
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
+          
+          // ✅ ESPERAR 3 segundos antes de recargar para que el toast sea visible
+          setTimeout(async () => {
+            await loadWorkspaces();
+          }, 3000);
+        } catch (error) {
+          console.error('Error al eliminar workspaces temporales:', error);
+          toast.showError(`Error al eliminar los workspaces temporales
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
         }
-        
-        // Recargar la lista
-        await loadWorkspaces();
-      } catch (error) {
-        setError('Error al limpiar cuentas temporales');
-        console.error('Error clearing temporary workspaces:', error);
       }
-    }
+    );
   };
 
   // Función para generar ticket de venta
@@ -153,7 +167,9 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
       setTicketActual(ticket);
       setShowTicketModal(true);
     } catch (error) {
-      alert('Error al generar el ticket. Por favor, intente nuevamente.');
+      toast.showError(`Error al generar el ticket. Por favor, intente nuevamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
       console.error('Error generating ticket:', error);
     }
   };
@@ -163,10 +179,20 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     setShowTicketModal(false);
     setTicketActual(null);
     
-    alert(`🎉 Venta procesada exitosamente!\n\nID: ${venta.ventaId}\nTotal: $${venta.totalVenta.toFixed(2)}\nMétodo: ${venta.metodoPagoNombre}`);
+    toast.showSuccess(`🎉 VENTA PROCESADA EXITOSAMENTE
+
+💳 ID: ${venta.ventaId}
+💰 Total: $${venta.totalVenta.toFixed(2)}
+🔄 Método: ${venta.metodoPagoNombre}
+
+La transacción se ha completado correctamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
     
-    // Recargar workspaces para actualizar estados
-    loadWorkspaces();
+    // ✅ ESPERAR 4 segundos antes de recargar para que el toast sea visible
+    setTimeout(() => {
+      loadWorkspaces();
+    }, 4000);
   };
 
   // Función para cerrar modal de ticket

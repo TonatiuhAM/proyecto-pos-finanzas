@@ -104,6 +104,11 @@ export const workspaceService = {
     return response.data;
   },
 
+  async getById(id: string): Promise<Workspace> {
+    const response = await api.get(`/workspaces/${id}`);
+    return response.data;
+  },
+
   // ===== SERVICIOS PARA FLUJO DE CUENTA =====
   
   async cambiarSolicitudCuenta(id: string, solicitudCuenta: boolean): Promise<WorkspaceStatus> {

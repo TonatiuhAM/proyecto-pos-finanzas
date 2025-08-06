@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { inventarioService } from '../services/inventarioService';
 import { workspaceService } from '../services/apiService';
+import { useToast } from '../hooks/useToast';
 import type { ProductoDTO, CategoriaDTO } from '../services/inventarioService';
 import type { ItemCarrito } from '../types';
 import './PuntoDeVenta.css';
@@ -8,14 +9,15 @@ import './PuntoDeVenta.css';
 interface PuntoDeVentaProps {
   workspaceId: string;
   onBackToWorkspaces: () => void;
-  onLogout: () => void;
 }
 
 const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({ 
   workspaceId, 
-  onBackToWorkspaces, 
-  onLogout 
+  onBackToWorkspaces
 }) => {
+  // Hook para notificaciones toast
+  const toast = useToast();
+
   // Verificar que workspaceId sea válido, usar Mesa 1 como fallback para desarrollo
   const workspaceIdFinal = workspaceId && workspaceId.trim() !== '' 
     ? workspaceId 
@@ -26,7 +28,10 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false); // Estado separado para operaciones de guardado
+  const [ordenGuardada, setOrdenGuardada] = useState(false); // ✅ NUEVO: Controlar si la orden actual está guardada
   const [error, setError] = useState<string | null>(null);
+  const [workspaceName, setWorkspaceName] = useState<string>('');
 
   // Estados para filtros y selección
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
@@ -53,10 +58,16 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
         const categoriasData = await inventarioService.getAllCategorias();
         console.log('✅ Categorías cargadas:', categoriasData.length, 'categorías');
 
+        // Cargar información del workspace
+        console.log('🏢 Cargando información del workspace...');
+        const workspaceData = await workspaceService.getById(workspaceIdFinal);
+        console.log('✅ Workspace cargado:', workspaceData.nombre);
+
         // Actualizar estados con datos básicos primero
         setProductos(productosConStock);
         setCategorias(categoriasData);
         setProductosFiltrados(productosConStock);
+        setWorkspaceName(workspaceData.nombre);
 
         // Cargar órdenes workspace existentes (con fallback)
         let carritoInicial: ItemCarrito[] = [];
@@ -84,6 +95,7 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
         }
         
         setCarrito(carritoInicial);
+        setOrdenGuardada(carritoInicial.length === 0); // ✅ Si carrito está vacío, no hay nada que guardar. Si hay productos, asumir que necesitan guardarse
         setError(null);
         console.log('🎉 Carga completa exitosa');
         
@@ -184,7 +196,11 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
       // Verificar stock disponible en tiempo real
       const stockValido = await inventarioService.verificarStock(producto.id, cantidad);
       if (!stockValido) {
-        alert(`Stock insuficiente. Verifique la disponibilidad actual del producto.`);
+        toast.showError(`❌ STOCK INSUFICIENTE
+
+Verifique la disponibilidad actual del producto.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
         await recargarDatos(); // Recargar datos para mostrar stock actualizado
         return;
       }
@@ -192,7 +208,11 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
       const stockDisponible = producto.cantidadInventario || 0;
       
       if (cantidad > stockDisponible) {
-        alert(`Stock insuficiente. Disponible: ${stockDisponible} unidades`);
+        toast.showError(`❌ STOCK INSUFICIENTE
+
+Disponible: ${stockDisponible} unidades
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
         return;
       }
 
@@ -203,7 +223,12 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
         // Actualizar cantidad del item existente
         const nuevaCantidad = itemExistente.cantidadPz + cantidad;
         if (nuevaCantidad > stockDisponible) {
-          alert(`Stock insuficiente. Ya tienes ${itemExistente.cantidadPz} en el carrito. Máximo disponible: ${stockDisponible}`);
+          toast.showError(`❌ STOCK INSUFICIENTE
+
+Ya tienes ${itemExistente.cantidadPz} en el carrito.
+Máximo disponible: ${stockDisponible} unidades
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
           return;
         }
         
@@ -212,6 +237,7 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
             ? { ...item, cantidadPz: nuevaCantidad }
             : item
         ));
+        setOrdenGuardada(false); // ✅ Marcar que la orden necesita guardarse nuevamente
       } else {
         // Agregar nuevo item al carrito
         const nuevoItem: ItemCarrito = {
@@ -225,6 +251,7 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
         };
         
         setCarrito([...carrito, nuevoItem]);
+        setOrdenGuardada(false); // ✅ Marcar que la orden necesita guardarse nuevamente
       }
 
       // Resetear selección
@@ -233,13 +260,18 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
       
     } catch (error) {
       console.error('Error al agregar producto al carrito:', error);
-      alert('Error al agregar producto al carrito');
+      toast.showError(`❌ ERROR
+
+No se pudo agregar el producto al carrito. Intente nuevamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
     }
   };
 
   // Remover producto del carrito
   const removerDelCarrito = (productoId: string) => {
     setCarrito(carrito.filter(item => item.productoId !== productoId));
+    setOrdenGuardada(false); // ✅ Marcar que la orden necesita guardarse nuevamente
   };
 
   // Calcular total del carrito
@@ -252,12 +284,16 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
   // Guardar orden en workspace
   const guardarOrden = async () => {
     if (carrito.length === 0) {
-      alert('El carrito está vacío');
+      toast.showWarning(`⚠️ CARRITO VACÍO
+
+Agregue productos antes de guardar la orden.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
       return;
     }
 
     try {
-      setIsLoading(true);
+      setIsSaving(true);
       
       // Limpiar órdenes workspace existentes antes de agregar nuevas
       await inventarioService.limpiarOrdenesWorkspace(workspaceIdFinal);
@@ -273,7 +309,18 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
       }
       
       // Mostrar confirmación
-      alert(`✅ Orden guardada exitosamente!\n\nWorkspace: ${workspaceIdFinal}\nProductos: ${carrito.length}\nTotal: $${calcularTotal().toFixed(2)}`);
+      toast.showSuccess(`✅ ORDEN GUARDADA EXITOSAMENTE
+
+🏪 Mesa: ${workspaceName || workspaceIdFinal}
+📦 Productos: ${carrito.length}
+💰 Total: $${calcularTotal().toFixed(2)}
+
+La orden se ha registrado correctamente en el sistema.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
+      
+      // ✅ Marcar la orden como guardada
+      setOrdenGuardada(true);
       
       console.log('✅ Orden guardada en workspace:', {
         workspaceId: workspaceIdFinal,
@@ -281,47 +328,72 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
         total: calcularTotal()
       });
       
-      // Recargar datos para mostrar stock actualizado
-      await recargarDatos();
+      // ✅ ESPERAR 3 segundos antes de recargar para que el toast sea visible
+      setTimeout(async () => {
+        await recargarDatos();
+      }, 3000);
       
     } catch (error) {
       console.error('❌ Error al guardar orden:', error);
-      alert('Error al guardar la orden. Por favor, intente nuevamente.');
+      toast.showError(`❌ ERROR AL GUARDAR
+
+No se pudo guardar la orden. Intente nuevamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
   // Solicitar cuenta (procesar venta final)
   const solicitarCuenta = async () => {
     if (carrito.length === 0) {
-      alert('El carrito está vacío');
+      toast.showWarning(`⚠️ CARRITO VACÍO
+
+Agregue productos antes de solicitar la cuenta.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
+      return;
+    }
+
+    // ✅ NUEVA VALIDACIÓN: Verificar que la orden esté guardada antes de solicitar cuenta
+    if (!ordenGuardada) {
+      toast.showWarning(`⚠️ ORDEN NO GUARDADA
+
+Debe guardar la orden antes de solicitar la cuenta.
+Presione "Guardar Orden" primero.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
       return;
     }
 
     try {
-      setIsLoading(true);
+      setIsSaving(true);
       
-      // Primero guardar la orden actual si hay productos en el carrito
-      if (carrito.length > 0) {
-        console.log('💾 Guardando orden antes de solicitar cuenta...');
-        await guardarOrden();
-      }
-      
-      // Cambiar estado del workspace a "cuenta"
+      // Solo cambiar estado del workspace a "cuenta" - NO volver a guardar
       console.log('📋 Solicitando cuenta para workspace:', workspaceIdFinal);
       await workspaceService.cambiarSolicitudCuenta(workspaceIdFinal, true);
       
-      alert('✅ Cuenta solicitada exitosamente. El administrador puede generar el ticket de venta.');
+      toast.showSuccess(`✅ CUENTA SOLICITADA EXITOSAMENTE
+
+El administrador puede proceder a generar el ticket de venta.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
       
-      // Opcional: redirigir a workspaces para que el administrador vea el estado "cuenta"
-      onBackToWorkspaces();
+      // ✅ ESPERAR 4 segundos antes de redirigir para que el toast sea visible
+      setTimeout(() => {
+        onBackToWorkspaces();
+      }, 4000);
       
     } catch (error) {
       console.error('❌ Error al solicitar cuenta:', error);
-      alert('Error al solicitar cuenta. Por favor, intente nuevamente.');
+      toast.showError(`❌ ERROR AL SOLICITAR CUENTA
+
+No se pudo procesar la solicitud. Intente nuevamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -351,14 +423,11 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
       <header className="punto-venta__header">
         <div className="header-content">
           <div className="header-left">
-            <button onClick={onBackToWorkspaces} className="btn btn-secondary">
-              ← Volver a Workspaces
+            <button onClick={onBackToWorkspaces} className="btn btn-back">
+              ← Regresar
             </button>
-            <h1>Punto de Venta - Mesa {workspaceIdFinal}</h1>
+            <h1>Punto de Venta - {workspaceName || `Mesa ${workspaceIdFinal}`}</h1>
           </div>
-          <button onClick={onLogout} className="btn btn-danger">
-            Cerrar Sesión
-          </button>
         </div>
       </header>
 
@@ -481,22 +550,33 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
             <div className="acciones">
               <button
                 onClick={guardarOrden}
-                disabled={carrito.length === 0 || isLoading}
+                disabled={carrito.length === 0 || isSaving}
                 className="btn btn-success btn-block"
               >
-                {isLoading ? 'Guardando...' : 'Guardar Orden'}
+                {isSaving ? 'Guardando...' : 'Guardar Orden'}
               </button>
               <button
                 onClick={solicitarCuenta}
-                disabled={carrito.length === 0 || isLoading}
-                className="btn btn-primary btn-block"
+                disabled={carrito.length === 0 || isSaving || !ordenGuardada}
+                className={`btn btn-block ${!ordenGuardada ? 'btn-secondary' : 'btn-primary'}`}
+                title={!ordenGuardada ? 'Debe guardar la orden primero' : 'Solicitar cuenta para proceder al pago'}
               >
-                {isLoading ? 'Procesando...' : 'Solicitar Cuenta'}
+                {isSaving ? 'Procesando...' : !ordenGuardada ? 'Guardar Orden Primero' : 'Solicitar Cuenta'}
               </button>
             </div>
           </div>
         </div>
       </main>
+      
+      {/* Overlay sutil para operaciones de guardado - permite que los toasts sean visibles */}
+      {isSaving && (
+        <div className="saving-overlay">
+          <div className="saving-indicator">
+            <div className="loading-spinner"></div>
+            <p>Procesando operación...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

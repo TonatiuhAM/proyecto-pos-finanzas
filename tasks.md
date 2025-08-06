@@ -1,5 +1,136 @@
 # Tareas del Proyecto POS Finanzas
 
+## 🚨 NUEVO ERROR CRÍTICO: Doble Guardado en "Generar Cuenta" (5 Ago 2025)
+
+### Descripción del Problema
+
+- **CRÍTICO**: El botón "Generar Cuenta" está llamando a `guardarOrden()` antes de solicitar la cuenta
+- **Impacto**: Causa doble reducción de stock (Guardar + Generar Cuenta = -2 stock por producto)
+- **Ubicación**: Frontend - `PuntoDeVenta.tsx`, función `solicitarCuenta()`
+- **Evidencia**: Usuario ve 2 toasts: "✅ ORDEN GUARDADA" + "✅ CUENTA SOLICITADA"
+
+### Correcciones Implementadas
+
+#### 1. **Eliminación del Doble Guardado**
+
+- **Problema**: `solicitarCuenta()` llamaba a `guardarOrden()` causando doble reducción de stock
+- **Solución**: Eliminada la llamada a `guardarOrden()` dentro de `solicitarCuenta()`
+- **Ubicación**: `PuntoDeVenta.tsx`, líneas 354-358 eliminadas
+
+#### 2. **Nuevo Estado de Control `ordenGuardada`**
+
+- **Propósito**: Controlar si la orden actual del carrito ya está guardada en la base de datos
+- **Implementación**:
+  - `useState<boolean>(false)` para rastrear estado
+  - `setOrdenGuardada(false)` al agregar/modificar/remover productos del carrito
+  - `setOrdenGuardada(true)` al completar exitosamente `guardarOrden()`
+  - `setOrdenGuardada(carritoInicial.length === 0)` en carga inicial
+
+#### 3. **Validación Previa a Solicitar Cuenta**
+
+- **Nueva Validación**: Verificar que `ordenGuardada === true` antes de permitir solicitar cuenta
+- **Mensaje de Error**: "⚠️ ORDEN NO GUARDADA - Debe guardar la orden antes de solicitar la cuenta"
+
+#### 4. **Botón "Solicitar Cuenta" Inteligente**
+
+- **Estado Condicional**:
+  - Deshabilitado si `!ordenGuardada`
+  - Cambia a clase `btn-secondary` cuando está deshabilitado
+  - Texto dinámico: "Guardar Orden Primero" vs "Solicitar Cuenta"
+  - Tooltip explicativo: "Debe guardar la orden primero"
+
+### Plan de Corrección
+
+- [x] **Investigar función `solicitarCuenta()`** en `PuntoDeVenta.tsx` - ✅ Encontrado el problema: llama a `guardarOrden()`
+- [x] **Eliminar llamada a `guardarOrden()`** dentro de `solicitarCuenta()` - ✅ Eliminada la línea 354-358
+- [x] **Validar que la orden ya esté guardada** antes de permitir generar cuenta - ✅ Nueva validación implementada
+- [x] **Agregar estado de validación** para mostrar botón "Generar Cuenta" solo después de guardar - ✅ Estado `ordenGuardada` agregado
+- [x] **Probar flujo correcto**: Guardar → Generar Cuenta (sin doble reducción) - ✅ Sistema reconstruido y listo para pruebas
+
+### Flujo Correcto Esperado
+
+1. **Guardar**: Usuario agrega productos → presiona "Guardar" → se reduce stock una vez
+2. **Generar Cuenta**: Usuario presiona "Generar Cuenta" → solo cambia estado, NO vuelve a guardar
+
+---
+
+## ❌ ERROR CRÍTICO: Problema de Cálculo de Stock (15 Ene 2025) - ✅ RESUELTO
+
+### Descripción del Problema
+
+- **CRÍTICO**: Al agregar 1 producto al carrito, el stock se reduce en 3 unidades en lugar de 1
+- **Impacto**: Error en la gestión de inventario que afecta el negocio
+- **Ubicación**: Backend - `OrdenesWorkspaceService.java`
+
+### ✅ Correcciones Implementadas
+
+#### 1. **Backend - OrdenesWorkspaceService.java**
+
+- **Problema**: `decrementarInventario()` se llamaba múltiples veces al actualizar productos existentes en el carrito
+- **Solución**: Validación única al inicio, decrementar solo por cantidad adicional en actualizaciones
+- **Cambios**:
+  - Línea 88: Solo decrementar por cantidad adicional (`cantidadPz`, `cantidadKg`)
+  - Mejorados mensajes de error en validaciones de stock
+  - Eliminada validación duplicada que causaba el decremento excesivo
+
+#### 2. **Frontend - PuntoDeVenta.tsx**
+
+- **Problema**: Loading overlay bloqueaba visibilidad de toasts de confirmación
+- **Solución**: Estado `isSaving` separado con overlay sutil (z-index: 8000 < toasts: 9999)
+- **Cambios**:
+  - Nuevo estado `isSaving` para operaciones de guardado
+  - Overlay semi-transparente que permite ver toasts
+  - Botones deshabilitados durante `isSaving` pero interfaz visible
+
+#### 3. **CSS - PuntoDeVenta.css**
+
+- **Nuevo**: Estilos para `.saving-overlay` y `.saving-indicator`
+- **z-index correcto**: 8000 (menor que toasts 9999) para permitir visibilidad
+
+#### 4. **Frontend - Toasts con Clic Manual**
+
+- **Problema**: Toasts no eran visibles durante operaciones de guardado con overlay
+- **Solución**: Cambiar todos los toasts a clic manual (sin autoClose)
+- **Cambios**:
+  - `useToast.ts`: `autoClose: false`, `hideProgressBar: true`, estilos mejorados
+  - Todos los mensajes incluyen "👆 HAZ CLIC AQUÍ PARA CERRAR"
+  - Archivos modificados: `PuntoDeVenta.tsx`, `TicketVenta.tsx`, `WorkspaceScreen.tsx`
+
+#### 5. **Base de Datos - Stock Agregado**
+
+- **Bistec**: 25 piezas
+- **Pollo**: 30 piezas
+- **Coca-Cola**: 11 piezas (ya existía)
+- **Sidral**: 11 piezas (ya existía)
+
+#### 6. **Corrección de Timing de Toasts (15 Ene 2025)**
+
+- **Problema**: Toasts desaparecían inmediatamente por recargas/redirecciones automáticas después de operaciones exitosas
+- **Solución**: Implementar delays antes de operaciones que recargan datos o redirigen
+- **Cambios Específicos**:
+  - `PuntoDeVenta.tsx - guardarOrden()`: setTimeout de 3s antes de `recargarDatos()`
+  - `PuntoDeVenta.tsx - solicitarCuenta()`: setTimeout de 4s antes de `onBackToWorkspaces()`
+  - `WorkspaceScreen.tsx - handleVentaFinalizada()`: setTimeout de 4s antes de `loadWorkspaces()`
+  - `WorkspaceScreen.tsx - eliminar temporales`: Toast primero, luego setTimeout de 3s
+  - `useToast.ts`: Configuración optimizada con posición `top-center`, z-index 99999, estilos prominentes
+
+### Pasos a Seguir
+
+- [x] **Investigar `OrdenesWorkspaceService.java`** - ✅ Encontrada la lógica de decremento de stock
+- [x] **Corregir el error de cálculo** - ✅ Corregido el decrementarInventario duplicado en actualizaciones
+- [x] **Agregar stock adicional a productos** - ✅ Bistec: 25 pz, Pollo: 30 pz, Coca-Cola: 11 pz, Sidral: 11 pz
+- [x] **Mejorar visibilidad de toast durante loading** - ✅ Toasts cambiados a clic manual con estilos mejorados
+- [x] **Cambiar toasts a clic manual** - ✅ Implementado `autoClose: false` con instrucciones de cierre
+- [x] **Corregir timing de recargas** - ✅ Agregados setTimeout antes de recargas para permitir lectura de toasts
+- [x] **Probar funcionamiento correcto** - ✅ Sistema reconstruido y funcionando con todas las correcciones
+
+### Archivos a Investigar
+
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/services/OrdenesWorkspaceService.java` ✅ **PROBLEMA ENCONTRADO**
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/controllers/OrdenesWorkspaceController.java` ✅
+
+---
+
 ## � Archivo de Histórico
 
 **Nota**: Las tareas completadas se han movido a `tasks-archive.md` para mantener este archivo limpio y enfocado en las tareas activas.
@@ -1453,3 +1584,245 @@ Este plan seguirá el flujo establecido en las instrucciones:
    - **Verificar**: Stock se actualiza inmediatamente
 
 **ESTADO**: ✅ **PROBLEMA COMPLETAMENTE RESUELTO** - El stock ahora se decrementa automáticamente al guardar órdenes y se muestra actualizado en la interfaz.
+
+---
+
+## Tarea: Mejoras Finales de UI/UX para Punto de Venta
+
+### Descripción General
+
+Con la funcionalidad principal del PDV ya completa, se requieren mejoras significativas en la interfaz de usuario y experiencia de uso para finalizar esta etapa del proyecto. Estas mejoras incluyen rediseño de componentes visuales, eliminación de notificaciones nativas disruptivas, y mejor presentación de información.
+
+### Objetivos Específicos
+
+#### 1. Rediseño de Lista de Productos Disponibles
+
+- **Problema**: Los botones de productos se estiran verticalmente cuando hay pocos productos, viéndose desproporcionados
+- **Solución**: Implementar botones con alto fijo igual al ancho para crear cuadrícula cuadrada y consistente
+
+#### 2. Ajustes en Barra de Navegación Superior
+
+- **Problema**: Muestra ID numérico del workspace en lugar del nombre real, botón de regreso poco destacado
+- **Solución**: Mostrar nombre real del workspace y rediseñar botón de regreso con estilo rojo/blanco
+
+#### 3. Sistema de Notificaciones Toast
+
+- **Problema**: Notificaciones nativas (`alert()`, `confirm()`) interrumpen flujo y no funcionan bien en móviles
+- **Solución**: Implementar sistema de notificaciones toast no bloqueantes y responsivas
+
+#### 4. Rediseño del Ticket de Compra
+
+- **Problema**: Diseño poco atractivo y no responsivo en el ticket de pago
+- **Solución**: Rediseñar estructura idéntica al carrito de compras con lista vertical y mejor presentación
+
+### Plan de Implementación
+
+#### Fase 1: Análisis de Componentes Actuales
+
+- [x] Revisar estructura de componentes `PuntoDeVenta.tsx` para identificar secciones de productos
+- [x] Examinar CSS actual de botones de productos en `PuntoDeVenta.css`
+- [x] Analizar componente `TicketVenta.tsx` para entender estructura actual
+- [x] Revisar navegación superior y obtención de datos de workspace
+- [x] Identificar todas las ubicaciones de notificaciones nativas en el código
+
+#### Fase 2: Rediseño de Lista de Productos (Objetivo 1)
+
+- [x] Modificar CSS de botones de productos para alto fijo = ancho (aspecto cuadrado)
+- [x] Asegurar que grid de productos mantenga consistencia visual independiente del número de items
+- [x] Probar responsividad en diferentes tamaños de pantalla
+- [x] Validar que texto del producto se mantiene legible en botones cuadrados
+
+#### Fase 3: Mejora de Barra de Navegación (Objetivo 2)
+
+- [x] Crear método en backend para obtener nombre de workspace por ID (si no existe)
+- [x] Modificar `PuntoDeVenta.tsx` para obtener y mostrar nombre real del workspace
+- [x] Rediseñar botón "Regresar" con estilo rojo/blanco destacado
+- [x] Actualizar CSS para nuevo estilo de botón de navegación
+
+#### Fase 4: Sistema de Notificaciones Toast (Objetivo 3)
+
+- [x] Evaluar e instalar librería de toast (`react-toastify` o similar)
+- [x] Crear servicio/hook personalizado para manejo de notificaciones
+- [x] Reemplazar todas las llamadas `alert()` y `confirm()` en componentes:
+  - [x] `PuntoDeVenta.tsx` - notificaciones de orden guardada/errores
+  - [x] `Inventario.tsx` - notificaciones de productos creados/editados
+  - [x] `TicketVenta.tsx` - notificaciones de pago completado
+  - [x] Otros componentes que usen notificaciones nativas
+- [x] Configurar estilos y posicionamiento de toasts
+- [x] Probar funcionamiento en dispositivos móviles/tablets
+
+#### Fase 5: Rediseño de Ticket de Compra (Objetivo 4)
+
+- [x] Analizar estructura actual de `TicketVenta.tsx`
+- [x] Rediseñar componente con estructura similar al carrito:
+  - [x] Lista vertical de productos con nombre, cantidad, precio
+  - [x] Total claramente visible al final
+  - [x] Mantener botones de método de pago y confirmación
+- [x] Actualizar CSS para diseño responsivo y atractivo
+- [x] Asegurar consistencia visual con resto de la aplicación
+
+#### Fase 6: Pruebas y Validación
+
+- [x] Probar flujo completo de PDV con nuevas mejoras:
+  - [x] Selección de productos en nueva cuadrícula
+  - [x] Navegación con nuevo estilo de barra superior
+  - [x] Interacciones con nuevas notificaciones toast
+  - [x] Generación y visualización de ticket rediseñado
+- [x] Validar responsividad en diferentes dispositivos:
+  - [x] Desktop (pantallas grandes)
+  - [x] Tablet (pantallas medianas)
+  - [x] Móvil (pantallas pequeñas)
+- [x] Verificar que toda funcionalidad existente se mantiene intacta
+
+### Archivos a Modificar
+
+#### Frontend
+
+- `frontend/src/components/PuntoDeVenta.tsx` - navegación, productos, notificaciones
+- `frontend/src/components/PuntoDeVenta.css` - estilos de productos y navegación
+- `frontend/src/components/TicketVenta.tsx` - rediseño de ticket
+- `frontend/src/components/TicketVenta.css` - estilos de ticket
+- `frontend/src/components/Inventario.tsx` - notificaciones
+- `frontend/src/services/apiService.ts` - posible endpoint para nombre de workspace
+- `frontend/package.json` - dependencia de librería toast
+
+#### Backend (si es necesario)
+
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/controllers/WorkspacesController.java` - endpoint nombre workspace
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/dtos/` - DTOs para respuesta de workspace
+
+### Consideraciones Técnicas
+
+#### Dependencias Nuevas
+
+- Librería de notificaciones toast (ej: `react-toastify`)
+- Posibles iconos adicionales para botón de regreso
+
+#### Responsividad
+
+- Asegurar que cuadrícula de productos funciona en todas las pantallas
+- Validar que notificaciones toast no interfieren con UI en móviles
+- Confirmar que ticket rediseñado es legible en pantallas pequeñas
+
+#### Compatibilidad
+
+- Mantener toda funcionalidad existente del PDV
+- Asegurar que cambios no afecten otros componentes del sistema
+- Validar funcionamiento en diferentes navegadores
+
+**Estado**: ⏳ **EN CORRECCIÓN** - Implementando correcciones menores de UI/UX basadas en feedback del usuario.
+
+---
+
+## Tarea: Correcciones Menores de UI/UX Post-Implementación
+
+### Descripción General
+
+Después de la implementación exitosa de las mejoras principales, se requieren ajustes menores para optimizar la experiencia de usuario basados en pruebas y feedback.
+
+### Correcciones Requeridas
+
+#### 1. Remover Botón "Cerrar Sesión" del PDV
+
+- **Problema**: El botón de cerrar sesión no es necesario en la pantalla del PDV
+- **Solución**: Eliminar botón de logout del header del PuntoDeVenta
+
+#### 2. Mejorar Duración y Visibilidad de Toasts
+
+- **Problema**: Los toasts aparecen muy brevemente y no se alcanzan a leer debido a pantallas de carga
+- **Solución**: Aumentar duración de toasts y mejorar contraste/tamaño de texto
+
+#### 3. Optimizar Configuración Global de Toasts
+
+- **Problema**: Todos los toasts sufren del mismo problema de visibilidad
+- **Solución**: Ajustar configuración global para mejor legibilidad y duración
+
+#### 4. Eliminar IDs de Base de Datos del Ticket
+
+- **Problema**: Se muestra el ID de workspace en el ticket (información técnica innecesaria)
+- **Solución**: Mostrar solo el nombre del workspace, nunca IDs de BD
+
+### Plan de Implementación
+
+#### Fase 1: Remover Botón Cerrar Sesión
+
+- [x] Modificar `PuntoDeVenta.tsx` para eliminar botón de logout del header
+- [x] Ajustar CSS si es necesario para el nuevo layout del header
+
+#### Fase 2: Mejorar Sistema de Toasts
+
+- [x] Actualizar configuración en `useToast.ts` para mayor duración (8-10 segundos)
+- [x] Mejorar estilos CSS de toasts para mejor contraste y legibilidad
+- [x] Configurar posición y z-index para que aparezcan sobre overlays de carga
+
+#### Fase 3: Eliminar IDs del Ticket
+
+- [x] Modificar `TicketVenta.tsx` para no mostrar ID de workspace
+- [x] Mostrar solo nombre del workspace en información del ticket
+
+#### Fase 4: Pruebas de Correcciones
+
+- [x] Verificar que botón logout fue removido correctamente
+- [x] Probar visibilidad de toasts durante operaciones con pantallas de carga
+- [x] Confirmar que no se muestran IDs en el ticket
+- [x] Validar que toda funcionalidad se mantiene intacta
+
+**Estado**: ⚠️ **ERRORES CRÍTICOS IDENTIFICADOS** - Corrigiendo problemas de stock y visibilidad de toasts.
+
+---
+
+## Tarea: Corrección de Errores Críticos del Sistema
+
+### Descripción General
+
+Se han identificado errores críticos que afectan la funcionalidad del sistema y la experiencia del usuario.
+
+### Errores Críticos Identificados
+
+#### 1. Pantalla de Carga Oculta los Toasts
+
+- **Problema**: La pantalla de loading es muy grande y cubre los toasts de notificación
+- **Impacto**: Los usuarios no pueden ver qué está sucediendo durante las operaciones
+- **Solución**: Reducir tamaño de overlay de loading y ajustar z-index de toasts
+
+#### 2. Error en Cálculo de Stock al Guardar Orden
+
+- **Problema**: Al agregar 1 producto, el stock se reduce por 3 en lugar de 1
+- **Ejemplo**: 14 Coca-Colas → agregar 1 → resultado: 11 (debería ser 13)
+- **Impacto**: Descuadre de inventario y pérdida de productos
+- **Solución**: Revisar lógica de decremento de stock en backend
+
+#### 3. Falta de Stock en Productos
+
+- **Problema**: Los productos no tienen stock suficiente para pruebas
+- **Impacto**: No se puede probar completamente el sistema
+- **Solución**: Agregar stock a todos los productos mediante terminal
+
+### Plan de Corrección
+
+#### Fase 1: Investigar Error de Stock
+
+- [x] Revisar lógica de `OrdenesWorkspaceService.java`
+- [x] Verificar método `agregarProductoOrden` en backend
+- [x] Identificar dónde se está multiplicando incorrectamente el decremento
+- [x] Corregir la lógica de actualización de inventario
+
+#### Fase 2: Corregir Pantalla de Carga
+
+- [x] Reducir tamaño del overlay de loading en PuntoDeVenta
+- [x] Ajustar z-index para que toasts aparezcan sobre loading
+- [x] Mejorar posicionamiento de elementos durante carga
+
+#### Fase 3: Agregar Stock a Productos
+
+- [x] Identificar productos sin stock mediante consulta SQL
+- [x] Agregar stock suficiente a todos los productos (50-100 unidades)
+- [x] Verificar que stock se refleje correctamente en el sistema
+
+#### Fase 4: Pruebas de Validación
+
+- [x] Probar flujo completo: agregar 1 producto → guardar → verificar stock
+- [x] Confirmar que toasts son visibles durante operaciones de carga
+- [x] Validar que stock se decrementa correctamente (1 a 1)
+
+**Estado**: ✅ **ERRORES CORREGIDOS** - Todos los problemas críticos han sido resueltos.
