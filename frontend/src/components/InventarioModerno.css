@@ -815,23 +815,6 @@ button:focus,
   }
 }
 
-/* ===== DARK MODE SUPPORT (Future Enhancement) ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --md-primary: #d0bcff;
-    --md-primary-container: #4f378b;
-    --md-on-primary: #371e73;
-    --md-on-primary-container: #eaddff;
-    --md-surface: #1c1b1f;
-    --md-surface-container: #2b2930;
-    --md-surface-container-high: #36343b;
-    --md-on-surface: #e6e0e9;
-    --md-on-surface-variant: #cac4d0;
-    --md-outline: #938f99;
-    --md-outline-variant: #49454f;
-  }
-}
-
 /* ===== INVENTORY CONTENT STYLES ===== */
 .inventory-content {
   max-width: 1400px;

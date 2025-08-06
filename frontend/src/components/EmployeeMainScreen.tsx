@@ -19,8 +19,8 @@ const EmployeeMainScreen: React.FC<EmployeeMainScreenProps> = ({
           /* --- Global Styles & Fonts --- */
           @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
           :root {
-            --background-color: #2C2A3A;
-            --text-light: #ffffff;
+            --background-color: #f5f5f5; /* Cambiado a fondo claro */
+            --text-light: #1a1a1a; /* Cambiado a texto oscuro */
             --font-family-main: 'Roboto Mono', monospace;
             --color-logout: #CC7A53;
             --color-punto-venta: #4E9A91;
@@ -81,7 +81,7 @@ const EmployeeMainScreen: React.FC<EmployeeMainScreenProps> = ({
             font-family: var(--font-family-main);
             font-size: 2rem;
             font-weight: 700;
-            color: #3a3a3a;
+            color: #ffffff; /* Color blanco para contraste con fondo verde */
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             background-color: var(--color-punto-venta);

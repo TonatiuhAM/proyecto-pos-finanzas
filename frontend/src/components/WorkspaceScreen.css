@@ -748,6 +748,13 @@
   box-shadow: var(--md-elevation-2);
 }
 
+/* ✅ CORRECCIÓN: Texto negro para workspaces con cuenta solicitada */
+.workspace-screen__card--cuenta .workspace-screen__card-title,
+.workspace-screen__card--cuenta .workspace-screen__card-meta,
+.workspace-screen__card--cuenta .workspace-screen__card-meta span {
+  color: #000000 !important; /* Negro para contraste con fondo amarillo */
+}
+
 /* Acciones especiales para workspace de cuenta */
 .workspace-screen__card-actions {
   padding: var(--md-spacing-md);

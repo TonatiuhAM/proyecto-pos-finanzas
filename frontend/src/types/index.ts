@@ -155,3 +155,64 @@ export interface VentaFinalizada {
 export interface CambiarEstadoWorkspaceRequest {
   solicitudCuenta: boolean;
 }
+
+// ==================== TIPOS PARA GESTIÓN DE EMPLEADOS ====================
+
+// Interface para mostrar empleados en la tabla (corresponde a EmpleadoResponseDTO del backend)
+export interface Empleado {
+  id: string;
+  nombre: string;
+  telefono: string;
+  rolId: string;
+  rolNombre: string;
+  estadoId: string;
+  estadoNombre: string;
+}
+
+// Interface para crear nuevos empleados (corresponde a EmpleadoCreateRequestDTO del backend)
+export interface EmpleadoCreate {
+  nombre: string;
+  contrasena: string;
+  telefono: string;
+  rolId: number;
+}
+
+// Interface para cambiar estado de empleado (corresponde a EmpleadoEstadoRequestDTO del backend)
+export interface EmpleadoEstadoRequest {
+  estado: string; // "Activo" o "Inactivo"
+}
+
+// Interface para roles en dropdown (corresponde a RolResponseDTO del backend)
+export interface Rol {
+  id: string;
+  nombre: string;
+}
+
+// Interface para el estado de un empleado (para indicadores visuales)
+export interface EstadoEmpleado {
+  activo: boolean;
+  texto: 'Activo' | 'Inactivo';
+  color: 'success' | 'error';
+}
+
+// Interface para formulario de creación de empleado (estado local del formulario)
+export interface FormularioEmpleado {
+  nombre: string;
+  contrasena: string;
+  telefono: string;
+  rolId: string;
+  errores: {
+    nombre?: string;
+    contrasena?: string;
+    telefono?: string;
+    rolId?: string;
+  };
+}
+
+// Interface para estado de carga de empleados (loading states)
+export interface EstadoCargaEmpleados {
+  cargando: boolean;
+  error: string | null;
+  creando: boolean;
+  cambiandoEstado: boolean;
+}

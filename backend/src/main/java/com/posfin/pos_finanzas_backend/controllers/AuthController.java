@@ -6,6 +6,7 @@ import com.posfin.pos_finanzas_backend.repositories.UsuariosRepository;
 import com.posfin.pos_finanzas_backend.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,6 +22,9 @@ public class AuthController {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
@@ -41,8 +45,22 @@ public class AuthController {
 
             Usuarios usuario = usuarioOpt.get();
 
-            // Verificar contraseña (en un entorno real deberías usar hashing)
-            if (!contrasena.equals(usuario.getContrasena())) {
+            // ✅ VALIDACIÓN CRÍTICA: Verificar que el usuario esté activo ANTES de verificar la contraseña
+            if (usuario.getEstados() == null || !"Activo".equals(usuario.getEstados().getEstado())) {
+                return ResponseEntity.badRequest().body("Usuario inactivo");
+            }
+
+            // Verificar contraseña usando BCrypt para usuarios nuevos, fallback a texto plano para usuarios existentes
+            boolean contrasenaValida = false;
+            if (usuario.getContrasena().startsWith("$2a$") || usuario.getContrasena().startsWith("$2b$") || usuario.getContrasena().startsWith("$2y$")) {
+                // Contraseña hasheada con BCrypt
+                contrasenaValida = passwordEncoder.matches(contrasena, usuario.getContrasena());
+            } else {
+                // Contraseña en texto plano (para compatibilidad con usuarios existentes)
+                contrasenaValida = contrasena.equals(usuario.getContrasena());
+            }
+
+            if (!contrasenaValida) {
                 return ResponseEntity.badRequest().body("Contraseña incorrecta");
             }
 

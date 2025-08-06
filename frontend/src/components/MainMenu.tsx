@@ -7,6 +7,7 @@ interface MainMenuProps {
   onPuntoDeVentaClick: () => void;
   onInventarioClick: () => void;
   onFinanzasClick: () => void;
+  onEmpleadosClick: () => void;
   onLogout: () => void;
 }
 
@@ -15,6 +16,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
   onPuntoDeVentaClick, 
   onInventarioClick,
   onFinanzasClick,
+  onEmpleadosClick,
   onLogout 
 }) => {
   return (
@@ -121,6 +123,28 @@ const MainMenu: React.FC<MainMenuProps> = ({
             <div className="main-menu__card-content">
               <h3 className="md-title-large">Finanzas</h3>
               <p className="md-body-medium">Visualiza reportes, estadísticas y análisis financiero</p>
+            </div>
+            <div className="main-menu__card-arrow">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+              </svg>
+            </div>
+          </button>
+
+          {/* Empleados Card */}
+          <button
+            onClick={onEmpleadosClick}
+            className="main-menu__card main-menu__card--employees"
+            aria-label="Abrir Gestión de Empleados"
+          >
+            <div className="main-menu__card-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A3.001 3.001 0 0 0 17 6c-1.06 0-2.05.55-2.6 1.46L9.8 14h2.2v8H4v-8h2.5L8 10.5V9H6V7h8v2H12v1.5l1.5 4.5H16v8h4zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zm-6 0C7.33 11.5 8 10.83 8 10s-.67-1.5-1.5-1.5S5 9.17 5 10s.67 1.5 1.5 1.5z"/>
+              </svg>
+            </div>
+            <div className="main-menu__card-content">
+              <h3 className="md-title-large">Empleados</h3>
+              <p className="md-body-medium">Gestiona usuarios, roles y permisos del sistema</p>
             </div>
             <div className="main-menu__card-arrow">
               <svg viewBox="0 0 24 24" fill="currentColor">

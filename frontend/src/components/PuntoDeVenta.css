@@ -458,6 +458,18 @@
   .panel-carrito {
     min-width: unset;
   }
+
+  /* ✅ CORRECCIÓN: Carrito más alto en tablets */
+  .panel-carrito {
+    min-height: 400px;
+    max-height: 500px;
+  }
+
+  .carrito-lista {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 300px; /* ✅ Altura específica con scroll interno */
+  }
   
   .productos-lista {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -469,5 +481,36 @@
   
   .header-left h1 {
     font-size: 1.25rem;
+  }
+}
+
+/* ✅ NUEVA: Media query específica para móviles */
+@media (max-width: 480px) {
+  .punto-venta__main {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  /* ✅ CORRECCIÓN: Carrito aún más alto en móviles */
+  .panel-carrito {
+    min-height: 50vh; /* 50% de la altura de la pantalla */
+    max-height: 60vh; /* Máximo 60% para dejar espacio a productos */
+  }
+
+  .carrito-lista {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(50vh - 120px); /* ✅ Altura adaptativa restando header y footer */
+    padding: 0.5rem;
+  }
+
+  .panel-productos {
+    min-height: 35vh; /* Productos ocupan menos espacio en móviles */
+  }
+
+  .productos-lista {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
   }
 }

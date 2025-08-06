@@ -46,7 +46,7 @@
 .main-menu__logo-icon {
   width: 24px;
   height: 24px;
-  color: white;
+  color: #1a1a1a; /* Cambiado de white a color oscuro */
 }
 
 .main-menu__brand-text h1 {
@@ -293,7 +293,7 @@
 .main-menu__profile-avatar svg {
   width: 32px;
   height: 32px;
-  color: white;
+  color: #1a1a1a; /* Cambiado de white a color oscuro */
 }
 
 .main-menu__profile-info h4 {
