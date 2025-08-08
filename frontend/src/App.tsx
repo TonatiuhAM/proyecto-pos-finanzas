@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
+import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import LoginScreen from './components/LoginScreen';
 import MainMenu from './components/MainMenu';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import Inventario from './components/Inventario';
 import PuntoDeVenta from './components/PuntoDeVenta';
 import GestionEmpleados from './components/GestionEmpleados';
-import type { UsuarioDTO } from './types/index';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -14,17 +16,20 @@ type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'finanzas'
 
 function App() {
   const [appState, setAppState] = useState<AppState>('login');
-  const [currentUser, setCurrentUser] = useState<UsuarioDTO | null>(null);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
+  
+  // Usar el hook de autenticación
+  const { logout: authLogout, isAuthenticated } = useAuth();
 
-  const handleLoginSuccess = (usuario: UsuarioDTO) => {
-    setCurrentUser(usuario);
-    // Todos los usuarios van al menú principal
+  const handleLoginSuccess = () => {
+    // Solo cambiar al menú principal - AuthContext ya tiene la información del usuario
     setAppState('main-menu');
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    // Limpiar el contexto de autenticación
+    authLogout();
+    // Volver al login
     setAppState('login');
   };
 
@@ -63,10 +68,9 @@ function App() {
       return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
     
     case 'main-menu':
-      if (!currentUser) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+      if (!isAuthenticated) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
         <MainMenu 
-          usuario={currentUser}
           onPuntoDeVentaClick={handlePuntoDeVentaClick}
           onInventarioClick={handleInventarioClick}
           onFinanzasClick={handleFinanzasClick}
@@ -76,7 +80,7 @@ function App() {
       );
     
     case 'workspaces':
-      if (!currentUser) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+      if (!isAuthenticated) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
         <WorkspaceScreen 
           onWorkspaceSelect={handleWorkspaceSelect}
@@ -85,7 +89,7 @@ function App() {
       );
     
     case 'punto-de-venta':
-      if (!currentUser) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+      if (!isAuthenticated) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
         <PuntoDeVenta
           workspaceId={selectedWorkspaceId}
@@ -95,34 +99,36 @@ function App() {
     
     case 'inventario':
       return (
-        <div className="inventory-screen">
-          {/* Header */}
-          <header className="inventory-screen__header">
-            <div className="inventory-screen__header-content">
-              <div className="inventory-screen__nav">
-                <button
-                  onClick={handleBackToMainMenu}
-                  className="md-button md-button--outlined inventory-screen__back-btn"
-                  aria-label="Volver al menú principal"
-                >
-                  <svg className="inventory-screen__back-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                  </svg>
-                  <span>Volver</span>
-                </button>
-                <div className="inventory-screen__title-section">
-                  <h1 className="md-headline-medium">Inventario</h1>
-                  <p className="md-body-medium">Gestión de productos y stock</p>
+        <ProtectedRoute adminOnly={true}>
+          <div className="inventory-screen">
+            {/* Header */}
+            <header className="inventory-screen__header">
+              <div className="inventory-screen__header-content">
+                <div className="inventory-screen__nav">
+                  <button
+                    onClick={handleBackToMainMenu}
+                    className="md-button md-button--outlined inventory-screen__back-btn"
+                    aria-label="Volver al menú principal"
+                  >
+                    <svg className="inventory-screen__back-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    <span>Volver</span>
+                  </button>
+                  <div className="inventory-screen__title-section">
+                    <h1 className="md-headline-medium">Inventario</h1>
+                    <p className="md-body-medium">Gestión de productos y stock</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </header>
+            </header>
 
-          {/* Main Content */}
-          <main className="inventory-screen__main">
-            <Inventario />
-          </main>
-        </div>
+            {/* Main Content */}
+            <main className="inventory-screen__main">
+              <Inventario />
+            </main>
+          </div>
+        </ProtectedRoute>
       );
     
     case 'finanzas':
@@ -171,32 +177,64 @@ function App() {
       );
     
     case 'empleados':
-      if (!currentUser) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+      if (!isAuthenticated) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
-        <div className="min-h-screen bg-gray-50">
-          {/* Header */}
-          <header className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center h-16">
-                <div className="flex items-center">
-                  <button
-                    onClick={handleBackToMainMenu}
-                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                  >
-                    ← Volver al Menú
-                  </button>
+        <ProtectedRoute adminOnly={true}>
+          <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <header className="bg-white shadow-sm border-b border-gray-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16">
+                  <div className="flex items-center">
+                    <button
+                      onClick={handleBackToMainMenu}
+                      style={{
+                        backgroundColor: '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        padding: '12px 24px',
+                        borderRadius: '6px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 4px rgba(244, 67, 54, 0.3)',
+                        minHeight: '40px',
+                        minWidth: '140px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#d32f2f';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(244, 67, 54, 0.4)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f44336';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(244, 67, 54, 0.3)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                      onMouseDown={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(244, 67, 54, 0.3)';
+                      }}
+                    >
+                      ← Volver al Menú
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </header>
+            </header>
 
-          {/* Main Content */}
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div className="px-4 py-6 sm:px-0">
-              <GestionEmpleados />
-            </div>
-          </main>
-        </div>
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+              <div className="px-4 py-6 sm:px-0">
+                <GestionEmpleados />
+              </div>
+            </main>
+          </div>
+        </ProtectedRoute>
       );
     
     default:
@@ -206,7 +244,7 @@ function App() {
 
 function AppWithToast() {
   return (
-    <>
+    <AuthProvider>
       <App />
       <ToastContainer 
         position="top-right"
@@ -228,7 +266,7 @@ function AppWithToast() {
           minHeight: '80px',
         }}
       />
-    </>
+    </AuthProvider>
   );
 }
 

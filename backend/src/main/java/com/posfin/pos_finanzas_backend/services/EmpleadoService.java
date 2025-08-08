@@ -38,7 +38,7 @@ public class EmpleadoService {
      */
     public List<EmpleadoResponseDTO> obtenerTodosLosEmpleados() {
         List<Usuarios> usuarios = usuariosRepository.findAll();
-        
+
         return usuarios.stream()
                 .map(this::convertirAEmpleadoResponseDTO)
                 .collect(Collectors.toList());
@@ -70,11 +70,11 @@ public class EmpleadoService {
         Usuarios nuevoUsuario = new Usuarios();
         nuevoUsuario.setNombre(empleadoRequest.getNombre());
         nuevoUsuario.setTelefono(empleadoRequest.getTelefono());
-        
+
         // Hashear la contraseña antes de guardarla
         String contrasenaHasheada = passwordEncoder.encode(empleadoRequest.getContrasena());
         nuevoUsuario.setContrasena(contrasenaHasheada);
-        
+
         nuevoUsuario.setRoles(rolOpt.get());
         nuevoUsuario.setEstados(estadoActivoOpt.get());
 
@@ -104,7 +104,7 @@ public class EmpleadoService {
         // Actualizar el estado del usuario
         Usuarios usuario = usuarioOpt.get();
         usuario.setEstados(estadoOpt.get());
-        
+
         Usuarios usuarioActualizado = usuariosRepository.save(usuario);
 
         return convertirAEmpleadoResponseDTO(usuarioActualizado);
@@ -118,7 +118,7 @@ public class EmpleadoService {
         if (usuarioOpt.isEmpty()) {
             throw new IllegalArgumentException("Empleado no encontrado");
         }
-        
+
         return convertirAEmpleadoResponseDTO(usuarioOpt.get());
     }
 
@@ -133,7 +133,6 @@ public class EmpleadoService {
                 usuario.getRoles().getId(),
                 usuario.getRoles().getRoles(),
                 usuario.getEstados().getId(),
-                usuario.getEstados().getEstado()
-        );
+                usuario.getEstados().getEstado());
     }
 }

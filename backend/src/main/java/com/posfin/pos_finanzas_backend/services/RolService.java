@@ -23,7 +23,7 @@ public class RolService {
      */
     public List<RolResponseDTO> obtenerTodosLosRoles() {
         List<Roles> roles = rolesRepository.findAll();
-        
+
         return roles.stream()
                 .map(this::convertirARolResponseDTO)
                 .collect(Collectors.toList());
@@ -37,7 +37,7 @@ public class RolService {
         if (rolOpt.isEmpty()) {
             throw new IllegalArgumentException("Rol no encontrado");
         }
-        
+
         return convertirARolResponseDTO(rolOpt.get());
     }
 
@@ -47,7 +47,6 @@ public class RolService {
     private RolResponseDTO convertirARolResponseDTO(Roles rol) {
         return new RolResponseDTO(
                 rol.getId(),
-                rol.getRoles()
-        );
+                rol.getRoles());
     }
 }

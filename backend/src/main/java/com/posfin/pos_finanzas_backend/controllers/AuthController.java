@@ -2,6 +2,7 @@ package com.posfin.pos_finanzas_backend.controllers;
 
 import com.posfin.pos_finanzas_backend.models.Usuarios;
 import com.posfin.pos_finanzas_backend.dtos.UsuariosDTO;
+import com.posfin.pos_finanzas_backend.dtos.LoginResponseDTO;
 import com.posfin.pos_finanzas_backend.repositories.UsuariosRepository;
 import com.posfin.pos_finanzas_backend.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,14 +46,17 @@ public class AuthController {
 
             Usuarios usuario = usuarioOpt.get();
 
-            // ✅ VALIDACIÓN CRÍTICA: Verificar que el usuario esté activo ANTES de verificar la contraseña
+            // ✅ VALIDACIÓN CRÍTICA: Verificar que el usuario esté activo ANTES de verificar
+            // la contraseña
             if (usuario.getEstados() == null || !"Activo".equals(usuario.getEstados().getEstado())) {
                 return ResponseEntity.badRequest().body("Usuario inactivo");
             }
 
-            // Verificar contraseña usando BCrypt para usuarios nuevos, fallback a texto plano para usuarios existentes
+            // Verificar contraseña usando BCrypt para usuarios nuevos, fallback a texto
+            // plano para usuarios existentes
             boolean contrasenaValida = false;
-            if (usuario.getContrasena().startsWith("$2a$") || usuario.getContrasena().startsWith("$2b$") || usuario.getContrasena().startsWith("$2y$")) {
+            if (usuario.getContrasena().startsWith("$2a$") || usuario.getContrasena().startsWith("$2b$")
+                    || usuario.getContrasena().startsWith("$2y$")) {
                 // Contraseña hasheada con BCrypt
                 contrasenaValida = passwordEncoder.matches(contrasena, usuario.getContrasena());
             } else {
@@ -83,10 +87,19 @@ public class AuthController {
             // Generar el token JWT
             String token = jwtService.generateToken(usuario.getNombre(), usuario.getId());
 
-            // Crear respuesta con el usuario y el token
-            Map<String, Object> response = new HashMap<>();
-            response.put("usuario", dto);
-            response.put("token", token);
+            // Crear respuesta con LoginResponseDTO que incluye rol del usuario
+            String rolNombre = (usuario.getRoles() != null) ? usuario.getRoles().getRoles() : "Sin Rol";
+            String rolId = (usuario.getRoles() != null) ? usuario.getRoles().getId() : null;
+
+            // Token expira en 24 horas (86400000 ms)
+            long expiresIn = 24 * 60 * 60 * 1000;
+
+            LoginResponseDTO response = new LoginResponseDTO(
+                    token,
+                    usuario.getNombre(),
+                    rolNombre,
+                    rolId,
+                    expiresIn);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

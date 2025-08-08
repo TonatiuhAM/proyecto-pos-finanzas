@@ -4,7 +4,7 @@ package com.posfin.pos_finanzas_backend.dtos;
  * DTO para recibir datos de creación de empleados desde el frontend
  */
 public class EmpleadoCreateRequestDTO {
-    
+
     private String nombre;
     private String contrasena;
     private String telefono;

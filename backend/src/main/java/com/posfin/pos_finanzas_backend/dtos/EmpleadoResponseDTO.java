@@ -17,9 +17,9 @@ public class EmpleadoResponseDTO {
     }
 
     // Constructor completo
-    public EmpleadoResponseDTO(String id, String nombre, String telefono, 
-                              String rolId, String rolNombre, 
-                              String estadoId, String estadoNombre) {
+    public EmpleadoResponseDTO(String id, String nombre, String telefono,
+            String rolId, String rolNombre,
+            String estadoId, String estadoNombre) {
         this.id = id;
         this.nombre = nombre;
         this.telefono = telefono;

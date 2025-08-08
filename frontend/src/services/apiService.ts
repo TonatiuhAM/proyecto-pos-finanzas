@@ -39,10 +39,26 @@ const api = axios.create({
 
 // Interceptor para añadir el token JWT a todas las peticiones
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // Buscar token en el nuevo sistema de autenticación primero
+  const authData = localStorage.getItem('pos_auth_data');
+  if (authData) {
+    try {
+      const userData = JSON.parse(authData);
+      if (userData.token) {
+        config.headers.Authorization = `Bearer ${userData.token}`;
+        return config;
+      }
+    } catch (error) {
+      console.warn('Error parsing auth data:', error);
+    }
   }
+  
+  // Fallback al sistema legacy
+  const legacyToken = localStorage.getItem('authToken');
+  if (legacyToken) {
+    config.headers.Authorization = `Bearer ${legacyToken}`;
+  }
+  
   return config;
 }, error => {
   return Promise.reject(error);
@@ -53,8 +69,9 @@ api.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem('authToken');
+      // Token expirado o inválido - limpiar todos los datos de autenticación
+      localStorage.removeItem('authToken'); // Legacy
+      localStorage.removeItem('pos_auth_data'); // Nuevo sistema
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -66,12 +83,16 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await api.post('/auth/login', credentials);
     
-    // Guardar el token en localStorage
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
+    // La respuesta ahora incluye: token, usuario, rolNombre, rolId, expiresIn
+    const loginData: LoginResponse = response.data;
+    
+    // Guardar el token en localStorage (compatibilidad legacy)
+    if (loginData.token) {
+      localStorage.setItem('authToken', loginData.token);
     }
     
-    return response.data;
+    // Los datos del usuario se manejarán en el AuthContext
+    return loginData;
   },
 };
 

@@ -97,7 +97,7 @@ const ModalCrearEmpleado: React.FC<ModalCrearEmpleadoProps> = ({
         nombre: formulario.nombre.trim(),
         contrasena: formulario.contrasena,
         telefono: formulario.telefono.trim() || '',
-        rolId: parseInt(formulario.rolId)
+        rolId: formulario.rolId
       };
 
       const nuevoEmpleado = await empleadoService.crearEmpleado(empleadoData);

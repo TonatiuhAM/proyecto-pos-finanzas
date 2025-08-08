@@ -14,7 +14,29 @@ export interface UsuarioDTO {
   estadosEstado?: string;
 }
 
+// NUEVO: Respuesta de login con información de rol
 export interface LoginResponse {
+  token: string;
+  usuario: string;
+  rolNombre: string;
+  rolId: string;
+  expiresIn: number;
+}
+
+// NUEVO: Usuario autenticado para el contexto
+export interface UsuarioAutenticado {
+  usuario: string;
+  rolNombre: string;
+  rolId: string;
+  token: string;
+  expiresIn: number;
+}
+
+// NUEVO: Tipos de roles del sistema
+export type RolUsuario = 'Administrador' | 'Empleado';
+
+// LEGACY: Mantener compatibilidad con respuesta anterior (deprecado)
+export interface LoginResponseLegacy {
   usuario: UsuarioDTO;
   token: string;
 }
@@ -174,7 +196,7 @@ export interface EmpleadoCreate {
   nombre: string;
   contrasena: string;
   telefono: string;
-  rolId: number;
+  rolId: string;
 }
 
 // Interface para cambiar estado de empleado (corresponde a EmpleadoEstadoRequestDTO del backend)

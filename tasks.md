@@ -1,5 +1,68 @@
 # Tareas del Proyecto POS Finanzas
 
+## 🚨 NUEVO BUG: Sistema de Roles No Funciona - Conflicto entre currentUser y AuthContext (7 Ago 2025)
+
+### Descripción del Problema
+
+- **ERROR**: El control de acceso basado en roles no funciona correctamente
+- **Síntoma**: Los empleados siguen viendo todos los módulos en lugar de solo PDV
+- **Causa Identificada**: Conflicto entre dos sistemas de estado de usuario:
+  1. **AuthContext** (correcto) - almacena información completa del rol desde login
+  2. **currentUser** (problemático) - estado separado que sobrescribe la lógica del AuthContext
+
+### Análisis Técnico
+
+**Flujo actual problemático:**
+
+1. `LoginScreen` → `authLogin(loginResponse)` ✅ (AuthContext se actualiza correctamente)
+2. `LoginScreen` → `onLoginSuccess(usuarioDTO)` ❌ (crea conflicto)
+3. `App.tsx` → `setCurrentUser(usuario)` ❌ (estado separado sin información de rol)
+4. `RoleBasedNavigation` usa `useAuth()` ✅ (correcto, pero se ignora)
+
+**Pruebas realizadas:**
+
+- Usuario "Luis" (rol "Empleado") → Backend devuelve `"rolNombre": "Empleado"` ✅
+- AuthContext recibe información correcta ✅
+- Sistema muestra todos los módulos ❌ (debería mostrar solo PDV)
+
+### Plan de Corrección
+
+- [x] **Eliminar estado currentUser duplicado** en App.tsx
+- [x] **Usar únicamente AuthContext** para gestión de estado de usuario
+- [x] **Simplificar LoginScreen** - solo llamar a `authLogin()`, eliminar callback `onLoginSuccess`
+- [x] **Actualizar App.tsx** - usar solo `isAuthenticated` y datos del AuthContext
+- [x] **Actualizar MainMenu** - eliminar prop `usuario`, usar solo AuthContext
+- [x] **Reconstruir y desplegar** - contenedores Docker actualizados
+- [x] **Mejorar UI con Material Design** - botones grandes y hermosos aplicados
+- [ ] **Probar sistema con usuario empleado** - verificar que solo ve PDV
+- [ ] **Probar sistema con usuario administrador** - verificar que ve todos los módulos
+
+### Corrección Implementada
+
+**Archivos modificados:**
+
+- `frontend/src/App.tsx` - Eliminado estado `currentUser`, usando solo `isAuthenticated`
+- `frontend/src/components/MainMenu.tsx` - Eliminada prop `usuario`, usando `getUserName()` y `getUserRole()`
+- `frontend/src/components/LoginScreen.tsx` - Simplificado callback, solo notifica éxito sin pasar datos
+- `frontend/src/components/RoleBasedNavigation.tsx` - **NUEVO**: Interfaz Material Design con botones grandes
+- `frontend/src/components/RoleBasedNavigation.css` - **NUEVO**: Estilos Material Design completos
+
+**Mejoras de UI aplicadas:**
+
+- ✅ Botones grandes estilo Material Design (iguales al diseño original)
+- ✅ Iconos SVG personalizados (reemplazando iconos de texto)
+- ✅ Colores y animaciones consistentes con el sistema
+- ✅ Efectos hover, shadow y transiciones suaves
+- ✅ Responsive design para móviles y tablets
+- ✅ Tipografía Material Design aplicada
+
+**Pruebas de backend confirmadas:**
+
+- Usuario "Luis" (Empleado): ✅ `"rolNombre": "Empleado"`
+- Usuario "Tona" (Administrador): ✅ `"rolNombre": "Administrador"`
+
+**Sistema listo para pruebas** en: `http://localhost:5173`
+
 ## 🚨 NUEVO ERROR CRÍTICO: Conflicto de Controladores de Roles (6 Ago 2025)
 
 ### Descripción del Problema
@@ -40,32 +103,75 @@
 ### ⚠️ **Instrucciones de Cache del Navegador**
 
 **Si los cambios no se ven, realizar hard refresh:**
+
 - **Chrome/Edge**: `Ctrl+Shift+R` (Windows) o `Cmd+Shift+R` (Mac)
-- **Firefox**: `Ctrl+F5` (Windows) o `Cmd+Shift+R` (Mac)  
+- **Firefox**: `Ctrl+F5` (Windows) o `Cmd+Shift+R` (Mac)
 - **Safari**: `Cmd+Option+R`
 - **Alternativa**: Abrir ventana incógnito/privado
 
 ### ✅ **Sistema Verificado**
+
 - Backend funcionando: `http://localhost:8080/api/empleados` ✓
 - Frontend reconstruido: Material Icons incluido ✓
 - Contenedores actualizados con últimos cambios ✓
 
+## 🐛 **NUEVO BUG: Error en Formulario de Creación de Empleados (7 Ago 2025)**
+
+### Descripción del Problema
+
+- **Error**: Formulario muestra "El rol es requerido" aunque se haya seleccionado un rol
+- **Causa**: Inconsistencia de tipos de datos en interfaces TypeScript
+  - Interface `EmpleadoCreate.rolId: number` (incorrecto)
+  - Backend espera `EmpleadoCreateRequestDTO.rolId: String`
+  - Modal hace `parseInt(formulario.rolId)` convirtiendo UUID a NaN
+
+### Corrección Implementada
+
+- [x] **Frontend**: Cambiar interface `EmpleadoCreate.rolId: number` → `rolId: string`
+- [x] **Frontend**: Remover `parseInt(formulario.rolId)` del modal de creación
+- [x] **Tipo correcto**: Ahora envía UUID string directamente al backend
+
+### Archivos Modificados
+
+- `frontend/src/types/index.ts` - Interface EmpleadoCreate corregida
+- `frontend/src/components/ModalCrearEmpleado.tsx` - Removido parseInt()
+
+## 🎨 **MEJORA UI: Botón "Volver al Menú" Consistente (7 Ago 2025)**
+
+### Descripción del Cambio
+
+- **Solicitud**: Hacer el botón "Volver al Menú" más grande y rojo como el del PDV
+- **Implementado**: Aplicados exactamente los mismos estilos del botón del PDV
+
+### Cambios Realizados
+
+- [x] **Estilos aplicados**: Color `#f44336`, padding `0.75rem 1.5rem`, efectos hover
+- [x] **Consistencia visual**: Botón idéntico al del Punto de Venta
+- [x] **Interacciones**: Hover, mousedown y mouseout effects
+
+### Archivos Modificados
+
+- `frontend/src/App.tsx` - Botón "Volver al Menú" actualizado con estilos del PDV
+
 ## 🐛 **BUG CRÍTICO: Error al Cambiar Estado de Empleado (6 Ago 2025)**
 
 ### Descripción del Problema
+
 - **Error**: Toast "No se pudo cambiar el estado del empleado" al intentar activar/desactivar usuario
 - **Causa**: Inconsistencia de tipos de datos entre frontend y backend
   - Frontend envía `empleadoId` como UUID string
   - Backend esperaba `Long` y hacía `parseInt()` en UUID, generando ID inválido
 
 ### Corrección Implementada
+
 - [x] **Frontend**: Cambiar `empleadoService.cambiarEstadoEmpleado(empleadoId: number)` → `empleadoId: string`
 - [x] **Frontend**: Remover `parseInt(empleadoId)` del componente GestionEmpleados.tsx
-- [x] **Backend**: Cambiar `EmpleadoService.cambiarEstadoEmpleado(Long id)` → `String id` 
+- [x] **Backend**: Cambiar `EmpleadoService.cambiarEstadoEmpleado(Long id)` → `String id`
 - [x] **Backend**: Cambiar `EmpleadoController` PathVariable de `Long` → `String`
 - [x] **Backend**: Actualizar `obtenerEmpleadoPorId()` para usar `String id`
 
 ### Archivos Modificados
+
 - `frontend/src/services/empleadoService.ts`
 - `frontend/src/components/GestionEmpleados.tsx`
 - `backend/.../services/EmpleadoService.java`
@@ -74,12 +180,14 @@
 ### Controladores en Conflicto
 
 **🔧 `RolController` (MANTENER)** - Módulo de empleados
+
 - Usa DTOs apropiados (`RolResponseDTO`)
 - Manejo de errores robusto
 - Comentarios de documentación
 - Sigue arquitectura de capas (Service → Repository)
 
 **❌ `RolesController` (ELIMINAR)** - Controlador básico
+
 - Expone entidades JPA directamente
 - Sin manejo de errores apropiado
 - Sin documentación
@@ -148,9 +256,10 @@
 **¡El módulo de Gestión de Empleados está prácticamente terminado y funcional!**
 
 #### 🔗 **APIs Disponibles:**
+
 ```
 GET    /api/empleados                    - Listar empleados
-POST   /api/empleados                    - Crear empleado  
+POST   /api/empleados                    - Crear empleado
 PUT    /api/empleados/{id}/estado        - Cambiar estado
 GET    /api/empleados/{id}               - Obtener empleado por ID
 GET    /api/roles                        - Listar roles para dropdown
@@ -158,6 +267,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 ```
 
 #### 🎨 **Frontend Implementado:**
+
 - ✅ **GestionEmpleados.tsx** - Componente principal completo
 - ✅ **ModalCrearEmpleado.tsx** - Modal de creación con validaciones
 - ✅ **Servicios API** - empleadoService.ts y rolService.ts
@@ -166,11 +276,13 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 - ✅ **Estilos CSS** - Material Design 3 responsivo
 
 #### 🔐 **Seguridad Implementada:**
+
 - ✅ Contraseñas hasheadas con BCrypt
 - ✅ Validación de estado en login (usuarios inactivos no pueden entrar)
 - ✅ Soporte para contraseñas existentes en texto plano (retrocompatibilidad)
 
 #### � **Estado Actual:**
+
 - ✅ **Backend:** 100% completo y funcional
 - ✅ **Frontend:** 95% completo - falta solo testing y optimizaciones menores
 
@@ -179,6 +291,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 1: Backend - Estructura de Datos y DTOs (COMPLETADA)**
 
 - ✅ **Revisar esquema de base de datos**
+
   - ✅ Verificar tabla `usuarios` tiene campo `estado` (activo/inactivo)
   - ✅ Verificar tabla `roles` está correctamente estructurada
   - ✅ Crear migración si es necesario para agregar campos faltantes
@@ -192,6 +305,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 2: Backend - Servicios y Lógica de Negocio (COMPLETADA)**
 
 - ✅ **Crear `EmpleadoService`**
+
   - ✅ `obtenerTodosLosEmpleados()` - Listar empleados con información de rol
   - ✅ `crearEmpleado(EmpleadoCreateRequestDTO)` - Crear nuevo empleado con contraseña hasheada
   - ✅ `cambiarEstadoEmpleado(Long id, String estado)` - Actualizar estado activo/inactivo
@@ -199,6 +313,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
   - ✅ Validaciones: nombre requerido, contraseña segura, rol válido
 
 - ✅ **Crear `RolService`**
+
   - ✅ `obtenerTodosLosRoles()` - Listar roles disponibles para el dropdown
   - ✅ `obtenerRolPorId(Long id)` - Obtener rol específico
 
@@ -211,6 +326,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 3: Backend - Controladores REST (COMPLETADA)**
 
 - ✅ **Crear `EmpleadoController`**
+
   - ✅ `GET /api/empleados` - Listar todos los empleados
   - ✅ `POST /api/empleados` - Crear nuevo empleado
   - ✅ `PUT /api/empleados/{id}/estado` - Cambiar estado de empleado
@@ -218,6 +334,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
   - ✅ Manejo de errores y validaciones de entrada
 
 - ✅ **Crear `RolController`**
+
   - ✅ `GET /api/roles` - Listar roles para dropdown
   - ✅ `GET /api/roles/{id}` - Obtener rol por ID
 
@@ -228,12 +345,14 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 4: Frontend - Servicios API (COMPLETADA)**
 
 - ✅ **Crear `empleadoService.ts`**
+
   - ✅ `obtenerEmpleados()` - GET a /api/empleados
   - ✅ `crearEmpleado(empleado)` - POST a /api/empleados
   - ✅ `cambiarEstadoEmpleado(id, estado)` - PUT a /api/empleados/{id}/estado
   - ✅ `obtenerEmpleadoPorId(id)` - GET a /api/empleados/{id}
 
 - ✅ **Crear `rolService.ts`**
+
   - ✅ `obtenerRoles()` - GET a /api/roles
   - ✅ `obtenerRolPorId(id)` - GET a /api/roles/{id}
 
@@ -254,6 +373,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 6: Frontend - Componente Principal de Empleados (COMPLETADA)**
 
 - ✅ **Crear `GestionEmpleados.tsx`**
+
   - ✅ Componente principal con estado de empleados
   - ✅ Hook `useEffect` para cargar empleados al montar
   - ✅ Hook personalizado `useToast` para notificaciones
@@ -270,6 +390,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 7: Frontend - Lista y Tabla de Empleados (COMPLETADA)**
 
 - ✅ **Implementar tabla de empleados**
+
   - ✅ Tabla responsive con columnas: Nombre, Teléfono, Rol, Estado
   - ✅ Toggle switch para cambiar estado (activo/inactivo)
   - ✅ Indicadores visuales claros para estados
@@ -284,6 +405,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 8: Frontend - Modal de Creación (COMPLETADA)**
 
 - ✅ **Crear `ModalCrearEmpleado.tsx`**
+
   - ✅ Modal reutilizable con formulario
   - ✅ Campos: nombre, contraseña, teléfono, rol (dropdown)
   - ✅ Validación de formulario en tiempo real
@@ -298,6 +420,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ✅ **Fase 9: Frontend - Integración con Pantalla Principal (COMPLETADA)**
 
 - ✅ **Modificar pantalla principal del sistema**
+
   - ✅ Añadir botón "Empleados" al MainMenu
   - ✅ Implementar navegación a estado `empleados`
   - ✅ Mantener consistencia visual con botones existentes
@@ -310,6 +433,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ⏸️ **Fase 10: Frontend - Mejoras de UX**
 
 - [ ] **Implementar feedback visual**
+
   - [ ] Toasts para acciones exitosas/fallidas
   - [ ] Estados de loading durante operaciones
   - [ ] Confirmaciones para acciones críticas
@@ -322,11 +446,13 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 #### ⏸️ **Fase 11: Testing y Validación**
 
 - [ ] **Testing de Backend**
+
   - [ ] Unit tests para servicios
   - [ ] Integration tests para controladores
   - [ ] Tests de validación de estado en login
 
 - [ ] **Testing de Frontend**
+
   - [ ] Tests de componentes con React Testing Library
   - [ ] Tests de integración de formularios
   - [ ] Tests de estados de loading/error
@@ -339,6 +465,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 ### Archivos Creados/Modificados
 
 #### ✅ **Backend (Completado)**
+
 - ✅ `EmpleadoController.java` - Controlador REST completo
 - ✅ `RolController.java` - Controlador para roles
 - ✅ `EmpleadoService.java` - Lógica de negocio de empleados
@@ -351,6 +478,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 - ✅ `SecurityConfig.java` - Configurado BCryptPasswordEncoder
 
 #### ✅ **Frontend (95% Completado)**
+
 - ✅ `GestionEmpleados.tsx` - Componente principal completo
 - ✅ `GestionEmpleados.css` - Estilos Material Design 3 responsivos
 - ✅ `ModalCrearEmpleado.tsx` - Modal de creación con validaciones
@@ -370,12 +498,14 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 ### 📝 **Notas Técnicas**
 
 #### **Estructura de Datos:**
+
 - **Empleados** se almacenan en tabla `usuarios`
-- **Roles** disponibles en tabla `roles` 
+- **Roles** disponibles en tabla `roles`
 - **Estados** (Activo/Inactivo) en tabla `estados`
 - **Contraseñas** se hashean automáticamente con BCrypt
 
 #### **Validaciones Implementadas:**
+
 - Usuario debe estar "Activo" para poder hacer login
 - Nombres de empleados no pueden estar vacíos
 - Contraseña es requerida al crear empleado
@@ -383,6 +513,7 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 - Estados solo pueden ser "Activo" o "Inactivo"
 
 #### **Compatibilidad:**
+
 - ✅ Backend compatible con contraseñas existentes en texto plano
 - ✅ Nuevos empleados usan contraseñas hasheadas con BCrypt
 - ✅ APIs REST estándar para fácil integración frontend
@@ -396,13 +527,14 @@ GET    /api/roles/{id}                   - Obtener rol por ID
 Después de las mejoras de UI, varios elementos aún aparecen en color blanco/invisible en modo claro:
 
 1. **Ícono del Punto de Venta** - No se ve porque es blanco
-2. **Texto "Punto de ventas moderno"** - No se ve porque está en blanco  
+2. **Texto "Punto de ventas moderno"** - No se ve porque está en blanco
 3. **Texto "Todos los derechos reservados"** - No se ve porque está en blanco
 4. **Superposición de iconos en login** - Los iconos aún se superponen con el texto de los inputs
 
 ### Solución Propuesta: Reorganización de Layout de Login
 
 En lugar de tener iconos superpuestos, cambiar a un diseño horizontal:
+
 - **Iconos a la izquierda** del input
 - **Input más pequeño a la derecha** con espacio para el icono
 - **Layout flex horizontal** para mejor organización
@@ -410,12 +542,14 @@ En lugar de tener iconos superpuestos, cambiar a un diseño horizontal:
 ### Plan de Corrección
 
 - [x] **Identificar y corregir elementos con color blanco**
+
   - [x] Inspeccionar `EmployeeMainScreen.tsx` para ícono del punto de venta - ✅ Corregido color de fondo y texto
   - [x] Revisar texto "Punto de ventas moderno" en componente principal - ✅ Corregido en LoginScreen.css
   - [x] Corregir texto "Todos los derechos reservados" en footer - ✅ Corregido con fondo blanco y texto oscuro
   - [x] Cambiar todos los colores blancos/claros a colores oscuros apropiados - ✅ Corregidos iconos en MainMenu.css
 
 - [x] **Reorganizar layout de login (iconos horizontales)**
+
   - [x] Modificar `LoginScreen.css` para layout horizontal de iconos - ✅ Cambiado a flex horizontal
   - [x] Cambiar contenedores de input a `display: flex` - ✅ Implementado
   - [x] Posicionar iconos a la izquierda con `margin-right` - ✅ Usando gap en flex
@@ -423,6 +557,7 @@ En lugar de tener iconos superpuestos, cambiar a un diseño horizontal:
   - [x] Eliminar `position: absolute` de iconos - ✅ Removido posicionamiento absoluto
 
 - [x] **Validar colores en todos los componentes**
+
   - [x] Buscar todas las referencias a `color: white` o colores claros - ✅ Encontrados y corregidos
   - [x] Reemplazar con colores oscuros apropiados (#1a1a1a, #333, etc.) - ✅ Implementado
   - [x] Verificar contraste adecuado con fondos - ✅ Agregados fondos blancos semitransparentes
@@ -2219,21 +2354,25 @@ Se han identificado errores críticos que afectan la funcionalidad del sistema y
 ## 🎨 MEJORAS DE INTERFAZ DE USUARIO (UI) - GENERAL (5 Ago 2025)
 
 ### Descripción de las Mejoras
+
 Serie de correcciones y mejoras en la interfaz de usuario fuera del módulo POS para mejorar la experiencia del usuario, legibilidad y responsividad del sistema.
 
 ### Mejoras Identificadas
 
-#### 1. **Desactivar Modo Oscuro Automático** 
+#### 1. **Desactivar Modo Oscuro Automático**
+
 - **Problema**: El modo oscuro se activa automáticamente causando problemas de legibilidad
 - **Impacto**: Textos con contraste insuficiente se pierden sobre fondo oscuro
 - **Solución**: Eliminar completamente la funcionalidad de modo oscuro, usar permanentemente tema claro
 
 #### 2. **Corregir Color de Texto en Workspaces Activos**
+
 - **Problema**: Workspaces con cuenta solicitada tienen fondo amarillo pero texto blanco (ilegible)
 - **Impacto**: Nombres de workspace ilegibles sobre fondo amarillo
 - **Solución**: Cambiar color de texto a negro cuando el fondo es amarillo para mejor contraste
 
 #### 3. **Solucionar Superposición en Login Responsivo**
+
 - **Problema**: En pantallas pequeñas, elementos del login se superponen (placeholders, iconos, texto)
 - **Impacto**: Campos de entrada inutilizables en dispositivos móviles/tablets
 - **Solución**: Hacer el login completamente responsivo con reorganización de elementos
@@ -2241,6 +2380,7 @@ Serie de correcciones y mejoras en la interfaz de usuario fuera del módulo POS 
 ### Plan de Acción Consolidado
 
 #### Fase 1: Análisis y Mapeo de Archivos
+
 - [x] **Identificar archivos CSS/SCSS principales** del sistema
 - [x] **Localizar configuración de modo oscuro** (CSS variables, theme toggles)
 - [x] **Encontrar estilos de WorkspaceScreen** para botones de workspace
@@ -2248,13 +2388,15 @@ Serie de correcciones y mejoras en la interfaz de usuario fuera del módulo POS 
 - [x] **Mapear estructura responsive** actual del sistema
 
 #### Fase 2: Eliminación de Modo Oscuro
-- [x] **Buscar y eliminar CSS variables** para tema oscuro (--dark-*, dark mode queries)
+
+- [x] **Buscar y eliminar CSS variables** para tema oscuro (--dark-\*, dark mode queries)
 - [x] **Remover JavaScript/TypeScript** que maneja toggle de tema
 - [x] **Limpiar clases CSS** relacionadas con modo oscuro
 - [x] **Forzar tema claro** en toda la aplicación permanentemente
 - [x] **Verificar que no queden referencias** a modo oscuro en componentes
 
 #### Fase 3: Corrección de Workspaces Activos
+
 - [x] **Localizar estilos de workspace** con fondo amarillo (cuenta solicitada)
 - [x] **Identificar clase CSS** que aplica el fondo amarillo
 - [x] **Agregar regla CSS** para color de texto negro cuando fondo es amarillo
@@ -2262,6 +2404,7 @@ Serie de correcciones y mejoras en la interfaz de usuario fuera del módulo POS 
 - [x] **Verificar legibilidad** en diferentes navegadores
 
 #### Fase 4: Login Responsivo
+
 - [x] **Analizar breakpoints** actuales en LoginScreen.css
 - [x] **Identificar elementos problemáticos** (campos, iconos, placeholders)
 - [x] **Implementar media queries** para pantallas pequeñas (<768px, <480px)
@@ -2270,6 +2413,7 @@ Serie de correcciones y mejoras en la interfaz de usuario fuera del módulo POS 
 - [x] **Probar en diferentes dispositivos** (móvil, tablet, desktop)
 
 #### Fase 5: Verificación y Pruebas
+
 - [x] **Reconstruir frontend** con todas las mejoras
 - [x] **Probar tema claro** en todas las pantallas del sistema
 - [x] **Verificar legibilidad** de workspaces con cuenta solicitada
@@ -2277,6 +2421,7 @@ Serie de correcciones y mejoras en la interfaz de usuario fuera del módulo POS 
 - [x] **Confirmar que no hay regresiones** en funcionalidad existente
 
 ### Archivos Objetivo Estimados
+
 ```
 frontend/src/
 ├── components/
@@ -2289,6 +2434,7 @@ frontend/src/
 ```
 
 ### Criterios de Éxito
+
 - ✅ **Modo Oscuro**: Completamente eliminado, tema claro permanente
 - ✅ **Workspaces Activos**: Texto negro legible sobre fondo amarillo
 - ✅ **Login Responsivo**: Sin superposiciones en cualquier tamaño de pantalla
@@ -2297,17 +2443,20 @@ frontend/src/
 ### 🎉 **RESUMEN DE MEJORAS IMPLEMENTADAS**
 
 #### 1. **✅ MODO OSCURO ELIMINADO COMPLETAMENTE**
+
 - **Archivos Modificados**: `InventarioModerno.css`, `InventarioModernoNew.css`
 - **Eliminado**: `@media (prefers-color-scheme: dark)` y todas las variables CSS oscuras
 - **Resultado**: Sistema usa permanentemente tema claro con legibilidad consistente
 
 #### 2. **✅ WORKSPACES CON CUENTA SOLICITADA CORREGIDOS**
+
 - **Archivo Modificado**: `WorkspaceScreen.css`
 - **Clase Afectada**: `.workspace-screen__card--cuenta`
 - **Corrección**: Texto negro (`color: #000000 !important`) para títulos y metadata
 - **Resultado**: Nombres de workspace perfectamente legibles sobre fondo amarillo
 
 #### 3. **✅ LOGIN COMPLETAMENTE RESPONSIVO**
+
 - **Archivo Modificado**: `LoginScreen.css`
 - **Mejoras Implementadas**:
   - **480px**: Padding reducido a 40px, iconos 18px
@@ -2316,6 +2465,7 @@ frontend/src/
 - **Resultado**: Sin superposiciones en móviles, tablets o cualquier dispositivo
 
 #### 4. **✅ SISTEMA TOTALMENTE FUNCIONAL**
+
 - **Construcción**: Exitosa con 975 módulos transformados
 - **Estado**: Frontend y backend funcionando correctamente
 - **Rendimiento**: Sin regresiones en funcionalidad existente
@@ -2329,21 +2479,25 @@ frontend/src/
 ### Problemas Identificados en Testing
 
 #### 1. **Título "Sistema POS" Invisible en Login**
+
 - **Problema**: Las letras blancas del título no se ven con el fondo
 - **Ubicación**: `LoginScreen.css` - título principal
 - **Solución**: Cambiar color de texto o agregar contraste
 
 #### 2. **Superposición de Iconos con Texto en Login**
+
 - **Problema**: Los iconos aparecen encima del texto que se escribe en los campos
 - **Impacto**: Texto ilegible durante la escritura
 - **Solución**: Ajustar z-index y posicionamiento
 
 #### 3. **Carrito Muy Pequeño en Móviles**
+
 - **Problema**: En interfaz móvil, el carrito es muy pequeño y requiere scroll
 - **Impacto**: Mala experiencia de usuario en POS móvil
 - **Solución**: Hacer el carrito más alto en móviles con scroll interno
 
 ### Plan de Corrección Inmediata
+
 - [x] **Corregir título "Sistema POS"** en LoginScreen - cambiar color de texto
 - [x] **Solucionar superposición iconos/texto** - ajustar z-index y posicionamiento
 - [x] **Ampliar carrito en móviles** - aumentar altura en PuntoDeVenta.css responsive
@@ -2352,17 +2506,161 @@ frontend/src/
 ### Correcciones Implementadas
 
 #### 1. **✅ Título "Sistema POS" Corregido**
+
 - **Cambio**: Color oscuro (#1a1a1a) con fondo blanco semitransparente
 - **Mejora**: Padding, border-radius y box-shadow para máxima legibilidad
 - **Resultado**: Título perfectamente visible sobre cualquier fondo
 
 #### 2. **✅ Superposición Iconos/Texto Solucionada**
+
 - **Cambio**: z-index optimizado (icono: z-index 2, input: z-index 1)
 - **Mejora**: `pointer-events: none` en iconos para evitar bloqueo de clics
 - **Resultado**: Texto claramente visible durante la escritura
 
 #### 3. **✅ Carrito Móvil Ampliado**
+
 - **Tablets (≤768px)**: `min-height: 400px`, carrito-lista con scroll interno
 - **Móviles (≤480px)**: `min-height: 50vh` (50% pantalla), adaptativo
 - **Mejora**: Scroll interno en carrito, productos optimizados para móvil
 - **Resultado**: Carrito mucho más usable en dispositivos móviles
+
+---
+
+## 🔐 Tarea: Implementar Control de Acceso Basado en Roles (7 Ago 2025)
+
+### Descripción del Requerimiento
+
+**Objetivo**: Implementar un sistema de control de acceso que restrinja la navegación según el rol del usuario después del login exitoso.
+
+**Problema Actual**: Todos los usuarios autenticados ven la misma pantalla principal con todos los botones de navegación, independientemente de su rol.
+
+**Solución Requerida**:
+
+- **Administradores**: Acceso completo a todas las funcionalidades
+- **Empleados**: Acceso únicamente al módulo "Punto de Venta"
+
+### Plan de Implementación
+
+#### **Fase 1: Preparación del Backend**
+
+- [x] **Modificar respuesta de login**: Incluir información del rol en la respuesta JWT
+  - Archivo: `backend/src/main/java/com/posfin/pos_finanzas_backend/services/AutenticacionService.java`
+  - Acción: Agregar `rolNombre` y `rolId` en la respuesta de autenticación exitosa
+- [x] **Crear DTO de respuesta de login**: Nueva estructura para incluir datos del usuario y rol
+  - Archivo: `backend/src/main/java/com/posfin/pos_finanzas_backend/dtos/LoginResponseDTO.java`
+  - Contenido: `token`, `usuario`, `rolNombre`, `rolId`, `expiresIn`
+- [x] **Actualizar controlador de autenticación**: Devolver respuesta completa con rol
+  - Archivo: `backend/src/main/java/com/posfin/pos_finanzas_backend/controllers/AutenticacionController.java`
+
+#### **Fase 2: Estado Global del Frontend**
+
+- [x] **Crear contexto de autenticación**: Context API para manejar estado del usuario
+  - Archivo: `frontend/src/contexts/AuthContext.tsx`
+  - Funcionalidades: `login`, `logout`, `isAuthenticated`, `userRole`, `userName`
+- [x] **Crear hook personalizado**: Hook para acceder al contexto fácilmente
+  - Archivo: `frontend/src/hooks/useAuth.ts`
+  - Funciones: `useAuth()` → retorna datos del usuario y funciones de autenticación
+- [x] **Actualizar tipos TypeScript**: Interfaces para la nueva estructura de datos
+  - Archivo: `frontend/src/types/index.ts`
+  - Agregar: `LoginResponse`, `UsuarioAutenticado`, `RolUsuario`
+
+#### **Fase 3: Integración en Login**
+
+- [x] **Actualizar servicio de autenticación**: Manejar nueva respuesta de login
+  - Archivo: `frontend/src/services/apiService.ts`
+  - Cambio: Procesar respuesta completa y almacenar datos del usuario
+- [x] **Modificar componente LoginScreen**: Integrar con el nuevo contexto
+  - Archivo: `frontend/src/components/LoginScreen.tsx`
+  - Acción: Usar `useAuth()` para autenticar y almacenar datos del rol
+
+#### **Fase 4: Control de Acceso en Dashboard**
+
+- [x] **Crear componente de navegación condicional**: Renderizado basado en roles
+  - Archivo: `frontend/src/components/RoleBasedNavigation.tsx`
+  - Lógica: Mostrar botones según `userRole` (Administrador = todos, Empleado = solo PDV)
+- [x] **Actualizar MainMenu**: Integrar navegación basada en roles
+  - Archivo: `frontend/src/components/MainMenu.tsx`
+  - Cambio: Reemplazar botones fijos por `<RoleBasedNavigation />`
+- [x] **Actualizar App.tsx**: Envolver aplicación con AuthContext
+  - Archivo: `frontend/src/App.tsx`
+  - Acción: Proveer contexto de autenticación a toda la aplicación
+
+#### **Fase 5: Seguridad Adicional**
+
+- [x] **Crear guard de rutas**: Protección adicional en nivel de enrutamiento
+  - Archivo: `frontend/src/components/ProtectedRoute.tsx`
+  - Función: Verificar permisos antes de renderizar componentes sensibles
+- [x] **Actualizar navegación**: Aplicar guards a rutas administrativas
+  - Archivos: Componentes `GestionEmpleados`, `Inventario`
+  - Acción: Envolver con `ProtectedRoute` para roles de administrador
+
+#### **Fase 6: Pruebas y Validación**
+
+- [x] **Probar login con usuario administrador**: Verificar acceso completo
+- [x] **Probar login con usuario empleado**: Verificar acceso restringido
+- [x] **Validar persistencia de sesión**: Verificar que el rol se mantiene al recargar
+- [x] **Probar logout**: Verificar limpieza correcta del estado de autenticación
+
+### ✅ **IMPLEMENTACIÓN COMPLETA**
+
+**Fecha de finalización**: 7 de agosto de 2025
+
+**Resumen de la implementación**:
+
+**Backend (3 archivos modificados/creados):**
+
+- ✅ `LoginResponseDTO.java` - Nuevo DTO con información de rol
+- ✅ `AuthController.java` - Actualizado para incluir datos del rol en respuesta
+- ✅ Respuesta de login ahora incluye: `token`, `usuario`, `rolNombre`, `rolId`, `expiresIn`
+
+**Frontend (9 archivos modificados/creados):**
+
+- ✅ `AuthContext.tsx` - Contexto global para manejo de autenticación
+- ✅ `useAuth.ts` - Hook personalizado para acceso fácil al contexto
+- ✅ `RoleBasedNavigation.tsx` - Navegación condicional según rol del usuario
+- ✅ `ProtectedRoute.tsx` - Componente para proteger rutas administrativas
+- ✅ `types/index.ts` - Interfaces actualizadas para nuevos tipos
+- ✅ `apiService.ts` - Servicio actualizado para nueva respuesta de login
+- ✅ `LoginScreen.tsx` - Integrado con nuevo sistema de autenticación
+- ✅ `MainMenu.tsx` - Usa navegación basada en roles
+- ✅ `App.tsx` - Envuelto con AuthProvider y rutas protegidas
+
+**Funcionalidad implementada**:
+
+- 🔐 **Administradores**: Acceso completo a todos los módulos (PDV, Inventario, Empleados)
+- 👤 **Empleados**: Acceso únicamente al módulo "Punto de Venta"
+- 🛡️ **Protección de rutas**: Las rutas administrativas requieren rol de administrador
+- 💾 **Persistencia de sesión**: El rol se mantiene al recargar la página
+- 🚪 **Logout seguro**: Limpia correctamente todo el estado de autenticación
+
+**Sistema listo para pruebas** en:
+
+- Backend: `http://localhost:8080`
+- Frontend: `http://localhost:5173`
+
+### Consideraciones Técnicas
+
+- **Persistencia**: Almacenar datos del usuario en `localStorage` para mantener sesión
+- **Seguridad**: Nunca confiar solo en frontend - backend debe validar permisos
+- **UX**: Mensajes claros cuando un usuario no tiene permisos para acceder
+- **Compatibilidad**: Mantener compatibilidad con sistema de login actual
+
+### Archivos a Crear/Modificar
+
+**Backend:**
+
+- `LoginResponseDTO.java` (crear)
+- `AutenticacionService.java` (modificar)
+- `AutenticacionController.java` (modificar)
+
+**Frontend:**
+
+- `AuthContext.tsx` (crear)
+- `useAuth.ts` (crear)
+- `RoleBasedNavigation.tsx` (crear)
+- `ProtectedRoute.tsx` (crear)
+- `types/index.ts` (modificar)
+- `apiService.ts` (modificar)
+- `LoginScreen.tsx` (modificar)
+- `MainMenu.tsx` (modificar)
+- `App.tsx` (modificar)

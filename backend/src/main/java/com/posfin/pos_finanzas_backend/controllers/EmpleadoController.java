@@ -21,7 +21,8 @@ public class EmpleadoController {
     /**
      * 🔍 Obtener lista de todos los empleados para mostrar en la tabla del frontend
      * Endpoint: GET /api/empleados
-     * Response: Lista de EmpleadoResponseDTO con información completa de cada empleado
+     * Response: Lista de EmpleadoResponseDTO con información completa de cada
+     * empleado
      */
     @GetMapping
     public ResponseEntity<List<EmpleadoResponseDTO>> obtenerTodosLosEmpleados() {
@@ -77,7 +78,8 @@ public class EmpleadoController {
      * Response: EmpleadoResponseDTO actualizado
      */
     @PutMapping("/{id}/estado")
-    public ResponseEntity<?> cambiarEstadoEmpleado(@PathVariable String id, @RequestBody EmpleadoEstadoRequestDTO request) {
+    public ResponseEntity<?> cambiarEstadoEmpleado(@PathVariable String id,
+            @RequestBody EmpleadoEstadoRequestDTO request) {
         try {
             // Validaciones básicas
             if (request.getEstado() == null || request.getEstado().trim().isEmpty()) {
