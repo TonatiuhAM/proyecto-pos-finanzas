@@ -141,41 +141,6 @@ function App() {
 
             {/* Main Content */}
             <main className="inventory-screen__main">
-              {/* 🚨🚨🚨 DEBUG MEGA VISIBLE - APP.TSX RENDERIZANDO INVENTARIO 🚨🚨🚨 */}
-              <div style={{
-                position: 'fixed',
-                top: '0',
-                left: '0',
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: 'rgba(255, 0, 0, 0.9)',
-                color: 'white',
-                fontSize: '30px',
-                fontWeight: 'bold',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: '99999',
-                textAlign: 'center',
-                cursor: 'pointer'
-              }}
-              onClick={() => {
-                // Quitar este overlay al hacer click
-                const overlay = document.querySelector('[data-debug-overlay]') as HTMLElement;
-                if (overlay) overlay.style.display = 'none';
-              }}
-              data-debug-overlay="true"
-              >
-                <div>🚨🚨🚨 DEBUG: APP.TSX ESTÁ RENDERIZANDO INVENTARIO 🚨🚨🚨</div>
-                <div style={{ fontSize: '20px', marginTop: '20px' }}>
-                  Si ves esto, significa que App.tsx SÍ está renderizando el componente Inventario
-                </div>
-                <div style={{ fontSize: '16px', marginTop: '20px', backgroundColor: 'rgba(0,0,0,0.5)', padding: '10px' }}>
-                  CLICK AQUÍ PARA CONTINUAR Y VER EL COMPONENTE INVENTARIO
-                </div>
-              </div>
-              
               <Inventario onNavigateToCompras={handleNavigateToCompras} />
             </main>
           </div>

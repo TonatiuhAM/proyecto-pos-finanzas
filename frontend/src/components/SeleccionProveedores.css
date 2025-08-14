@@ -1,86 +1,425 @@
-/* ===== SELECCIÓN DE PROVEEDORES - ESTILOS ESPECÍFICOS ===== */
+/* ===== SELECCIÓN DE PROVEEDORES - ESTILOS MATERIAL DESIGN ===== */
 
-/* Estado de deuda - Amarillo para proveedores con deuda */
-.workspace-card.status-debt {
-  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-  border: 2px solid #ffb300;
+/* Contenedor principal con padding adecuado */
+.proveedores-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--md-spacing-xxl) var(--md-spacing-lg);
 }
 
-.workspace-card.status-debt:hover {
-  background: linear-gradient(135deg, #fff3c4 0%, #ffe082 100%);
-  box-shadow: 0 8px 32px rgba(255, 179, 0, 0.3);
+/* Grid responsivo para botones de proveedores */
+.proveedores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--md-spacing-lg);
+  padding: var(--md-spacing-lg) 0;
 }
 
-.workspace-card.status-debt .workspace-status {
-  background: #ff8f00;
-  color: white;
-}
-
-/* Estado sin deuda - Verde para proveedores sin deuda pendiente */
-.workspace-card.status-available {
-  background: linear-gradient(135deg, #f1f8e9 0%, #c8e6c9 100%);
-  border: 2px solid #4caf50;
-}
-
-.workspace-card.status-available:hover {
-  background: linear-gradient(135deg, #e8f5e8 0%, #a5d6a7 100%);
-  box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3);
-}
-
-.workspace-card.status-available .workspace-status {
-  background: #4caf50;
-  color: white;
-}
-
-/* Información adicional para proveedores */
-.workspace-details {
-  margin-top: 12px;
+/* Botones de proveedor con Material Design */
+.proveedor-card {
+  background-color: var(--md-surface-container);
+  border-radius: var(--md-border-radius-xl);
+  padding: var(--md-spacing-xl);
+  box-shadow: var(--md-elevation-1);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--md-spacing-md);
+  text-align: left;
+  min-height: 180px;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
 }
 
-.detail-item {
+.proveedor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.proveedor-card:hover {
+  box-shadow: var(--md-elevation-3);
+  transform: translateY(-2px);
+}
+
+.proveedor-card:hover::before {
+  opacity: 0.04;
+}
+
+.proveedor-card:active {
+  transform: translateY(0);
+  box-shadow: var(--md-elevation-2);
+}
+
+.proveedor-card:focus {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+/* Estado de deuda - Amarillo Material Design */
+.proveedor-card.status-debt {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  border-left: 4px solid #FF8F00;
+}
+
+.proveedor-card.status-debt:hover {
+  background: linear-gradient(135deg, #FFF3C4 0%, #FFE082 100%);
+  box-shadow: var(--md-elevation-3), 0 0 0 1px rgba(255, 143, 0, 0.2);
+}
+
+/* Estado sin deuda - Verde Material Design */
+.proveedor-card.status-available {
+  background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%);
+  border-left: 4px solid #4CAF50;
+}
+
+.proveedor-card.status-available:hover {
+  background: linear-gradient(135deg, #E1F4E1 0%, #A5D6A7 100%);
+  box-shadow: var(--md-elevation-3), 0 0 0 1px rgba(76, 175, 80, 0.2);
+}
+
+/* Icono del proveedor con Material Design */
+.proveedor-icon {
+  width: 56px;
+  height: 56px;
+  background-color: var(--md-primary-container);
+  border-radius: var(--md-border-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--md-primary);
+  flex-shrink: 0;
+  margin-bottom: var(--md-spacing-sm);
+}
+
+/* Información del proveedor */
+.proveedor-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-sm);
+}
+
+.proveedor-name {
+  margin: 0;
+  font-size: var(--md-title-medium);
+  font-weight: 500;
+  color: var(--md-on-surface);
+  line-height: 1.4;
+}
+
+/* Detalles adicionales del proveedor */
+.proveedor-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-spacing-xs);
+}
+
+.proveedor-detail-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--md-body-small);
 }
 
-.detail-label {
-  color: #666;
+.proveedor-detail-label {
+  color: var(--md-on-surface-variant);
+  font-weight: 400;
+}
+
+.proveedor-detail-value {
+  color: var(--md-on-surface);
   font-weight: 500;
 }
 
-.detail-value {
-  color: #333;
+/* Información de deuda con Material Design */
+.proveedor-debt-info {
+  padding: var(--md-spacing-sm) var(--md-spacing-md);
+  background: rgba(255, 143, 0, 0.12);
+  border-radius: var(--md-border-radius-md);
+  margin-top: var(--md-spacing-sm);
+}
+
+.proveedor-debt-amount {
+  color: #E65100;
   font-weight: 600;
+  font-size: var(--md-body-medium);
 }
 
-.debt-info {
-  padding: 8px;
-  background: rgba(255, 152, 0, 0.1);
-  border-radius: 6px;
-  margin-top: 4px;
+/* Estado del proveedor */
+.proveedor-status {
+  align-self: flex-start;
+  padding: var(--md-spacing-xs) var(--md-spacing-sm);
+  border-radius: var(--md-border-radius-lg);
+  font-size: var(--md-label-small);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.debt-amount {
-  color: #e65100;
-  font-weight: 700;
-  font-size: 14px;
+.proveedor-status.status-debt {
+  background-color: #FF8F00;
+  color: white;
 }
 
-/* Responsive para pantallas pequeñas */
+.proveedor-status.status-available {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Botón de regresar con Material Design */
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+  padding: var(--md-spacing-md) var(--md-spacing-lg);
+  background-color: var(--md-surface-container);
+  color: var(--md-on-surface);
+  border: 1px solid var(--md-outline);
+  border-radius: var(--md-border-radius-lg);
+  font-size: var(--md-label-large);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  text-decoration: none;
+  min-height: 48px;
+  box-shadow: var(--md-elevation-1);
+}
+
+.back-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: inherit;
+}
+
+.back-button:hover {
+  box-shadow: var(--md-elevation-2);
+  background-color: var(--md-surface-container-high);
+}
+
+.back-button:hover::before {
+  opacity: 0.08;
+}
+
+.back-button:active {
+  box-shadow: var(--md-elevation-1);
+}
+
+.back-button:focus {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+.back-button-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Header de la pantalla */
+.proveedores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--md-spacing-xl);
+  gap: var(--md-spacing-lg);
+}
+
+.proveedores-title-section h2 {
+  margin: 0 0 var(--md-spacing-xs) 0;
+  font-size: var(--md-headline-medium);
+  font-weight: 400;
+  color: var(--md-on-surface);
+}
+
+.proveedores-subtitle {
+  margin: 0;
+  font-size: var(--md-body-large);
+  color: var(--md-on-surface-variant);
+}
+
+/* Estados de carga y error */
+.proveedores-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: var(--md-spacing-lg);
+  color: var(--md-on-surface-variant);
+}
+
+.proveedores-error {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-md);
+  padding: var(--md-spacing-lg);
+  background-color: var(--md-error-container);
+  color: var(--md-error);
+  border-radius: var(--md-border-radius-md);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+  margin-bottom: var(--md-spacing-xl);
+}
+
+.proveedores-error-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* Estado vacío */
+.proveedores-empty {
+  text-align: center;
+  padding: var(--md-spacing-xxl);
+  color: var(--md-on-surface-variant);
+}
+
+.proveedores-empty-icon {
+  font-size: 80px;
+  margin-bottom: var(--md-spacing-lg);
+  color: var(--md-outline);
+}
+
+.proveedores-empty h3 {
+  margin: 0 0 var(--md-spacing-md) 0;
+  font-size: var(--md-headline-small);
+  color: var(--md-on-surface);
+}
+
+.proveedores-empty p {
+  margin: 0;
+  font-size: var(--md-body-large);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive Design para tablets */
+@media (max-width: 1024px) {
+  .proveedores-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--md-spacing-md);
+  }
+  
+  .proveedor-card {
+    min-height: 160px;
+    padding: var(--md-spacing-lg);
+  }
+}
+
+/* Responsive Design para móviles */
 @media (max-width: 768px) {
-  .workspace-details {
-    gap: 4px;
+  .proveedores-container {
+    padding: var(--md-spacing-lg) var(--md-spacing-md);
   }
   
-  .detail-item {
-    font-size: 12px;
+  .proveedores-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--md-spacing-md);
   }
   
-  .debt-amount {
-    font-size: 13px;
+  .back-button {
+    align-self: flex-start;
+  }
+  
+  .proveedores-grid {
+    grid-template-columns: 1fr;
+    gap: var(--md-spacing-md);
+  }
+  
+  .proveedor-card {
+    min-height: 140px;
+    padding: var(--md-spacing-md);
+  }
+  
+  .proveedor-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+  
+  .proveedor-name {
+    font-size: var(--md-title-small);
+  }
+  
+  .proveedor-detail-item {
+    font-size: var(--md-body-small);
+  }
+}
+
+/* Responsive Design para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .proveedores-container {
+    padding: var(--md-spacing-md) var(--md-spacing-sm);
+  }
+  
+  .proveedor-card {
+    padding: var(--md-spacing-sm);
+    min-height: 120px;
+  }
+  
+  .proveedor-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  
+  .back-button {
+    padding: var(--md-spacing-sm) var(--md-spacing-md);
+  }
+}
+
+/* Mejoras de accesibilidad y táctiles */
+@media (max-width: 768px) {
+  .proveedor-card,
+  .back-button {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+}
+
+/* Soporte para modo de alto contraste */
+@media (prefers-contrast: high) {
+  .proveedor-card {
+    border: 2px solid var(--md-outline);
+  }
+  
+  .proveedor-card:focus {
+    outline-width: 3px;
+  }
+  
+  .back-button {
+    border-width: 2px;
+  }
+}
+
+/* Soporte para movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .proveedor-card,
+  .back-button {
+    transition: none;
+  }
+  
+  .proveedor-card:hover {
+    transform: none;
   }
 }

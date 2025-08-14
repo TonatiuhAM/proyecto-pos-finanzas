@@ -3,8 +3,7 @@ import { comprasService } from '../services/comprasService';
 import { deudasProveedoresService } from '../services/deudasService';
 import { useToast } from '../hooks/useToast';
 import type { Proveedor, DeudaProveedor } from '../types';
-import './WorkspaceScreen.css'; // Reutilizamos los estilos del workspace
-import './SeleccionProveedores.css'; // Estilos específicos para proveedores
+import './SeleccionProveedores.css'; // Estilos específicos Material Design
 
 interface SeleccionProveedoresProps {
   onProveedorSelect: (proveedor: Proveedor) => void;
@@ -137,41 +136,43 @@ const SeleccionProveedores: React.FC<SeleccionProveedoresProps> = ({
 
   if (isLoading) {
     return (
-      <div className="workspace-screen">
-        <div className="workspace-header">
-          <h2>Seleccionar Proveedor</h2>
-          <div className="loading-spinner">Cargando proveedores...</div>
+      <div className="proveedores-container">
+        <div className="proveedores-loading">
+          <div style={{ fontSize: '48px', color: 'var(--md-primary)' }}>🔄</div>
+          <h3>Cargando proveedores...</h3>
+          <p>Por favor espera mientras obtenemos la información</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="workspace-screen">
-      <div className="workspace-header">
-        <div className="header-content">
+    <div className="proveedores-container">
+      <div className="proveedores-header">
+        <div className="proveedores-title-section">
           <h2>Seleccionar Proveedor</h2>
-          <p className="workspace-subtitle">Elige un proveedor para realizar compras</p>
+          <p className="proveedores-subtitle">Elige un proveedor para realizar compras</p>
         </div>
         
         {onBackToInventario && (
           <button 
-            className="back-btn"
+            className="back-button md-button"
             onClick={onBackToInventario}
           >
-            ← Volver al Inventario
+            <span className="back-button-icon">←</span>
+            Volver al Inventario
           </button>
         )}
       </div>
 
       {error && (
-        <div className="error-message">
-          <span className="error-icon">⚠️</span>
-          {error}
+        <div className="proveedores-error">
+          <span className="proveedores-error-icon">⚠️</span>
+          <span>{error}</span>
         </div>
       )}
 
-      <div className="workspaces-grid">
+      <div className="proveedores-grid">
         {proveedores.map((proveedor) => {
           const statusInfo = getStatusInfo(proveedor);
           const deudaInfo = deudasMap.get(proveedor.id);
@@ -185,57 +186,59 @@ const SeleccionProveedores: React.FC<SeleccionProveedoresProps> = ({
           });
           
           return (
-            <div
+            <button
               key={proveedor.id}
-              className={`workspace-card ${statusInfo.className}`}
+              className={`proveedor-card ${statusInfo.className}`}
               onClick={() => handleProveedorClick(proveedor)}
             >
-              <div className="workspace-icon">
+              <div className="proveedor-icon">
                 🏪
               </div>
               
-              <div className="workspace-info">
-                <h3 className="workspace-name">
+              <div className="proveedor-info">
+                <h3 className="proveedor-name">
                   {getNombreCompleto(proveedor)}
                 </h3>
                 
-                <div className="workspace-details">
+                <div className="proveedor-details">
                   {proveedor.telefono && (
-                    <div className="detail-item">
-                      <span className="detail-label">Teléfono:</span>
-                      <span className="detail-value">{proveedor.telefono}</span>
+                    <div className="proveedor-detail-item">
+                      <span className="proveedor-detail-label">Teléfono:</span>
+                      <span className="proveedor-detail-value">{proveedor.telefono}</span>
                     </div>
                   )}
                   
                   {proveedor.email && (
-                    <div className="detail-item">
-                      <span className="detail-label">Email:</span>
-                      <span className="detail-value">{proveedor.email}</span>
+                    <div className="proveedor-detail-item">
+                      <span className="proveedor-detail-label">Email:</span>
+                      <span className="proveedor-detail-value">{proveedor.email}</span>
                     </div>
                   )}
                   
                   {statusInfo.deudaTotal > 0 && (
-                    <div className="detail-item debt-info">
-                      <span className="detail-label">Deuda pendiente:</span>
-                      <span className="detail-value debt-amount">
-                        {formatCurrency(statusInfo.deudaTotal)}
-                      </span>
+                    <div className="proveedor-debt-info">
+                      <div className="proveedor-detail-item">
+                        <span className="proveedor-detail-label">Deuda pendiente:</span>
+                        <span className="proveedor-debt-amount">
+                          {formatCurrency(statusInfo.deudaTotal)}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className={`workspace-status ${statusInfo.className}`}>
+              <div className={`proveedor-status ${statusInfo.className}`}>
                 {statusInfo.text}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
 
       {proveedores.length === 0 && !isLoading && (
-        <div className="no-workspaces">
-          <div className="no-workspaces-icon">🏪</div>
+        <div className="proveedores-empty">
+          <div className="proveedores-empty-icon">🏪</div>
           <h3>No hay proveedores disponibles</h3>
           <p>No se encontraron proveedores activos en el sistema.</p>
         </div>
