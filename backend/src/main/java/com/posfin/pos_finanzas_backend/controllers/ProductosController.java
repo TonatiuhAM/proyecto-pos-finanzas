@@ -116,11 +116,17 @@ public class ProductosController {
             }
 
             Productos producto = optionalProducto.get();
+            boolean productoModificado = false;
+            StringBuilder motivoEdicion = new StringBuilder();
 
             // Actualizar nombre si viene en el request
             if (requestBody.containsKey("nombre")) {
                 String nombre = (String) requestBody.get("nombre");
-                producto.setNombre(nombre);
+                if (!nombre.equals(producto.getNombre())) {
+                    producto.setNombre(nombre);
+                    motivoEdicion.append("Nombre,");
+                    productoModificado = true;
+                }
             }
 
             // Actualizar categoría solo si viene en el request
@@ -132,7 +138,11 @@ public class ProductosController {
                     if (!categoria.isPresent()) {
                         return ResponseEntity.badRequest().body("Categoría no encontrada: " + categoriasProductosId);
                     }
-                    producto.setCategoriasProductos(categoria.get());
+                    if (!categoria.get().getId().equals(producto.getCategoriasProductos().getId())) {
+                        producto.setCategoriasProductos(categoria.get());
+                        motivoEdicion.append("Categoria,");
+                        productoModificado = true;
+                    }
                 }
             }
 
@@ -144,7 +154,11 @@ public class ProductosController {
                     if (!proveedor.isPresent()) {
                         return ResponseEntity.badRequest().body("Proveedor no encontrado: " + proveedorId);
                     }
-                    producto.setProveedor(proveedor.get());
+                    if (!proveedor.get().getId().equals(producto.getProveedor().getId())) {
+                        producto.setProveedor(proveedor.get());
+                        motivoEdicion.append("Proveedor,");
+                        productoModificado = true;
+                    }
                 }
             }
 
@@ -173,6 +187,8 @@ public class ProductosController {
                         nuevoPrecio.setPrecio(java.math.BigDecimal.valueOf(precioVentaActual));
                         nuevoPrecio.setFechaDeRegistro(java.time.ZonedDateTime.now());
                         historialPreciosRepository.save(nuevoPrecio);
+                        motivoEdicion.append("PrecioVenta,");
+                        productoModificado = true;
                     }
                 }
             }
@@ -198,8 +214,26 @@ public class ProductosController {
                         nuevoCosto.setCosto(java.math.BigDecimal.valueOf(precioCompraActual));
                         nuevoCosto.setFechaDeRegistro(java.time.ZonedDateTime.now());
                         historialCostosRepository.save(nuevoCosto);
+                        motivoEdicion.append("PrecioCompra,");
+                        productoModificado = true;
                     }
                 }
+            }
+
+            // Registrar movimiento de edición si hubo cambios
+            if (productoModificado) {
+                String motivo = motivoEdicion.toString();
+                if (motivo.endsWith(",")) {
+                    motivo = motivo.substring(0, motivo.length() - 1);
+                }
+                
+                // Intentar obtener el usuario del request o usar null para que use uno por defecto
+                String usuarioId = null;
+                if (requestBody.containsKey("usuarioId")) {
+                    usuarioId = (String) requestBody.get("usuarioId");
+                }
+                
+                productoService.registrarMovimientoEdicion(savedProducto.getId(), usuarioId, motivo);
             }
 
             return ResponseEntity.ok(productoService.convertToDTO(savedProducto));
@@ -236,10 +270,18 @@ public class ProductosController {
             return ResponseEntity.notFound().build();
         }
         Productos productoExistente = productoOptional.get();
+        
+        boolean productoModificado = false;
+        StringBuilder motivoEdicion = new StringBuilder();
 
         // 2. Actualizar campos simples
         if (updates.containsKey("nombre")) {
-            productoExistente.setNombre((String) updates.get("nombre"));
+            String nuevoNombre = (String) updates.get("nombre");
+            if (!nuevoNombre.equals(productoExistente.getNombre())) {
+                productoExistente.setNombre(nuevoNombre);
+                motivoEdicion.append("Nombre,");
+                productoModificado = true;
+            }
         }
 
         // 3. Lógica para actualizar la relación con CategoriasProductos
@@ -252,7 +294,11 @@ public class ProductosController {
                 return ResponseEntity.badRequest()
                         .body("Error: La Categoría de Producto con ID " + categoriasProductosId + " no existe.");
             }
-            productoExistente.setCategoriasProductos(categoriasProductosOpt.get());
+            if (!categoriasProductosId.equals(productoExistente.getCategoriasProductos().getId())) {
+                productoExistente.setCategoriasProductos(categoriasProductosOpt.get());
+                motivoEdicion.append("Categoria,");
+                productoModificado = true;
+            }
         }
 
         // 4. Lógica para actualizar la relación con Proveedor (Personas)
@@ -263,7 +309,11 @@ public class ProductosController {
             if (proveedorOpt.isEmpty()) {
                 return ResponseEntity.badRequest().body("Error: El Proveedor con ID " + proveedorId + " no existe.");
             }
-            productoExistente.setProveedor(proveedorOpt.get());
+            if (!proveedorId.equals(productoExistente.getProveedor().getId())) {
+                productoExistente.setProveedor(proveedorOpt.get());
+                motivoEdicion.append("Proveedor,");
+                productoModificado = true;
+            }
         }
 
         // 5. Lógica para actualizar la relación con Estados
@@ -274,11 +324,36 @@ public class ProductosController {
             if (estadosOpt.isEmpty()) {
                 return ResponseEntity.badRequest().body("Error: El Estado con ID " + estadosId + " no existe.");
             }
-            productoExistente.setEstados(estadosOpt.get());
+            if (!estadosId.equals(productoExistente.getEstados().getId())) {
+                productoExistente.setEstados(estadosOpt.get());
+                motivoEdicion.append("Estado,");
+                productoModificado = true;
+            }
         }
 
-        // 6. Guardar y devolver
+        // 6. Guardar y registrar movimiento si hubo cambios
         Productos productoActualizado = productosRepository.save(productoExistente);
+        
+        if (productoModificado) {
+            String motivo = motivoEdicion.toString();
+            if (motivo.endsWith(",")) {
+                motivo = motivo.substring(0, motivo.length() - 1);
+            }
+            
+            // Intentar obtener el usuario del request o usar null para que use uno por defecto
+            String usuarioId = null;
+            if (updates.containsKey("usuarioId")) {
+                usuarioId = (String) updates.get("usuarioId");
+            }
+            
+            try {
+                productoService.registrarMovimientoEdicion(productoActualizado.getId(), usuarioId, motivo);
+            } catch (Exception e) {
+                // Log error pero no fallar la actualización
+                System.err.println("Error al registrar movimiento de edición: " + e.getMessage());
+            }
+        }
+        
         ProductosDTO dto = productoService.convertToDTO(productoActualizado);
         return ResponseEntity.ok(dto);
     }

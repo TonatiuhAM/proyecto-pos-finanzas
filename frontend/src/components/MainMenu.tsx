@@ -6,7 +6,6 @@ import './MainMenu.css';
 interface MainMenuProps {
   onPuntoDeVentaClick: () => void;
   onInventarioClick: () => void;
-  onFinanzasClick: () => void;
   onEmpleadosClick: () => void;
   onLogout: () => void;
 }
@@ -14,7 +13,6 @@ interface MainMenuProps {
 const MainMenu: React.FC<MainMenuProps> = ({ 
   onPuntoDeVentaClick, 
   onInventarioClick,
-  onFinanzasClick,
   onEmpleadosClick,
   onLogout 
 }) => {
@@ -31,9 +29,6 @@ const MainMenu: React.FC<MainMenuProps> = ({
         break;
       case 'empleados':
         onEmpleadosClick();
-        break;
-      case 'finanzas':
-        onFinanzasClick();
         break;
       default:
         console.warn('Vista no reconocida:', view);

@@ -8,15 +8,19 @@ import WorkspaceScreen from './components/WorkspaceScreen';
 import Inventario from './components/Inventario';
 import PuntoDeVenta from './components/PuntoDeVenta';
 import GestionEmpleados from './components/GestionEmpleados';
+import SeleccionProveedores from './components/SeleccionProveedores';
+import PuntoDeCompras from './components/PuntoDeCompras';
 import ProtectedRoute from './components/ProtectedRoute';
+import type { Proveedor } from './types';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'finanzas' | 'punto-de-venta' | 'empleados';
+type AppState = 'login' | 'main-menu' | 'workspaces' | 'inventario' | 'punto-de-venta' | 'empleados' | 'seleccion-proveedores' | 'compras';
 
 function App() {
   const [appState, setAppState] = useState<AppState>('login');
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
+  const [selectedProveedor, setSelectedProveedor] = useState<Proveedor | null>(null);
   
   // Usar el hook de autenticación
   const { logout: authLogout, isAuthenticated } = useAuth();
@@ -41,10 +45,6 @@ function App() {
     setAppState('inventario');
   };
 
-  const handleFinanzasClick = () => {
-    setAppState('finanzas');
-  };
-
   const handleEmpleadosClick = () => {
     setAppState('empleados');
   };
@@ -63,6 +63,23 @@ function App() {
     setAppState('workspaces');
   };
 
+  const handleNavigateToCompras = () => {
+    setAppState('seleccion-proveedores');
+  };
+
+  const handleProveedorSelect = (proveedor: Proveedor) => {
+    setSelectedProveedor(proveedor);
+    setAppState('compras');
+  };
+
+  const handleBackToInventario = () => {
+    setAppState('inventario');
+  };
+
+  const handleBackToProveedores = () => {
+    setAppState('seleccion-proveedores');
+  };
+
   switch (appState) {
     case 'login':
       return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
@@ -73,7 +90,6 @@ function App() {
         <MainMenu 
           onPuntoDeVentaClick={handlePuntoDeVentaClick}
           onInventarioClick={handleInventarioClick}
-          onFinanzasClick={handleFinanzasClick}
           onEmpleadosClick={handleEmpleadosClick}
           onLogout={handleLogout}
         />
@@ -125,55 +141,45 @@ function App() {
 
             {/* Main Content */}
             <main className="inventory-screen__main">
-              <Inventario />
+              {/* 🚨🚨🚨 DEBUG MEGA VISIBLE - APP.TSX RENDERIZANDO INVENTARIO 🚨🚨🚨 */}
+              <div style={{
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: 'rgba(255, 0, 0, 0.9)',
+                color: 'white',
+                fontSize: '30px',
+                fontWeight: 'bold',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: '99999',
+                textAlign: 'center',
+                cursor: 'pointer'
+              }}
+              onClick={() => {
+                // Quitar este overlay al hacer click
+                const overlay = document.querySelector('[data-debug-overlay]') as HTMLElement;
+                if (overlay) overlay.style.display = 'none';
+              }}
+              data-debug-overlay="true"
+              >
+                <div>🚨🚨🚨 DEBUG: APP.TSX ESTÁ RENDERIZANDO INVENTARIO 🚨🚨🚨</div>
+                <div style={{ fontSize: '20px', marginTop: '20px' }}>
+                  Si ves esto, significa que App.tsx SÍ está renderizando el componente Inventario
+                </div>
+                <div style={{ fontSize: '16px', marginTop: '20px', backgroundColor: 'rgba(0,0,0,0.5)', padding: '10px' }}>
+                  CLICK AQUÍ PARA CONTINUAR Y VER EL COMPONENTE INVENTARIO
+                </div>
+              </div>
+              
+              <Inventario onNavigateToCompras={handleNavigateToCompras} />
             </main>
           </div>
         </ProtectedRoute>
-      );
-    
-    case 'finanzas':
-      return (
-        <div className="min-h-screen bg-gray-50">
-          {/* Header */}
-          <header className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center h-16">
-                <div className="flex items-center">
-                  <button
-                    onClick={handleBackToMainMenu}
-                    className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    ← Volver al Menú
-                  </button>
-                  <h1 className="text-xl font-semibold text-gray-900">Finanzas</h1>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  Cerrar Sesión
-                </button>
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div className="px-4 py-6 sm:px-0">
-              <div className="text-center">
-                <div className="mx-auto h-12 w-12 text-gray-400">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="h-12 w-12">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Módulo de Finanzas</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Esta funcionalidad estará disponible próximamente.
-                </p>
-              </div>
-            </div>
-          </main>
-        </div>
       );
     
     case 'empleados':
@@ -234,6 +240,31 @@ function App() {
               </div>
             </main>
           </div>
+        </ProtectedRoute>
+      );
+    
+    case 'seleccion-proveedores':
+      return (
+        <ProtectedRoute adminOnly={true}>
+          <SeleccionProveedores 
+            onProveedorSelect={handleProveedorSelect}
+            onBackToInventario={handleBackToInventario}
+          />
+        </ProtectedRoute>
+      );
+    
+    case 'compras':
+      if (!selectedProveedor) {
+        // Si no hay proveedor seleccionado, volver a la selección
+        setAppState('seleccion-proveedores');
+        return null;
+      }
+      return (
+        <ProtectedRoute adminOnly={true}>
+          <PuntoDeCompras 
+            proveedor={selectedProveedor}
+            onBackToProveedores={handleBackToProveedores}
+          />
         </ProtectedRoute>
       );
     

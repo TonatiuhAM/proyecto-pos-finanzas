@@ -171,6 +171,69 @@ public class ProductoService {
         return convertToDTO(productoActualizado);
     }
 
+    @Transactional
+    public void registrarMovimientoEdicion(String productoId, String usuarioId, String motivo) {
+        // Buscar el producto
+        Optional<Productos> productoOpt = productosRepository.findById(productoId);
+        if (productoOpt.isEmpty()) {
+            throw new RuntimeException("Producto no encontrado con ID: " + productoId);
+        }
+
+        // Buscar el usuario (por ahora usar el primero disponible si no se proporciona)
+        Optional<Usuarios> usuarioOpt;
+        if (usuarioId != null && !usuarioId.isEmpty()) {
+            usuarioOpt = usuariosRepository.findById(usuarioId);
+        } else {
+            usuarioOpt = usuariosRepository.findAll().stream().findFirst();
+        }
+
+        if (usuarioOpt.isEmpty()) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+
+        // Buscar una ubicación (usar la primera disponible)
+        Optional<Ubicaciones> ubicacionOpt = ubicacionesRepository.findAll().stream().findFirst();
+        if (ubicacionOpt.isEmpty()) {
+            throw new RuntimeException("No hay ubicaciones disponibles");
+        }
+
+        // Buscar o crear el tipo de movimiento "Edición"
+        Optional<TipoMovimientos> tipoEdicion = tipoMovimientosRepository.findByMovimiento("Edición");
+        if (tipoEdicion.isEmpty()) {
+            tipoEdicion = tipoMovimientosRepository.findByMovimiento("Edicion");
+        }
+        if (tipoEdicion.isEmpty()) {
+            tipoEdicion = tipoMovimientosRepository.findByMovimiento("Modificación");
+        }
+        if (tipoEdicion.isEmpty()) {
+            tipoEdicion = tipoMovimientosRepository.findByMovimiento("Modificacion");
+        }
+
+        if (tipoEdicion.isEmpty()) {
+            // Crear el tipo de movimiento si no existe
+            TipoMovimientos nuevoTipo = new TipoMovimientos();
+            nuevoTipo.setMovimiento("Edición");
+            tipoEdicion = Optional.of(tipoMovimientosRepository.save(nuevoTipo));
+        }
+
+        // Crear el movimiento de inventario
+        MovimientosInventarios movimientoEdicion = new MovimientosInventarios();
+        movimientoEdicion.setProducto(productoOpt.get());
+        movimientoEdicion.setUbicacion(ubicacionOpt.get());
+        movimientoEdicion.setTipoMovimiento(tipoEdicion.get());
+        movimientoEdicion.setCantidad(BigDecimal.ZERO); // Para ediciones la cantidad es 0
+        movimientoEdicion.setFechaMovimiento(OffsetDateTime.now());
+        movimientoEdicion.setUsuario(usuarioOpt.get());
+        
+        String claveMovimiento = "EDICION-" + productoOpt.get().getId().substring(0, 8);
+        if (motivo != null && !motivo.isEmpty()) {
+            claveMovimiento += "-" + motivo.toUpperCase().replace(" ", "_");
+        }
+        movimientoEdicion.setClaveMovimiento(claveMovimiento);
+        
+        movimientosInventariosRepository.save(movimientoEdicion);
+    }
+
     // Método auxiliar para convertir Productos a ProductosDTO con información
     // adicional
     public ProductosDTO convertToDTO(Productos producto) {

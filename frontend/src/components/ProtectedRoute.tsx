@@ -58,7 +58,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   })();
 
   if (hasAccess) {
-    return <>{children}</>;
+    return (
+      <>
+        {/* 🚨 DEBUG: Información de permisos */}
+        <div style={{
+          backgroundColor: '#00ff00',
+          color: 'black',
+          padding: '10px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          border: '3px solid #000000',
+          margin: '10px 0'
+        }}>
+          🚨 DEBUG ProtectedRoute: ✅ ACCESO CONCEDIDO - Usuario rol: {userRole} - isAdmin: {isAdmin().toString()} - adminOnly: {adminOnly.toString()} 🚨
+        </div>
+        {children}
+      </>
+    );
   }
 
   // Mostrar mensaje de acceso denegado

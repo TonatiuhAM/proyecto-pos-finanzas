@@ -1,0 +1,86 @@
+/* ===== SELECCIÓN DE PROVEEDORES - ESTILOS ESPECÍFICOS ===== */
+
+/* Estado de deuda - Amarillo para proveedores con deuda */
+.workspace-card.status-debt {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  border: 2px solid #ffb300;
+}
+
+.workspace-card.status-debt:hover {
+  background: linear-gradient(135deg, #fff3c4 0%, #ffe082 100%);
+  box-shadow: 0 8px 32px rgba(255, 179, 0, 0.3);
+}
+
+.workspace-card.status-debt .workspace-status {
+  background: #ff8f00;
+  color: white;
+}
+
+/* Estado sin deuda - Verde para proveedores sin deuda pendiente */
+.workspace-card.status-available {
+  background: linear-gradient(135deg, #f1f8e9 0%, #c8e6c9 100%);
+  border: 2px solid #4caf50;
+}
+
+.workspace-card.status-available:hover {
+  background: linear-gradient(135deg, #e8f5e8 0%, #a5d6a7 100%);
+  box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3);
+}
+
+.workspace-card.status-available .workspace-status {
+  background: #4caf50;
+  color: white;
+}
+
+/* Información adicional para proveedores */
+.workspace-details {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.detail-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #333;
+  font-weight: 600;
+}
+
+.debt-info {
+  padding: 8px;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.debt-amount {
+  color: #e65100;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+  .workspace-details {
+    gap: 4px;
+  }
+  
+  .detail-item {
+    font-size: 12px;
+  }
+  
+  .debt-amount {
+    font-size: 13px;
+  }
+}

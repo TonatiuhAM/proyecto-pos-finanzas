@@ -1,0 +1,351 @@
+/* Estilos para el componente DeudasProveedores */
+
+.deudas-proveedores {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.header h1 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.btn-actualizar {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-actualizar:hover {
+  background: #2980b9;
+}
+
+.btn-actualizar:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* Estadísticas */
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.tarjeta-estadistica {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tarjeta-estadistica h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.tarjeta-estadistica .numero {
+  font-size: 24px;
+  font-weight: bold;
+  display: block;
+}
+
+/* Controles de filtrado */
+.controles {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.grupo-control {
+  display: flex;
+  flex-direction: column;
+}
+
+.grupo-control label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.input-busqueda,
+.select-filtro,
+.select-ordenamiento {
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.input-busqueda:focus,
+.select-filtro:focus,
+.select-ordenamiento:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Tabla */
+.tabla-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.tabla-deudas {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-deudas th {
+  background: #34495e;
+  color: white;
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tabla-deudas td {
+  padding: 12px;
+  border-bottom: 1px solid #ecf0f1;
+  vertical-align: middle;
+}
+
+.tabla-deudas tbody tr:hover {
+  background: #f8f9fa;
+}
+
+/* Estilos específicos de celdas */
+.proveedor-info .nombre {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.proveedor-info .alerta-deuda {
+  font-size: 12px;
+  color: #856404;
+  background: #fff3cd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 5px;
+  border: 1px solid #ffc107;
+  font-weight: 600;
+}
+
+.contacto-info {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.contacto-info .telefono,
+.contacto-info .email {
+  margin: 2px 0;
+}
+
+.monto {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.deuda-pendiente {
+  color: #d63384;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.estado {
+  text-align: center;
+}
+
+.indicador-estado {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.indicador-estado.verde {
+  background: #d5eedd;
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.indicador-estado.amarillo {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  font-weight: 700;
+}
+
+.ordenes-pendientes {
+  text-align: center;
+  font-weight: 600;
+  color: #8e44ad;
+}
+
+.fecha {
+  color: #7f8c8d;
+  font-size: 13px;
+}
+
+/* Estados de las filas */
+.estado-sin-deuda {
+  background: rgba(39, 174, 96, 0.05);
+}
+
+.estado-con-deuda {
+  background: rgba(255, 193, 7, 0.1);
+  border-left: 4px solid #ffc107;
+}
+
+/* Estados de carga y error */
+.cargando,
+.error {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error h3 {
+  color: #e74c3c;
+  margin-bottom: 10px;
+}
+
+.error p {
+  color: #7f8c8d;
+  margin-bottom: 20px;
+}
+
+.btn-reintentar {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-reintentar:hover {
+  background: #c0392b;
+}
+
+/* Sin resultados */
+.sin-resultados {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+/* Resumen */
+.resumen {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 14px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .deudas-proveedores {
+    padding: 10px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .controles {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .estadisticas {
+    grid-template-columns: 1fr;
+  }
+  
+  .tabla-container {
+    overflow-x: auto;
+  }
+  
+  .tabla-deudas {
+    min-width: 800px;
+  }
+  
+  .tabla-deudas th,
+  .tabla-deudas td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabla-deudas th,
+  .tabla-deudas td {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+  
+  .tarjeta-estadistica {
+    padding: 15px;
+  }
+  
+  .tarjeta-estadistica .numero {
+    font-size: 20px;
+  }
+}

@@ -198,4 +198,30 @@ public class HistorialCostosController {
 
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/producto/{productoId}/ultimo-costo")
+    public ResponseEntity<HistorialCostosDTO> getUltimoCostoPorProducto(@PathVariable String productoId) {
+        // Buscar el producto
+        Optional<Productos> producto = productosRepository.findById(productoId);
+        if (!producto.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Buscar el último costo del producto
+        Optional<HistorialCostos> ultimoCosto = historialCostosRepository.findLatestByProducto(producto.get());
+        if (!ultimoCosto.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Crear DTO para respuesta
+        HistorialCostos historial = ultimoCosto.get();
+        HistorialCostosDTO dto = new HistorialCostosDTO();
+        dto.setId(historial.getId());
+        dto.setCosto(historial.getCosto());
+        dto.setFechaDeRegistro(historial.getFechaDeRegistro());
+        dto.setProductosId(historial.getProductos().getId());
+        dto.setProductosNombre(historial.getProductos().getNombre());
+
+        return ResponseEntity.ok(dto);
+    }
 }

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface EstadosRepository extends JpaRepository<Estados, String> {
-    // Método para buscar estado por nombre
+    // Método para buscar estado por estado
     Optional<Estados> findByEstado(String estado);
 }

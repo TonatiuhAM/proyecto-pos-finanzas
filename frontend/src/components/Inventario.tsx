@@ -5,7 +5,11 @@ import ModalCrearProducto from './ModalCrearProducto';
 import ModalEditarProducto from './ModalEditarProducto';
 import type { ProductoDTO } from '../services/inventarioService';
 
-const Inventario: React.FC = () => {
+interface InventarioProps {
+  onNavigateToCompras?: () => void;
+}
+
+const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
   // Estados principales
   const [productos, setProductos] = useState<ProductoDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +46,17 @@ const Inventario: React.FC = () => {
   // Abrir modal para crear nuevo producto
   const handleCrearNuevo = () => {
     setShowCreateModal(true);
+  };
+
+  // Navegar a compras a proveedores
+  const handleComprarProducto = () => {
+    console.log('🛒 Botón Comprar Producto clickeado!');
+    console.log('onNavigateToCompras:', onNavigateToCompras);
+    if (onNavigateToCompras) {
+      onNavigateToCompras();
+    } else {
+      console.warn('onNavigateToCompras no está definido');
+    }
   };
 
   // Abrir modal para editar producto
@@ -114,6 +129,20 @@ const Inventario: React.FC = () => {
 
   return (
     <div className="inventory-content">
+      {/* 🚨 DEBUG: Mensaje visual temporal para confirmar renderizado */}
+      <div style={{
+        backgroundColor: '#ff0000',
+        color: 'white',
+        padding: '20px',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        border: '5px solid #ffff00',
+        margin: '10px 0'
+      }}>
+        🚨 DEBUG: El componente Inventario se está renderizando correctamente! 🚨
+      </div>
+
       {error && (
         <div className="error-message">
           <span className="error-icon">⚠️</span>
@@ -122,6 +151,40 @@ const Inventario: React.FC = () => {
       )}
 
       <div className="inventory-controls">
+        {/* 🚨 DEBUG: Botón de compras con estilos súper llamativos */}
+        <div style={{
+          backgroundColor: '#ff0000',
+          border: '10px solid #ffff00',
+          padding: '20px',
+          margin: '20px 0'
+        }}>
+          <h2 style={{ color: 'white', fontSize: '24px', margin: '0 0 10px 0' }}>
+            🚨 DEBUG: AQUÍ ESTÁ EL BOTÓN DE COMPRAS 🚨
+          </h2>
+          <button
+            className="purchase-btn"
+            onClick={handleComprarProducto}
+            title="Ir a compras a proveedores"
+            style={{
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: '5px solid #000000',
+              padding: '20px 40px',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              fontSize: '18px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.5)',
+              minWidth: '300px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <span className="btn-icon">🛒</span>
+            COMPRAR PRODUCTO (DEBUG)
+          </button>
+        </div>
         <button
           className="create-product-btn"
           onClick={handleCrearNuevo}
@@ -268,4 +331,4 @@ const Inventario: React.FC = () => {
     );
   };
 
-  export default Inventario;
+export default Inventario;

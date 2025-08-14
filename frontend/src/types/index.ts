@@ -238,3 +238,118 @@ export interface EstadoCargaEmpleados {
   creando: boolean;
   cambiandoEstado: boolean;
 }
+
+// ==================== TIPOS PARA SISTEMA DE COMPRAS ====================
+
+// Interface para proveedor (corresponde a ProveedorDTO del backend)
+export interface Proveedor {
+  id: string;
+  nombre: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  telefono?: string;
+  email?: string;
+  nombreCompleto: string;
+  deudaTotal: number;
+}
+
+// Interface para productos en orden de compra (corresponde a ProductoCompraDTO del backend)
+export interface ProductoCompraDTO {
+  productoId: string;
+  cantidadKg: number;
+  cantidadPz: number;
+}
+
+// Interface para request de compra (corresponde a CompraRequestDTO del backend)
+export interface CompraRequest {
+  proveedorId: string;
+  metodoPagoId?: string;
+  productos: ProductoCompraDTO[];
+}
+
+// Interface para request de pago (corresponde a PagoRequestDTO del backend)
+export interface PagoRequest {
+  proveedorId: string;
+  ordenCompraId: string;
+  montoPagado: number;
+  metodoPagoId: string;
+  pagarTodoElTotal: boolean;
+}
+
+// Interface para deuda de proveedor mejorada (corresponde a DeudaProveedorDTO del backend)
+export interface DeudaProveedor {
+  proveedorId: string;
+  proveedorNombre: string;
+  telefonoProveedor?: string;
+  emailProveedor?: string;
+  totalCompras: number;
+  totalPagos: number;
+  deudaPendiente: number;
+  estadoDeuda: 'verde' | 'amarillo';
+  fechaOrdenMasAntigua?: string;
+  cantidadOrdenesPendientes: number;
+}
+
+// Interface para estadísticas de deudas
+export interface EstadisticasDeudas {
+  totalProveedoresConDeuda: number;
+  totalDeudasPendientes: number;
+  deudaPromedio: number;
+}
+
+// Interface para producto en compras
+export interface ProductoCompra {
+  id: string;
+  nombre: string;
+  stockActualKg: number;
+  stockActualPz: number;
+  categoria: string;
+  costoPromedioKg: number;
+  costoPromedioPz: number;
+}
+
+// Interface para orden de compra
+export interface OrdenCompra {
+  id: string;
+  proveedorId: string;
+  proveedorNombre: string;
+  fecha: string;
+  total: number;
+  usuarioId: string;
+  usuarioNombre: string;
+  detalles: DetalleOrdenCompra[];
+}
+
+// Interface para detalle de orden de compra
+export interface DetalleOrdenCompra {
+  id: string;
+  ordenCompraId: string;
+  productoId: string;
+  productoNombre: string;
+  cantidadKg: number;
+  cantidadPz: number;
+  costoUnitarioKg: number;
+  costoUnitarioPz: number;
+  subtotal: number;
+}
+
+// Interface para item en carrito de compras (solo frontend)
+export interface ItemCarritoCompra {
+  productoId: string;
+  productoNombre: string;
+  cantidadKg: number;
+  cantidadPz: number;
+  costoUnitarioKg: number;
+  costoUnitarioPz: number;
+  subtotal: number;
+}
+
+// Interface para formulario de compra
+export interface FormularioCompra {
+  proveedorId: string;
+  productos: ItemCarritoCompra[];
+  total: number;
+  metodoPagoId?: string;
+  pagoInmediato: boolean;
+  montoPago?: number;
+}
