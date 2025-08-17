@@ -165,7 +165,7 @@ export const comprasService = {
       return {
         costo: parseFloat(response.data.costo) || 0
       };
-    } catch (error) {
+    } catch {
       console.log(`No se encontró historial de costos para producto ${productoId}`);
       return null;
     }

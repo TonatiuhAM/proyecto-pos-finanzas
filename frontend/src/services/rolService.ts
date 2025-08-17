@@ -52,10 +52,10 @@ export const rolService = {
     try {
       const response = await axiosInstance.get(`/api/roles/${rolId}`);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al obtener rol por ID:', error);
       
-      if (error.response?.status === 404) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
         throw new Error('Rol no encontrado');
       }
       

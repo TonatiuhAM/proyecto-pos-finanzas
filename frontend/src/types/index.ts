@@ -277,6 +277,15 @@ export interface PagoRequest {
 }
 
 // Interface para deuda de proveedor mejorada (corresponde a DeudaProveedorDTO del backend)
+export const EstadoDeuda = {
+  PENDIENTE: 'PENDIENTE',
+  PARCIAL: 'PARCIAL',
+  PAGADA: 'PAGADA'
+} as const;
+
+export type EstadoDeuda = typeof EstadoDeuda[keyof typeof EstadoDeuda];
+
+// Interface para la estructura actual de DeudaProveedor (usada por el servicio)
 export interface DeudaProveedor {
   proveedorId: string;
   proveedorNombre: string;
@@ -288,6 +297,21 @@ export interface DeudaProveedor {
   estadoDeuda: 'verde' | 'amarillo';
   fechaOrdenMasAntigua?: string;
   cantidadOrdenesPendientes: number;
+}
+
+// Interface para la nueva estructura de DeudaProveedor (para futura compatibilidad)
+export interface DeudaProveedorNueva {
+  id: number;
+  proveedor: {
+    id: number;
+    nombreCompleto: string;
+    email: string;
+    telefono: string;
+  };
+  montoDeuda: number;
+  fechaVencimiento: string;
+  estado: EstadoDeuda;
+  descripcion?: string;
 }
 
 // Interface para estadísticas de deudas
@@ -352,4 +376,91 @@ export interface FormularioCompra {
   metodoPagoId?: string;
   pagoInmediato: boolean;
   montoPago?: number;
+}
+
+// ==================== TIPOS PARA GESTIÓN UNIFICADA DE PERSONAS ====================
+
+// Interface para categorías de personas (corresponde a CategoriaPersonaDTO del backend)
+export interface CategoriaPersona {
+  id: string;
+  nombre: string;
+}
+
+// Interface para crear nueva persona (corresponde a PersonaCreateRequestDTO del backend)
+export interface PersonaCreateRequest {
+  nombre: string;
+  apellidos: string;
+  rfc?: string;
+  email?: string;
+  telefono?: string;
+  direccion?: string;
+  idCategoriaPersona: string;
+}
+
+// Interface para mostrar personas en tabla (corresponde a PersonaResponseDTO del backend)
+export interface PersonaResponse {
+  id: string;
+  nombre: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  apellidos?: string; // Campo de compatibilidad
+  nombreCompleto: string;
+  rfc?: string;
+  email?: string;
+  telefono?: string;
+  direccion?: string;
+  idCategoriaPersona: string;
+  nombreCategoria: string;
+  idEstado: string;
+  nombreEstado: string;
+}
+
+// Interface para formulario de creación de persona (estado local del frontend)
+export interface FormularioPersona {
+  nombre: string;
+  apellidos: string;
+  rfc: string;
+  email: string;
+  telefono: string;
+  direccion: string;
+  idCategoriaPersona: string;
+  errores: {
+    nombre?: string;
+    apellidos?: string;
+    rfc?: string;
+    email?: string;
+    telefono?: string;
+    direccion?: string;
+    idCategoriaPersona?: string;
+  };
+}
+
+// Interface para gestión de estado de carga
+export interface EstadoCargaPersonas {
+  cargando: boolean;
+  cargandoCategorias: boolean;
+  error: string | null;
+  creando: boolean;
+  cambiandoEstado: boolean;
+}
+
+// Interface para request de cambio de estado
+export interface CambiarEstadoPersonaRequest {
+  estadoNombre: string;
+}
+
+// Enum para tipos de categorías de personas (para facilitar el manejo en frontend)
+export const TipoCategoriaPersona = {
+  EMPLEADO: "a1c85197-a54f-4686-9964-73f3d0965d4f", // UUID real de empleados
+  PROVEEDOR: "50887317-1DD8-4DE4-AAC5-62A342AC7FD4", // UUID real de proveedores
+  CLIENTE: "39348296-3d59-419f-94fd-7681276e47fc" // UUID real de clientes
+} as const;
+
+export type TipoCategoriaPersona = typeof TipoCategoriaPersona[keyof typeof TipoCategoriaPersona];
+
+// Interface para filtros de personas
+export interface FiltrosPersonas {
+  categoria: string | null;
+  estado: string | null;
+  busqueda: string;
 }

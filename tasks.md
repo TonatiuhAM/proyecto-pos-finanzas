@@ -1005,6 +1005,172 @@ Se modernizó completamente la interfaz de `PuntoDeCompras.tsx` aplicando Materi
 
 ## 🔄 TAREAS ACTIVAS
 
+## Tarea: Sistema Unificado de Gestión de Personas - Empleados, Proveedores y Clientes
+
+### Descripción del Objetivo
+
+Expandir la funcionalidad actual de la página de "Empleados" para crear un centro de gestión unificado que permita visualizar y crear registros en la tabla `personas`, incluyendo empleados, proveedores y clientes. La implementación incluirá una actualización visual completa siguiendo los estándares de **Material Design**.
+
+### Funcionalidades Requeridas
+
+#### 1. Reestructuración de la Página de Empleados
+
+- **Expansión de Tablas**: Añadir dos nuevas tablas debajo de la existente de "Empleados":
+  - Tabla de **"Proveedores"** con información relevante por categoría
+  - Tabla de **"Clientes"** con información relevante por categoría
+- **Botón Principal**: Agregar botón **"Crear nueva persona"** justo encima de las nuevas tablas
+
+#### 2. Sistema de Creación de Personas
+
+- **Modal de Creación**: Formulario emergente con campos:
+  - Nombre
+  - Apellido Paterno  
+  - Apellido Materno
+  - RFC (opcional)
+  - Teléfono
+  - Email
+  - **Categoría** (selector dinámico cargado desde API)
+
+- **Lógica de Categorías**: 
+  - Carga dinámica desde endpoint `/api/categorias-personas`
+  - Mostrar nombres de categorías al usuario
+  - Enviar IDs al backend al crear la persona
+  - Estado "activo" por defecto para nuevas personas
+
+#### 3. Actualización Visual (Material Design)
+
+- **Rediseño Completo**: Aplicar Material Design a toda la página:
+  - Tablas con estilo Material Design (separadores, espaciado, tipografía)
+  - Botones con estilos `contained` y `outlined`
+  - Formularios y campos con estética Material Design
+  - Tipografía y layout limpio y consistente
+
+### Plan de Implementación
+
+#### Backend (Java/Spring Boot)
+
+- [ ] **Crear endpoint para gestión de personas**
+  - [ ] `POST /api/personas` - Crear nueva persona
+  - [ ] Validar datos y guardar en tabla `personas`
+  - [ ] Estado "activo" por defecto
+  - [ ] Validaciones de RFC, email y teléfono
+
+- [ ] **Crear endpoint para categorías de personas**
+  - [ ] `GET /api/categorias-personas` - Obtener lista de categorías
+  - [ ] Retornar objetos con `id` y `nombre`
+  - [ ] Para poblar selector dinámico en frontend
+
+- [ ] **Crear DTOs necesarios**
+  - [ ] `PersonaCreateRequestDTO` - Para creación de personas
+  - [ ] `PersonaResponseDTO` - Para listado de personas  
+  - [ ] `CategoriaPersonaDTO` - Para categorías
+
+- [ ] **Crear servicios de negocio**
+  - [ ] `PersonaService` - Lógica de creación y validación
+  - [ ] Validaciones de campos requeridos
+  - [ ] Manejo de errores y casos edge
+
+#### Frontend (React/TypeScript)
+
+- [ ] **Expandir página de Empleados**
+  - [ ] Modificar `GestionEmpleados.tsx` para incluir nuevas tablas
+  - [ ] Tabla de Proveedores con datos filtrados por categoría
+  - [ ] Tabla de Clientes con datos filtrados por categoría
+  - [ ] Botón "Crear nueva persona" con navegación a modal
+
+- [ ] **Crear modal de creación de personas**
+  - [ ] `ModalCrearPersona.tsx` - Formulario completo
+  - [ ] Campos de entrada con validaciones en tiempo real
+  - [ ] Selector de categoría con carga dinámica
+  - [ ] Manejo de estados de carga y error
+
+- [ ] **Implementar servicios API**
+  - [ ] `personaService.ts` - Llamadas a endpoints de personas
+  - [ ] `categoriaPersonaService.ts` - Gestión de categorías
+  - [ ] Manejo de errores y tipos TypeScript
+
+- [ ] **Aplicar Material Design**
+  - [ ] Actualizar `GestionEmpleados.css` con estilos Material Design
+  - [ ] Crear `ModalCrearPersona.css` con componentes MD
+  - [ ] Variables CSS para consistencia visual
+  - [ ] Responsive design para todos los dispositivos
+
+#### Integración y Pruebas
+
+- [ ] **Integrar nuevos componentes**
+  - [ ] Conectar modal con página principal
+  - [ ] Navegación entre diferentes vistas de personas
+  - [ ] Actualización de listas tras creación exitosa
+
+- [ ] **Validaciones completas**
+  - [ ] Campos requeridos y formatos correctos
+  - [ ] Mensajes de error específicos y claros
+  - [ ] Feedback visual para operaciones exitosas
+
+- [ ] **Pruebas de funcionalidad**
+  - [ ] Crear personas de diferentes categorías
+  - [ ] Verificar filtrado correcto por tipo
+  - [ ] Validar persistencia en base de datos
+  - [ ] Probar responsive design en múltiples dispositivos
+
+### Archivos a Crear/Modificar
+
+#### Backend
+- `PersonaController.java` - Nuevo controlador para gestión de personas
+- `PersonaService.java` - Lógica de negocio
+- `PersonaCreateRequestDTO.java` - DTO para creación
+- `PersonaResponseDTO.java` - DTO para respuestas
+- `CategoriaPersonaController.java` - Controlador para categorías
+- `CategoriaPersonaDTO.java` - DTO para categorías
+
+#### Frontend
+- `GestionEmpleados.tsx` - Expansión con nuevas tablas
+- `GestionEmpleados.css` - Actualización Material Design
+- `ModalCrearPersona.tsx` - Nuevo modal de creación
+- `ModalCrearPersona.css` - Estilos Material Design
+- `personaService.ts` - Nuevo servicio API
+- `categoriaPersonaService.ts` - Servicio para categorías
+- `types/index.ts` - Nuevas interfaces TypeScript
+
+### Consideraciones Técnicas
+
+#### Validaciones
+- **RFC**: Formato válido mexicano (opcional)
+- **Email**: Formato válido de correo electrónico
+- **Teléfono**: Formato numérico con longitud apropiada
+- **Nombres**: No vacíos, longitud mínima/máxima
+
+#### Seguridad
+- **Validación Backend**: Nunca confiar solo en validaciones frontend
+- **Sanitización**: Limpiar inputs para prevenir inyecciones
+- **Autorización**: Solo administradores pueden crear personas
+
+#### Performance
+- **Carga Lazy**: Cargar tablas de personas solo cuando se necesiten
+- **Paginación**: Implementar si el número de registros es alto
+- **Cache**: Almacenar categorías en cache para evitar llamadas repetidas
+
+### Estado de la Implementación
+
+- [ ] **Backend**: Pendiente - crear endpoints y servicios
+- [ ] **Frontend**: Pendiente - expandir interfaz y crear modal
+- [ ] **Integración**: Pendiente - conectar frontend con backend
+- [ ] **Material Design**: Pendiente - aplicar rediseño completo
+- [ ] **Pruebas**: Pendiente - validar funcionalidad completa
+
+### Expectativas de Resultados
+
+Al completar esta implementación, el sistema tendrá:
+
+✅ **Centro Unificado**: Una sola página para gestionar todos los tipos de personas
+✅ **Interfaz Moderna**: Diseño Material Design consistente y atractivo  
+✅ **Categorización**: Separación clara entre empleados, proveedores y clientes
+✅ **Creación Flexible**: Modal que permite crear cualquier tipo de persona
+✅ **Validaciones Robustas**: Formularios con validación en tiempo real
+✅ **Responsive**: Funcionalidad completa en todos los dispositivos
+
+---
+
 ### ✅ Correcciones Críticas del Sistema de Compras COMPLETADAS (11 Ago 2025)
 
 #### Estado Final: TODAS LAS CORRECCIONES IMPLEMENTADAS

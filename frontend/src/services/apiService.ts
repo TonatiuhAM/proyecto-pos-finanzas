@@ -50,13 +50,26 @@ api.interceptors.request.use(config => {
       }
     } catch (error) {
       console.warn('Error parsing auth data:', error);
+      // Limpiar datos corruptos
+      localStorage.removeItem('pos_auth_data');
     }
   }
   
   // Fallback al sistema legacy
   const legacyToken = localStorage.getItem('authToken');
   if (legacyToken) {
-    config.headers.Authorization = `Bearer ${legacyToken}`;
+    try {
+      // Verificar que el token no esté obviously corrupto
+      if (legacyToken.includes('.') && legacyToken.length > 50) {
+        config.headers.Authorization = `Bearer ${legacyToken}`;
+      } else {
+        // Token corrupto, remover
+        localStorage.removeItem('authToken');
+      }
+    } catch (error) {
+      console.warn('Error processing legacy token:', error);
+      localStorage.removeItem('authToken');
+    }
   }
   
   return config;
@@ -68,11 +81,15 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401) {
-      // Token expirado o inválido - limpiar todos los datos de autenticación
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Token expirado, inválido o permisos insuficientes - limpiar todos los datos de autenticación
       localStorage.removeItem('authToken'); // Legacy
       localStorage.removeItem('pos_auth_data'); // Nuevo sistema
-      window.location.href = '/login';
+      
+      // Solo redirigir a login en 401 (no autenticado), no en 403 (no autorizado)
+      if (error.response?.status === 401) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -157,3 +174,5 @@ export const metodoPagoService = {
     return response.data;
   },
 };
+
+export default api;

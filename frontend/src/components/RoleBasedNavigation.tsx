@@ -41,8 +41,8 @@ const RoleBasedNavigation: React.FC<RoleBasedNavigationProps> = ({ onNavigation 
         },
         {
           id: 'empleados',
-          title: 'Empleados',
-          description: 'Gestión de personal',
+          title: 'Administración',
+          description: 'Gestión de empleados, proveedores y clientes',
           icon: (
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M16 4C18.2 4 20 5.8 20 8S18.2 12 16 12C13.8 12 12 10.2 12 8S13.8 4 16 4ZM16 6C14.9 6 14 6.9 14 8S14.9 10 16 10C17.1 10 18 9.1 18 8S17.1 6 16 6ZM20 18V20H12V18C12 15.8 13.8 14 16 14S20 15.8 20 18ZM8 12C10.2 12 12 10.2 12 8S10.2 4 8 4C5.8 4 4 5.8 4 8S5.8 12 8 12ZM8 6C9.1 6 10 6.9 10 8S9.1 10 8 10C6.9 10 6 9.1 6 8S6.9 6 8 6ZM12 18V20H4V18C4 15.8 5.8 14 8 14S12 15.8 12 18Z"/>

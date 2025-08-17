@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { authService } from '../services/apiService';
+import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import './LoginScreen.css';
 
@@ -47,8 +48,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       
       // Notificar que el login fue exitoso
       onLoginSuccess();
-    } catch (error: any) {
-      if (error.response?.data) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         setError(typeof error.response.data === 'string' ? error.response.data : 'Error de autenticación');
       } else {
         setError('Error de conexión');

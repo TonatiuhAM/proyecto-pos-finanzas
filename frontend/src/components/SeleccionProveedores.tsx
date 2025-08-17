@@ -4,7 +4,7 @@ import { deudasProveedoresService } from '../services/deudasService';
 import { useToast } from '../hooks/useToast';
 import type { Proveedor, DeudaProveedor } from '../types';
 import './SeleccionProveedores.css'; // Estilos específicos Material Design
-
+import axios from 'axios';
 interface SeleccionProveedoresProps {
   onProveedorSelect: (proveedor: Proveedor) => void;
   onBackToInventario?: () => void;
@@ -60,24 +60,24 @@ const SeleccionProveedores: React.FC<SeleccionProveedoresProps> = ({
         setProveedores(proveedoresData);
         setError(null);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Error loading proveedores:', error);
       console.error('❌ Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        url: error.config?.url
+        message: error instanceof Error ? error.message : String(error),
+        status: axios.isAxiosError(error) && error.response?.status,
+        statusText: axios.isAxiosError(error) && error.response?.statusText,
+        data: axios.isAxiosError(error) && error.response?.data,
+        url: axios.isAxiosError(error) && error.config?.url
       });
       
       let errorMessage = 'Error al cargar los proveedores';
-      if (error.response?.status === 401) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
         errorMessage = 'Error de autenticación. Por favor, inicia sesión nuevamente.';
-      } else if (error.response?.status === 403) {
+      } else if (axios.isAxiosError(error) && error.response?.status === 403) {
         errorMessage = 'No tienes permisos para acceder a esta información.';
-      } else if (error.response?.status === 404) {
+      } else if (axios.isAxiosError(error) && error.response?.status === 404) {
         errorMessage = 'Endpoint de proveedores no encontrado.';
-      } else if (error.message?.includes('Network Error')) {
+      } else if (error instanceof Error ? error.message : String(error)?.includes('Network Error')) {
         errorMessage = 'Error de conexión. Verifica que el backend esté funcionando.';
       }
       

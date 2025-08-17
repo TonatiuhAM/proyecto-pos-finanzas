@@ -4,6 +4,7 @@ import { workspaceService } from '../services/apiService';
 import { useToast } from '../hooks/useToast';
 import type { ProductoDTO, CategoriaDTO } from '../services/inventarioService';
 import type { ItemCarrito } from '../types';
+import axios from 'axios';
 import './PuntoDeVenta.css';
 
 interface PuntoDeVentaProps {
@@ -87,7 +88,7 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
             stockDisponibleKg: 0
           }));
           
-        } catch (ordenesError: any) {
+        } catch (ordenesError: unknown) {
           console.warn('⚠️ No se pudieron cargar órdenes existentes:', ordenesError);
           console.warn('⚠️ Continuando con carrito vacío...');
           // No es un error crítico, continuar con carrito vacío
@@ -99,21 +100,21 @@ const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({
         setError(null);
         console.log('🎉 Carga completa exitosa');
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('❌ Error detallado al cargar POS:', error);
-        console.error('❌ Error response:', error.response);
-        console.error('❌ Error status:', error.response?.status);
-        console.error('❌ Error data:', error.response?.data);
+        console.error('❌ Error response:', axios.isAxiosError(error) && error.response);
+        console.error('❌ Error status:', axios.isAxiosError(error) && error.response?.status);
+        console.error('❌ Error data:', axios.isAxiosError(error) && error.response?.data);
         
         // Manejo de errores más específico
-        if (error.response?.status === 404) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
           setError('Workspace no encontrado o algunos datos no están disponibles');
-        } else if (error.response?.status === 500) {
+        } else if (axios.isAxiosError(error) && error.response?.status === 500) {
           setError('Error del servidor. Por favor intente nuevamente');
-        } else if (error.message?.includes('Network Error')) {
+        } else if (error instanceof Error ? error.message : String(error)?.includes('Network Error')) {
           setError('Error de conexión. Verifique que el backend esté ejecutándose');
         } else {
-          setError(`Error al cargar los datos del punto de venta: ${error.message || 'Error desconocido'}`);
+          setError(`Error al cargar los datos del punto de venta: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Error desconocido'}`);
         }
       } finally {
         setIsLoading(false);

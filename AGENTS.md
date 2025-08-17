@@ -1,27 +1,32 @@
 # AGENTS.md - Sistema POS y Gesti√≥n Integral
 
 ## Build/Test Commands
+
 - **Frontend**: `cd frontend && npm run dev` (dev), `npm run build` (build), `npm run lint` (lint)
 - **Backend**: `cd backend && ./mvnw spring-boot:run` (dev), `./mvnw test` (tests), `./mvnw test -Dtest=ClassName#methodName` (single test)
 - **Docker**: `docker-compose up --build -d` (full environment)
 
 ## Language & Documentation
+
 - **Espa√±ol obligatorio** para c√≥digo, comentarios, commits y documentaci√≥n
 - Usar Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
 
 ## Planning Workflow
+
 - **SIEMPRE** usar `tasks.md` para planificar antes de codificar
 - Esperar aprobaci√≥n expl√≠cita antes de implementar
 - Actualizar checkboxes en `tasks.md` durante implementaci√≥n
 
 ## Backend (Java/Spring Boot)
-- Arquitectura: `Controller ‚Üí Service ‚Üí Repository`
+
+- Arquitectura: `Controller ‚Uí Service ‚Uí Repository`
 - **Nunca** exponer entidades JPA directamente, usar DTOs
 - Validaci√≥n con `jakarta.validation` (`@NotBlank`, `@Email`, `@Size`)
 - `@Autowired` para inyecci√≥n de dependencias
 - Lombok para reducir boilerplate
 
 ## Frontend (React/TypeScript)
+
 - Componentes funcionales con Hooks √∫nicamente
 - **TypeScript estricto**: evitar `any`, definir interfaces para props y DTOs
 - Servicios API centralizados en `services/` con axios
@@ -69,13 +74,13 @@ El diferenciador clave del sistema es su motor de **predicción de compras basad
 
 Para cualquier solicitud de nueva funcionalidad, corrección o refactorización, sigue estos pasos estrictamente:
 
-1.  **Localiza el archivo `tasks.md`** en la raíz del proyecto.
-2.  **Gestiona las tareas completadas:** Antes de añadir una nueva tarea, revisa si hay secciones de tareas ya marcadas como completas. Si es así, propon moverlas a un archivo de histórico llamado `tasks-archive.md` para mantener limpio el archivo principal. Espera confirmación para hacerlo.
-3.  **Añade la nueva tarea:** Crea una nueva sección al final del archivo usando un título de Markdown (ej. `## Tarea: Implementar Sistema de Notificaciones`).
-4.  **Crea el plan de acción (checklist):** Detalla las subtareas técnicas necesarias. Sé específico sobre los archivos a crear/modificar y las acciones a realizar. El plan debe ser una guía clara de tu trabajo.
-5.  **Presenta el plan:** Comunica que el plan está listo en `tasks.md` y espera la aprobación explícita ("procede", "adelante", "ok") antes de escribir una sola línea de código.
-6.  **Ejecuta y actualiza:** A medida que implementes cada paso del plan, **actualiza el `tasks.md` marcando la casilla correspondiente** (`[x]`).
-7.  **Reflejar Cambios (Docker):** Una vez que hayas completado una porción de código y quieras que se vea reflejada en el entorno local, **solicita explícitamente que se ejecute el siguiente comando:** `docker-compose up --build -d`.
+1. **Localiza el archivo `tasks.md`** en la raíz del proyecto.
+2. **Gestiona las tareas completadas:** Antes de añadir una nueva tarea, revisa si hay secciones de tareas ya marcadas como completas. Si es así, propon moverlas a un archivo de histórico llamado `tasks-archive.md` para mantener limpio el archivo principal. Espera confirmación para hacerlo.
+3. **Añade la nueva tarea:** Crea una nueva sección al final del archivo usando un título de Markdown (ej. `## Tarea: Implementar Sistema de Notificaciones`).
+4. **Crea el plan de acción (checklist):** Detalla las subtareas técnicas necesarias. Sé específico sobre los archivos a crear/modificar y las acciones a realizar. El plan debe ser una guía clara de tu trabajo.
+5. **Presenta el plan:** Comunica que el plan está listo en `tasks.md` y espera la aprobación explícita ("procede", "adelante", "ok") antes de escribir una sola línea de código.
+6. **Ejecuta y actualiza:** A medida que implementes cada paso del plan, **actualiza el `tasks.md` marcando la casilla correspondiente** (`[x]`).
+7. **Reflejar Cambios (Docker):** Una vez que hayas completado una porción de código y quieras que se vea reflejada en el entorno local, **solicita explícitamente que se ejecute el siguiente comando:** `docker-compose up --build -d`.
 
 ---
 
@@ -122,10 +127,10 @@ Para cualquier solicitud de nueva funcionalidad, corrección o refactorización,
 - **Pruebas de Integración:**
   - **Backend:** Para los `Controller` y `Repository`, crea pruebas de integración con `@SpringBootTest` que puedan usar una base de datos de prueba (como H2 en memoria o Testcontainers).
 - **Depuración (Debugging):**
-  1.  **Replicar el Error:** Tu primer paso debe ser entender y replicar el bug de manera consistente.
-  2.  **Formular Hipótesis:** Basado en el error, formula una hipótesis sobre la causa raíz.
-  3.  **Proponer un Plan de Depuración:** En el `tasks.md`, detalla los pasos que seguirás para confirmar la hipótesis (ej. "Añadir logs en `X` servicio", "Inspeccionar la respuesta de la API en el navegador", "Ejecutar prueba unitaria `Y`").
-  4.  **Solucionar y Verificar:** Una vez encontrada la causa, propón la solución y un plan para verificar que el arreglo funciona y no introduce nuevas regresiones (ej. "Crear una nueva prueba unitaria que cubra este caso de error").
+  1. **Replicar el Error:** Tu primer paso debe ser entender y replicar el bug de manera consistente.
+  2. **Formular Hipótesis:** Basado en el error, formula una hipótesis sobre la causa raíz.
+  3. **Proponer un Plan de Depuración:** En el `tasks.md`, detalla los pasos que seguirás para confirmar la hipótesis (ej. "Añadir logs en `X` servicio", "Inspeccionar la respuesta de la API en el navegador", "Ejecutar prueba unitaria `Y`").
+  4. **Solucionar y Verificar:** Una vez encontrada la causa, propón la solución y un plan para verificar que el arreglo funciona y no introduce nuevas regresiones (ej. "Crear una nueva prueba unitaria que cubra este caso de error").
 
 ---
 

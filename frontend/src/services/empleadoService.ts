@@ -57,11 +57,11 @@ export const empleadoService = {
     try {
       const response = await axiosInstance.post('/api/empleados', empleadoData);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al crear empleado:', error);
       
       // Manejar errores específicos del servidor
-      if (error.response?.status === 400) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
         const errorMessage = error.response.data || 'Datos inválidos para crear el empleado';
         throw new Error(errorMessage);
       }
@@ -81,16 +81,16 @@ export const empleadoService = {
       const estadoRequest: EmpleadoEstadoRequest = { estado: nuevoEstado };
       const response = await axiosInstance.put(`/api/empleados/${empleadoId}/estado`, estadoRequest);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al cambiar estado del empleado:', error);
       
       // Manejar errores específicos del servidor
-      if (error.response?.status === 400) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
         const errorMessage = error.response.data || 'No se pudo cambiar el estado del empleado';
         throw new Error(errorMessage);
       }
       
-      if (error.response?.status === 404) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
         throw new Error('Empleado no encontrado');
       }
       
@@ -107,10 +107,10 @@ export const empleadoService = {
     try {
       const response = await axiosInstance.get(`/api/empleados/${empleadoId}`);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al obtener empleado por ID:', error);
       
-      if (error.response?.status === 404) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
         throw new Error('Empleado no encontrado');
       }
       

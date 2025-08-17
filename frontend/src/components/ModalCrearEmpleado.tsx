@@ -102,9 +102,9 @@ const ModalCrearEmpleado: React.FC<ModalCrearEmpleadoProps> = ({
 
       const nuevoEmpleado = await empleadoService.crearEmpleado(empleadoData);
       onEmpleadoCreado(nuevoEmpleado);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Mostrar error específico del servidor
-      const errorMessage = error.message || 'Error al crear empleado';
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear empleado';
       
       // Si es un error de validación específico, mostrarlo en el campo correspondiente
       if (errorMessage.toLowerCase().includes('nombre')) {
@@ -148,145 +148,185 @@ const ModalCrearEmpleado: React.FC<ModalCrearEmpleadoProps> = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={cerrarModal}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Header del modal */}
-        <div className="modal-header">
-          <h2 className="modal-titulo">
-            <span className="material-icons">person_add</span>
-            Crear Nuevo Empleado
-          </h2>
+    <div className="modal-overlay-empleado" onClick={cerrarModal}>
+      <div className="modal-empleado" onClick={(e) => e.stopPropagation()}>
+        {/* Header con Material Design */}
+        <div className="modal-empleado__header">
+          <div className="modal-empleado__header-content">
+            <div className="modal-empleado__icon-wrapper">
+              <span className="material-icons">person_add</span>
+            </div>
+            <div className="modal-empleado__title-section">
+              <h2 className="modal-empleado__title">Crear Nuevo Empleado</h2>
+              <p className="modal-empleado__subtitle">Complete la información del empleado</p>
+            </div>
+          </div>
           <button 
-            className="modal-cerrar"
+            className="modal-empleado__close"
             onClick={cerrarModal}
             disabled={estadoCarga.creando}
+            aria-label="Cerrar modal"
           >
             <span className="material-icons">close</span>
           </button>
         </div>
 
-        {/* Formulario */}
-        <form onSubmit={manejarEnvio} className="modal-formulario">
-          {/* Campo Nombre */}
-          <div className="campo-formulario">
-            <label htmlFor="nombre" className="campo-label">
-              <span className="material-icons">person</span>
-              Nombre Completo *
-            </label>
-            <input
-              type="text"
-              id="nombre"
-              value={formulario.nombre}
-              onChange={(e) => manejarCambio('nombre', e.target.value)}
-              className={`campo-input ${formulario.errores.nombre ? 'campo-input--error' : ''}`}
-              placeholder="Ingrese el nombre completo"
-              disabled={estadoCarga.creando}
-              maxLength={100}
-            />
-            {formulario.errores.nombre && (
-              <span className="campo-error">{formulario.errores.nombre}</span>
-            )}
+        {/* Formulario con Material Design */}
+        <form onSubmit={manejarEnvio} className="modal-empleado__form">
+          <div className="modal-empleado__form-grid">
+            {/* Campo Nombre */}
+            <div className="input-group">
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="nombre"
+                  value={formulario.nombre}
+                  onChange={(e) => manejarCambio('nombre', e.target.value)}
+                  className={`input-field ${formulario.errores.nombre ? 'input-field--error' : ''} ${formulario.nombre ? 'input-field--filled' : ''}`}
+                  placeholder=" "
+                  disabled={estadoCarga.creando}
+                  maxLength={100}
+                />
+                <label htmlFor="nombre" className="input-label">
+                  <span className="material-icons">person</span>
+                  Nombre Completo *
+                </label>
+                <div className="input-underline"></div>
+              </div>
+              {formulario.errores.nombre && (
+                <div className="input-error">
+                  <span className="material-icons">error</span>
+                  {formulario.errores.nombre}
+                </div>
+              )}
+            </div>
+
+            {/* Campo Contraseña */}
+            <div className="input-group">
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  id="contrasena"
+                  value={formulario.contrasena}
+                  onChange={(e) => manejarCambio('contrasena', e.target.value)}
+                  className={`input-field ${formulario.errores.contrasena ? 'input-field--error' : ''} ${formulario.contrasena ? 'input-field--filled' : ''}`}
+                  placeholder=" "
+                  disabled={estadoCarga.creando}
+                  maxLength={50}
+                />
+                <label htmlFor="contrasena" className="input-label">
+                  <span className="material-icons">lock</span>
+                  Contraseña *
+                </label>
+                <div className="input-underline"></div>
+              </div>
+              {formulario.errores.contrasena && (
+                <div className="input-error">
+                  <span className="material-icons">error</span>
+                  {formulario.errores.contrasena}
+                </div>
+              )}
+            </div>
+
+            {/* Campo Teléfono */}
+            <div className="input-group">
+              <div className="input-wrapper">
+                <input
+                  type="tel"
+                  id="telefono"
+                  value={formulario.telefono}
+                  onChange={(e) => manejarCambio('telefono', e.target.value)}
+                  className={`input-field ${formulario.errores.telefono ? 'input-field--error' : ''} ${formulario.telefono ? 'input-field--filled' : ''}`}
+                  placeholder=" "
+                  disabled={estadoCarga.creando}
+                  maxLength={15}
+                />
+                <label htmlFor="telefono" className="input-label">
+                  <span className="material-icons">phone</span>
+                  Teléfono
+                </label>
+                <div className="input-underline"></div>
+              </div>
+              {formulario.errores.telefono && (
+                <div className="input-error">
+                  <span className="material-icons">error</span>
+                  {formulario.errores.telefono}
+                </div>
+              )}
+            </div>
+
+            {/* Campo Rol */}
+            <div className="input-group">
+              <div className="select-wrapper">
+                <select
+                  id="rolId"
+                  value={formulario.rolId}
+                  onChange={(e) => manejarCambio('rolId', e.target.value)}
+                  className={`select-field ${formulario.errores.rolId ? 'select-field--error' : ''} ${formulario.rolId ? 'select-field--filled' : ''}`}
+                  disabled={estadoCarga.creando}
+                >
+                  <option value=""></option>
+                  {roles.map((rol) => (
+                    <option key={rol.id} value={rol.id}>
+                      {rol.nombre}
+                    </option>
+                  ))}
+                </select>
+                <label htmlFor="rolId" className="select-label">
+                  <span className="material-icons">work</span>
+                  Rol *
+                </label>
+                <div className="select-underline"></div>
+                <span className="material-icons select-arrow">expand_more</span>
+              </div>
+              {formulario.errores.rolId && (
+                <div className="input-error">
+                  <span className="material-icons">error</span>
+                  {formulario.errores.rolId}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Campo Contraseña */}
-          <div className="campo-formulario">
-            <label htmlFor="contrasena" className="campo-label">
-              <span className="material-icons">lock</span>
-              Contraseña *
-            </label>
-            <input
-              type="password"
-              id="contrasena"
-              value={formulario.contrasena}
-              onChange={(e) => manejarCambio('contrasena', e.target.value)}
-              className={`campo-input ${formulario.errores.contrasena ? 'campo-input--error' : ''}`}
-              placeholder="Ingrese la contraseña"
-              disabled={estadoCarga.creando}
-              maxLength={50}
-            />
-            {formulario.errores.contrasena && (
-              <span className="campo-error">{formulario.errores.contrasena}</span>
-            )}
+          {/* Información adicional con Material Design */}
+          <div className="info-card">
+            <div className="info-card__icon">
+              <span className="material-icons">info</span>
+            </div>
+            <div className="info-card__content">
+              <h4>Información importante</h4>
+              <ul>
+                <li>El empleado será creado con estado <strong>Activo</strong></li>
+                <li>La contraseña será encriptada de forma segura</li>
+                <li>El teléfono es opcional pero recomendado</li>
+              </ul>
+            </div>
           </div>
 
-          {/* Campo Teléfono */}
-          <div className="campo-formulario">
-            <label htmlFor="telefono" className="campo-label">
-              <span className="material-icons">phone</span>
-              Teléfono
-            </label>
-            <input
-              type="tel"
-              id="telefono"
-              value={formulario.telefono}
-              onChange={(e) => manejarCambio('telefono', e.target.value)}
-              className={`campo-input ${formulario.errores.telefono ? 'campo-input--error' : ''}`}
-              placeholder="1234567890"
-              disabled={estadoCarga.creando}
-              maxLength={15}
-            />
-            {formulario.errores.telefono && (
-              <span className="campo-error">{formulario.errores.telefono}</span>
-            )}
-          </div>
-
-          {/* Campo Rol */}
-          <div className="campo-formulario">
-            <label htmlFor="rolId" className="campo-label">
-              <span className="material-icons">work</span>
-              Rol *
-            </label>
-            <select
-              id="rolId"
-              value={formulario.rolId}
-              onChange={(e) => manejarCambio('rolId', e.target.value)}
-              className={`campo-input campo-select ${formulario.errores.rolId ? 'campo-input--error' : ''}`}
-              disabled={estadoCarga.creando}
-            >
-              <option value="">Seleccione un rol</option>
-              {roles.map((rol) => (
-                <option key={rol.id} value={rol.id}>
-                  {rol.nombre}
-                </option>
-              ))}
-            </select>
-            {formulario.errores.rolId && (
-              <span className="campo-error">{formulario.errores.rolId}</span>
-            )}
-          </div>
-
-          {/* Información adicional */}
-          <div className="info-adicional">
-            <span className="material-icons">info</span>
-            <p>
-              El empleado será creado con estado <strong>Activo</strong> por defecto.
-              La contraseña será hasheada de forma segura.
-            </p>
-          </div>
-
-          {/* Botones */}
-          <div className="modal-botones">
+          {/* Botones con Material Design */}
+          <div className="modal-empleado__actions">
             <button
               type="button"
-              className="btn-secondary"
+              className="btn-material btn-material--outline"
               onClick={cerrarModal}
               disabled={estadoCarga.creando}
             >
+              <span className="material-icons">close</span>
               Cancelar
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className="btn-material btn-material--primary"
               disabled={estadoCarga.creando}
             >
               {estadoCarga.creando ? (
                 <>
-                  <div className="loading-spinner-small"></div>
+                  <div className="btn-spinner"></div>
                   Creando...
                 </>
               ) : (
                 <>
-                  <span className="material-icons">save</span>
+                  <span className="material-icons">add</span>
                   Crear Empleado
                 </>
               )}
