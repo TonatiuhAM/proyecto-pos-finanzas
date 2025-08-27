@@ -3,6 +3,7 @@ package com.posfin.pos_finanzas_backend.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +22,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -35,8 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(OPTIONS, "/**").permitAll() // Permitir todas las peticiones OPTIONS
                         .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a la autenticación
-                        .requestMatchers("/api/**").permitAll() // TEMPORAL: Permitir acceso a toda la API para debugging
-                        .anyRequest().permitAll() // TEMPORAL: Permitir todo para debugging
+                        .anyRequest().authenticated() // Requerir autenticación para el resto
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
