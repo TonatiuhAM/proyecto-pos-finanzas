@@ -29,7 +29,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Excluir rutas de autenticación del procesamiento JWT
         String requestPath = request.getRequestURI();
-        if (requestPath.startsWith("/api/auth/")) {
+        if (requestPath.startsWith("/api/auth/") || requestPath.startsWith("/auth/")) {
             logger.debug("Skipping JWT processing for auth endpoint: " + requestPath);
             chain.doFilter(request, response);
             return;
