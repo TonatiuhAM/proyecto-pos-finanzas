@@ -29,6 +29,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        System.out.println("!!!!!! DEBUG: Solicitud recibida en AuthController.login !!!!!!");
         try {
             String nombre = credentials.get("nombre");
             String contrasena = credentials.get("contrasena");
