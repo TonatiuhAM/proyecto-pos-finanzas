@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(OPTIONS, "/**").permitAll() // Permitir todas las peticiones OPTIONS
                         .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a la autenticación
-                        //.requestMatchers("/api/**").permitAll() // DESARROLLO: Permitir acceso a todas las APIs sin
+                        .requestMatchers("/api/**").permitAll() // DESARROLLO: Permitir acceso a todas las APIs sin
                                                                 // autenticación
                         .requestMatchers("/actuator/**").permitAll() // Permitir acceso a actuator
                         .anyRequest().authenticated() // Requerir autenticación para el resto

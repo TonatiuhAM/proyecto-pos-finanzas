@@ -20,7 +20,10 @@ const getBackendUrl = () => {
   
   // En producción real
   if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
-    return 'https://pos-finanzas-q2ddz.ondigitalocean.app';
+    // En producción, usamos una ruta relativa para que el navegador
+    // haga la petición al mismo dominio. El enrutador de la App Platform
+    // se encargará de dirigir /api al backend.
+    return '';
   }
   
   // Fallback para desarrollo local
