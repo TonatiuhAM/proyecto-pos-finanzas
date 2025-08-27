@@ -32,7 +32,11 @@ public class SecurityConfig {
                 .cors(withDefaults()) // Habilitar CORS
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(OPTIONS, "/**").permitAll() // Permitir todas las peticiones OPTIONS
+                        .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a la autenticación
+                        .anyRequest().authenticated() // Requerir autenticación para el resto
+                )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
