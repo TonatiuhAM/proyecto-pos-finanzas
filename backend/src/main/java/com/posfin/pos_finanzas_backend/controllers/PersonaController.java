@@ -62,6 +62,19 @@ public class PersonaController {
     }
 
     /**
+     * Obtener todas las personas (para uso en formularios)
+     */
+    @GetMapping
+    public ResponseEntity<List<PersonaResponseDTO>> obtenerTodasLasPersonas() {
+        try {
+            List<PersonaResponseDTO> personas = personaService.obtenerTodasLasPersonas();
+            return ResponseEntity.ok(personas);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Obtener una persona por ID
      */
     @GetMapping("/{id}")

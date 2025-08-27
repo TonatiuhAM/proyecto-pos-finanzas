@@ -33,6 +33,11 @@ public interface PersonasRepository extends JpaRepository<Personas, String> {
     List<Personas> findByEmailAndEstados_Estado(String email, String estado);
     
     /**
+     * Encuentra todas las personas por estado ordenadas por nombre
+     */
+    List<Personas> findByEstados_EstadoOrderByNombreAsc(String estado);
+    
+    /**
      * Encuentra personas por categoría (para mantener compatibilidad)
      */
     @Query("SELECT p FROM Personas p WHERE p.categoriaPersonas.categoria = :categoriaNombre AND p.estados.estado = 'Activo' ORDER BY p.nombre")

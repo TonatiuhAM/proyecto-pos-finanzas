@@ -111,6 +111,18 @@ public class PersonaService {
     }
 
     /**
+     * Obtener todas las personas (para uso en formularios)
+     */
+    @Transactional(readOnly = true)
+    public List<PersonaResponseDTO> obtenerTodasLasPersonas() {
+        List<Personas> personas = personasRepository.findByEstados_EstadoOrderByNombreAsc("Activo");
+        
+        return personas.stream()
+            .map(this::convertirAPersonaResponseDTO)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Obtener una persona por ID
      */
     @Transactional(readOnly = true)

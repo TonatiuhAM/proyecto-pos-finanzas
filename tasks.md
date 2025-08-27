@@ -1,10 +1,55 @@
 # Tareas del Proyecto POS Finanzas
 
+## 🐛 Bug en Formulario de Creación de Productos
+
+**Fecha:** 26 de agosto de 2025
+**Prioridad:** Alta
+**Estado:** En investigación
+
+### Problema Identificado
+Los selectores de "Proveedores" y "Categorías" en el formulario de creación de productos aparecen vacíos, aunque existen datos en la base de datos.
+
+### Tareas de Investigación y Corrección
+
+- [ ] **Investigar problema en formulario de creación de productos**
+  - Localizar archivo del formulario de productos
+  - Verificar llamadas a APIs para cargar datos
+  - Revisar estructura de componentes
+
+- [ ] **Revisar código de carga de proveedores en formulario**
+  - Verificar servicio de proveedores
+  - Comprobar endpoints utilizados
+  - Analizar estructura de respuesta
+
+- [ ] **Revisar código de carga de categorías en formulario**
+  - Verificar servicio de categorías de productos
+  - Comprobar endpoints utilizados  
+  - Analizar manejo de estado
+
+- [ ] **Corregir selectores vacíos en formulario de productos**
+  - Implementar correcciones necesarias
+  - Probar funcionalidad
+  - Verificar carga correcta de datos
+
+### Notas Técnicas
+- Los datos existen en BD según reporte del usuario
+- Problema específico en selectores del formulario
+- Posible issue con servicios API o manejo de estado React
+
+### Checklist de Verificación
+- [ ] Verificar consola del navegador por errores
+- [ ] Comprobar Network tab para llamadas fallidas
+- [ ] Revisar estructura de respuestas de API
+- [ ] Validar que los componentes reciban los datos correctamente
+
+---
+
 ## 🛒 NUEVA IMPLEMENTACIÓN: Sistema de Compras a Proveedores (11 Ago 2025)
 
 ### Descripción del Sistema
 
 Se implementará un flujo completo de compras a proveedores que permitirá:
+
 - Registrar órdenes de compra desde la pantalla de Inventario
 - Seleccionar proveedores y filtrar productos por proveedor
 - Gestionar deudas y pagos parciales/totales
@@ -90,16 +135,19 @@ Se implementará un flujo completo de compras a proveedores que permitirá:
 ### Características Técnicas
 
 #### Lógica de Deuda
+
 - **Cálculo**: SUMA(ordenes_de_compras.total_compras) - SUMA(historial_cargos_proveedores.monto_pagado)
 - **Estados**: Verde (deuda <= 0), Amarillo (deuda > 0)
 - **Actualización**: Tiempo real al crear órdenes o registrar pagos
 
 #### Registro de Movimientos
+
 - **Tabla**: `movimientos_inventarios` con tipo "Compra"
 - **Actualización**: Stock incrementa por cada producto comprado
 - **Trazabilidad**: Relación con orden de compra específica
 
 #### Validaciones de Negocio
+
 - Solo productos activos del proveedor seleccionado
 - Pagos no pueden exceder deuda total
 - Montos de pago no pueden ser negativos
@@ -108,11 +156,13 @@ Se implementará un flujo completo de compras a proveedores que permitirá:
 ### Archivos Principales a Crear/Modificar
 
 #### Backend
+
 - `ComprasService.java` - Lógica de negocio principal ✅ IMPLEMENTADO
 - `ComprasController.java` - Endpoints REST ✅ IMPLEMENTADO
 - `ProveedorDTO.java`, `CompraRequestDTO.java`, etc. - DTOs específicos ✅ IMPLEMENTADOS
 
 #### Frontend
+
 - `SeleccionProveedores.tsx` - Pantalla de selección ✅ IMPLEMENTADO
 - `PuntoDeCompras.tsx` - Interfaz principal de compras ✅ IMPLEMENTADO
 - `comprasService.ts` - Servicios API ✅ IMPLEMENTADO
@@ -122,7 +172,7 @@ Se implementará un flujo completo de compras a proveedores que permitirá:
 
 **El sistema completo de compras a proveedores ha sido implementado exitosamente con todas las funcionalidades solicitadas.**
 
-#### ✅ Funcionalidades Implementadas:
+#### ✅ Funcionalidades Implementadas
 
 - **Backend (Java/Spring Boot)**: ✅ 100% COMPLETADO
   - DTOs completos para compras, proveedores, pagos y deudas
@@ -137,7 +187,7 @@ Se implementará un flujo completo de compras a proveedores que permitirá:
   - ComprasService.ts con funciones helper y validaciones
   - Tipos TypeScript completos para todo el flujo
 
-#### ✅ Flujo Funcional Completado:
+#### ✅ Flujo Funcional Completado
 
 1. **Inventario** → Botón "Comprar producto"
 2. **Selección de Proveedores** → Lista con estado de deudas visualizado
@@ -145,7 +195,7 @@ Se implementará un flujo completo de compras a proveedores que permitirá:
 4. **Sistema de Pago** → Opción inmediata con validaciones
 5. **Confirmación** → Registro de compra y actualización de inventario
 
-#### ✅ Características Técnicas Implementadas:
+#### ✅ Características Técnicas Implementadas
 
 - **Cálculo dinámico de deudas** en tiempo real desde backend
 - **Validaciones completas** en frontend y backend
@@ -154,7 +204,7 @@ Se implementará un flujo completo de compras a proveedores que permitirá:
 - **Arquitectura escalable** con separación de responsabilidades
 - **TypeScript estricto** sin errores de compilación
 
-#### ⚠️ Nota sobre Estado del Backend:
+#### ⚠️ Nota sobre Estado del Backend
 
 - **Frontend**: ✅ Compilación exitosa sin errores
 - **Backend**: ⚠️ Necesita ajustes menores de compatibilidad con modelos existentes
@@ -945,6 +995,7 @@ En lugar de tener iconos superpuestos, cambiar a un diseño horizontal:
 ### Descripción
 
 Se modernizó completamente la interfaz de `PuntoDeCompras.tsx` aplicando Material Design 3 para:
+
 - **Tarjeta de selección de productos**: Dropdown moderno y campo numérico para cantidad
 - **Tarjeta de carrito de compras**: Tabla moderna con botón "Finalizar compra" estilizado
 
@@ -1031,7 +1082,7 @@ Expandir la funcionalidad actual de la página de "Empleados" para crear un cent
   - Email
   - **Categoría** (selector dinámico cargado desde API)
 
-- **Lógica de Categorías**: 
+- **Lógica de Categorías**:
   - Carga dinámica desde endpoint `/api/categorias-personas`
   - Mostrar nombres de categorías al usuario
   - Enviar IDs al backend al crear la persona
@@ -1116,6 +1167,7 @@ Expandir la funcionalidad actual de la página de "Empleados" para crear un cent
 ### Archivos a Crear/Modificar
 
 #### Backend
+
 - `PersonaController.java` - Nuevo controlador para gestión de personas
 - `PersonaService.java` - Lógica de negocio
 - `PersonaCreateRequestDTO.java` - DTO para creación
@@ -1124,6 +1176,7 @@ Expandir la funcionalidad actual de la página de "Empleados" para crear un cent
 - `CategoriaPersonaDTO.java` - DTO para categorías
 
 #### Frontend
+
 - `GestionEmpleados.tsx` - Expansión con nuevas tablas
 - `GestionEmpleados.css` - Actualización Material Design
 - `ModalCrearPersona.tsx` - Nuevo modal de creación
@@ -1135,17 +1188,20 @@ Expandir la funcionalidad actual de la página de "Empleados" para crear un cent
 ### Consideraciones Técnicas
 
 #### Validaciones
+
 - **RFC**: Formato válido mexicano (opcional)
 - **Email**: Formato válido de correo electrónico
 - **Teléfono**: Formato numérico con longitud apropiada
 - **Nombres**: No vacíos, longitud mínima/máxima
 
 #### Seguridad
+
 - **Validación Backend**: Nunca confiar solo en validaciones frontend
 - **Sanitización**: Limpiar inputs para prevenir inyecciones
 - **Autorización**: Solo administradores pueden crear personas
 
 #### Performance
+
 - **Carga Lazy**: Cargar tablas de personas solo cuando se necesiten
 - **Paginación**: Implementar si el número de registros es alto
 - **Cache**: Almacenar categorías en cache para evitar llamadas repetidas
@@ -1185,11 +1241,13 @@ Al completar esta implementación, el sistema tendrá:
 #### Implementaciones Técnicas
 
 **Frontend (React/TypeScript):**
+
 - `PuntoDeCompras.tsx` - Simplificado con nuevo layout de un solo campo cantidad + unidad
 - `PuntoDeCompras.css` - Spinner centrado en pantalla completa, layout responsivo actualizado
 - `comprasService.ts` - Nuevo método `obtenerUltimoPrecioCompra()` para precios automáticos
 
 **Backend (Java/Spring Boot):**
+
 - `HistorialCostosController.java` - Nuevo endpoint `GET /historial-costos/producto/{id}/ultimo-costo`
 - `HistorialCostosRepository.java` - Método `findLatestByProducto()` ya existía
 
@@ -1216,7 +1274,7 @@ Al completar esta implementación, el sistema tendrá:
 
 Al intentar generar una cuenta desde el POS, la aplicación produce errores CORS y URL malformada.
 
-#### Errores Identificados:
+#### Errores Identificados
 
 - **Error CORS**: `No 'Access-Control-Allow-Origin' header is present on the requested resource`
 - **URL Duplicada**: La URL contiene `/api/api/` en lugar de `/api/`
@@ -1224,7 +1282,7 @@ Al intentar generar una cuenta desde el POS, la aplicación produce errores CORS
 - **Error de Conexión**: Error 403 Forbidden al intentar login después de correcciones iniciales
 - **Error PATCH CORS**: Método PATCH no incluido en allowedMethods de configuración CORS
 
-#### Solución Implementada:
+#### Solución Implementada
 
 - ✅ **Causa Raíz 1 Identificada**: Duplicación de `/api` en `apiService.ts` (baseURL)
 - ✅ **Causa Raíz 2 Identificada**: Inconsistencia entre `apiService.ts` e `inventarioService.ts` en lógica de URL
@@ -1237,7 +1295,7 @@ Al intentar generar una cuenta desde el POS, la aplicación produce errores CORS
 - ✅ **Sistema Reconstruido**: Docker containers funcionando correctamente con fix CORS
 - ✅ **Backend CORS**: Configuración actualizada con soporte completo para PATCH
 
-#### Detalles Técnicos:
+#### Detalles Técnicos
 
 ```typescript
 // ANTES (incorrecto en apiService.ts):
@@ -1256,7 +1314,7 @@ baseURL: `${backendUrl}/api`; // Con getBackendUrl() corregida para usar VITE_AP
 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
 ```
 
-#### Configuración de Entorno:
+#### Configuración de Entorno
 
 - **Archivo**: `frontend/.env.local`
 - **Variable**: `VITE_API_URL=http://localhost:8080`
@@ -1280,27 +1338,27 @@ baseURL: `${backendUrl}/api`; // Con getBackendUrl() corregida para usar VITE_AP
 
 Al intentar seleccionar un método de pago en el ticket generado, el selector no muestra ningún método de pago y se obtiene un error 403 Forbidden.
 
-#### Error Identificado:
+#### Error Identificado
 
 - **Endpoint**: `GET /api/metodos-pago` ❌ (Incorrecto)
 - **Status**: 403 Forbidden
 - **Contexto**: El error ocurre cuando el usuario intenta seleccionar un método de pago en la pantalla del ticket
 - **Comportamiento**: El selector aparece vacío, sin opciones de métodos de pago
 
-#### Causa Raíz Identificada:
+#### Causa Raíz Identificada
 
 - **Inconsistencia de URLs**: El frontend hacía petición a `/metodos-pago` (con guión) pero el backend está configurado para `/metodos_pago` (con guión bajo)
 - **Backend Controller**: `@RequestMapping("/api/metodos_pago")` ✅
 - **Frontend apiService**: `api.get('/metodos-pago')` ❌ → `api.get('/metodos_pago')` ✅
 - **Frontend inventarioService**: `api.get('/metodos_pago')` ✅ (Ya estaba correcto)
 
-#### Solución Implementada:
+#### Solución Implementada
 
 - ✅ **Corregido apiService.ts**: Cambiado `/metodos-pago` → `/metodos_pago`
 - ✅ **Unificada nomenclatura**: Ambos servicios frontend ahora usan la URL correcta
 - ✅ **Endpoint funcional**: `/api/metodos_pago` ahora accesible correctamente
 
-#### Archivos Modificados:
+#### Archivos Modificados
 
 - `frontend/src/services/apiService.ts` - Corregida URL del endpoint de métodos de pago
 
@@ -1322,14 +1380,14 @@ Al intentar seleccionar un método de pago en el ticket generado, el selector no
 
 Al seleccionar un método de pago y presionar "Procesar Pago", se obtiene un error 400 Bad Request que impide completar la venta.
 
-#### Error Identificado:
+#### Error Identificado
 
 - **Endpoint**: `POST /api/workspaces/b63c0e93-62a7-483b-82dc-4e2e9430e7af/finalizar-venta`
 - **Status**: 400 Bad Request
 - **Contexto**: Error al intentar finalizar la venta después de seleccionar método de pago
 - **Comportamiento**: Se muestra "Error al procesar el pago. Por favor, intente nuevamente."
 
-#### Causa Raíz Identificada:
+#### Causa Raíz Identificada
 
 - **Usuario ID hardcodeado**: El frontend enviaba `usuarioId: 'current-user-id'` como valor fijo
 - **Validación backend**: El servicio `VentaService.validarUsuario()` intenta buscar este ID en la base de datos
@@ -1338,7 +1396,7 @@ Al seleccionar un método de pago y presionar "Procesar Pago", se obtiene un err
   - `IllegalArgumentException("Usuario no encontrado: current-user-id")`
   - `IllegalStateException("Tipo de movimiento 'venta' no encontrado en el sistema")`
 
-#### Solución Implementada:
+#### Solución Implementada
 
 - ✅ **Modificado TicketVenta.tsx**: Reemplazado usuario hardcodeado por obtención dinámica
 - ✅ **Usado inventarioService.getFirstAvailableUser()**: Obtiene dinámicamente el primer usuario disponible del sistema
@@ -1346,7 +1404,7 @@ Al seleccionar un método de pago y presionar "Procesar Pago", se obtiene un err
 - ✅ **Consistencia con otros componentes**: Usa la misma estrategia que otros archivos del proyecto
 - ✅ **Backend y Frontend reconstruidos**: Cambios aplicados y desplegados
 
-#### Archivos Modificados:
+#### Archivos Modificados
 
 - `frontend/src/components/TicketVenta.tsx` - Obtención dinámica de usuarioId
 - `backend/src/main/java/.../services/VentaService.java` - Corrección tipo de movimiento
@@ -1382,7 +1440,7 @@ Al seleccionar un método de pago y presionar "Procesar Pago", se obtiene un err
 
 Los workspaces temporales no se eliminan automáticamente después de procesar su cuenta exitosamente. En su lugar, solo cambian su estado a "disponible", pero deberían ser eliminados completamente del sistema.
 
-#### Comportamiento Actual (Incorrecto):
+#### Comportamiento Actual (Incorrecto)
 
 - Se crea un workspace temporal
 - Se toman órdenes y se solicita la cuenta
@@ -1390,13 +1448,13 @@ Los workspaces temporales no se eliminan automáticamente después de procesar s
 - El workspace temporal se marca como "disponible" en lugar de eliminarse
 - El workspace temporal sigue apareciendo en la lista
 
-#### Comportamiento Esperado (Correcto):
+#### Comportamiento Esperado (Correcto)
 
 - Los workspaces **permanentes** deben cambiar estado a "disponible" después de procesar cuenta
 - Los workspaces **temporales** deben ser **eliminados completamente** después de procesar cuenta
 - Solo los workspaces permanentes deben persistir en el sistema
 
-#### Solución Implementada:
+#### Solución Implementada
 
 - ✅ **Identificado campo discriminador**: `workspace.getPermanente()` (Boolean)
 - ✅ **Modificado WorkspacesController.finalizarVentaWorkspace()**: Lógica condicional implementada
@@ -1404,7 +1462,7 @@ Los workspaces temporales no se eliminan automáticamente después de procesar s
 - ✅ **Workspaces temporales**: Se eliminan completamente con `workspacesRepository.delete(workspace)`
 - ✅ **Backend reconstruido**: Cambios aplicados y desplegados
 
-#### Archivos Modificados:
+#### Archivos Modificados
 
 - `backend/src/main/java/.../controllers/WorkspacesController.java` - Lógica condicional de eliminación
 
@@ -1434,13 +1492,13 @@ Los workspaces temporales no se eliminan automáticamente después de procesar s
 - [ ] Error "Error al actualizar el producto. Por favor, intente nuevamente" al presionar "Actualizar Producto"
 - [ ] Error "Error al crear el producto. Por favor, intente nuevamente" al intentar crear un nuevo producto
 
-#### Estado Actual:
+#### Estado Actual
 
 - ✅ **Backend**: Corregidos errores de esquema y migración de base de datos
 - ✅ **Frontend**: Corregida obtención dinámica de usuario válido
 - ⚠️ **Problema Pendiente**: Precios y stock aparecen como "N/A" y "0" después de crear productos
 
-#### Próximas Acciones:
+#### Próximas Acciones
 
 - [ ] Investigar por qué los precios y stock no se muestran correctamente después de la creación
 - [ ] Verificar la creación y actualización de registros en `historial_precios` e `inventarios`
@@ -1529,7 +1587,7 @@ Los workspaces temporales no se eliminan automáticamente después de procesar s
 
 La funcionalidad de **Generar la cuenta final para un workspace** ha sido completamente implementada siguiendo el flujo deseado:
 
-#### ✅ Flujo Implementado:
+#### ✅ Flujo Implementado
 
 1. **Solicitar Cuenta**: Mesero presiona "Solicitar Cuenta" desde PuntoDeVenta
 2. **Indicador Visual**: Workspace cambia a estado "cuenta" con color naranja
@@ -1538,13 +1596,13 @@ La funcionalidad de **Generar la cuenta final para un workspace** ha sido comple
 5. **Persistencia**: Datos se guardan en tablas permanentes y se limpian temporales
 6. **Liberación**: Workspace vuelve automáticamente a "disponible"
 
-#### ✅ Componentes Creados:
+#### ✅ Componentes Creados
 
 - **Backend**: 3 endpoints nuevos, 3 DTOs nuevos, lógica de estado
 - **Frontend**: Componente TicketVenta, servicios API, estilos CSS
 - **Integración**: Flujo completo funcional
 
-#### ✅ Archivos Principales Modificados:
+#### ✅ Archivos Principales Modificados
 
 **Backend:**
 
@@ -1684,7 +1742,7 @@ La funcionalidad de **Generar la cuenta final para un workspace** ha sido comple
 
 #### Fase 6: Verificación Frontend - PENDIENTE
 
-- [ ] Abrir la interfaz web en http://localhost:3000
+- [ ] Abrir la interfaz web en <http://localhost:3000>
 - [ ] Verificar que los productos se cargan correctamente en la tabla
 - [ ] Probar creación de productos desde la interfaz (botón "Crear Nuevo Producto")
 - [ ] Probar edición de productos desde la interfaz (botón "Editar")
@@ -1741,6 +1799,7 @@ La funcionalidad de **Generar la cuenta final para un workspace** ha sido comple
   ```
 
 - [x] **Corregir `InventarioModerno.tsx`**
+
   ```typescript
   // Agregado en la función loadData()
   const productosActivos = productosData.filter(
@@ -1809,7 +1868,7 @@ La funcionalidad de **Generar la cuenta final para un workspace** ha sido comple
 
 #### Fase 2: Probar Funcionalidad en Navegador Real
 
-- [x] **Abrir aplicación web en http://localhost:5173**
+- [x] **Abrir aplicación web en <http://localhost:5173>**
 - [ ] **Probar crear un producto nuevo para verificar conexión API**
 - [ ] **Probar botón "Desactivar" en un producto existente**
 - [ ] **Verificar en consola del navegador si hay errores JavaScript**
@@ -2258,6 +2317,7 @@ El sistema se divide en tres fases principales:
   ```
 
 - [ ] **Implementar manejo de errores más específico**:
+
   ```typescript
   catch (error) {
     console.error('Error loading POS data:', error);
@@ -2289,6 +2349,7 @@ El sistema se divide en tres fases principales:
   ```
 
 - [ ] **Verificar mapeo de rutas** en `@RequestMapping`:
+
   ```java
   @RestController
   @RequestMapping("/api/ordenes-workspace") // ¿Debería ser /api?
@@ -2532,14 +2593,14 @@ Este plan seguirá el flujo establecido en las instrucciones:
 
 ### Análisis del Problema
 
-#### Flujo Actual (Incorrecto):
+#### Flujo Actual (Incorrecto)
 
 1. ✅ **Usuario agrega productos** al carrito en el POS
 2. ✅ **Usuario presiona "Guardar Orden"** - se guardan en `ordenes_workspace`
 3. ❌ **Inventario NO se actualiza** - los productos siguen mostrando el mismo stock
 4. ❌ **Riesgo de sobreventa** - otros usuarios pueden "vender" productos ya reservados
 
-#### Comportamiento Correcto Esperado:
+#### Comportamiento Correcto Esperado
 
 1. ✅ **Usuario agrega productos** al carrito en el POS
 2. ✅ **Usuario presiona "Guardar Orden"** - se guardan en `ordenes_workspace`
@@ -2608,7 +2669,7 @@ Este plan seguirá el flujo establecido en las instrucciones:
 
 ### Verificación de Funcionamiento
 
-#### Pruebas Recomendadas:
+#### Pruebas Recomendadas
 
 1. **✅ Guardar Orden**:
 

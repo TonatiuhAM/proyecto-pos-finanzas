@@ -111,6 +111,10 @@ export interface ProveedorDTO {
   nombre: string;
   apellidoPaterno?: string;
   apellidoMaterno?: string;
+  nombreCompleto: string;
+  rfc?: string;
+  email?: string;
+  telefono?: string;
 }
 
 export interface UsuarioDTO {
@@ -252,7 +256,8 @@ export const inventarioService = {
 
   // Obtener proveedores para dropdown (personas que son proveedores)
   getAllProveedores: async (): Promise<ProveedorDTO[]> => {
-    const response = await api.get<ProveedorDTO[]>('/personas');
+    // Cambiar para obtener solo proveedores activos por categoría
+    const response = await api.get<ProveedorDTO[]>('/personas/categoria/50887317-1DD8-4DE4-AAC5-62A342AC7FD4/activos');
     return response.data;
   },
 
