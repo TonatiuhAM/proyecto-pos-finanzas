@@ -27,6 +27,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             @NonNull FilterChain chain)
             throws ServletException, IOException {
 
+        // Excluir rutas de autenticación del procesamiento JWT
+        String requestPath = request.getRequestURI();
+        if (requestPath.startsWith("/api/auth/")) {
+            logger.debug("Skipping JWT processing for auth endpoint: " + requestPath);
+            chain.doFilter(request, response);
+            return;
+        }
+
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String username = null;
@@ -39,11 +47,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtService.extractUsername(jwtToken);
             } catch (Exception e) {
-                logger.warn("JWT Token has expired or is invalid for request: " + request.getRequestURI());
+                logger.warn("JWT Token has expired or is invalid for request: " + request.getRequestURI() + " - " + e.getMessage());
                 // Continue with the filter chain even if token is invalid
                 // The SecurityConfig determines if the route requires authentication
-                chain.doFilter(request, response);
-                return;
             }
         }
 
