@@ -9,6 +9,7 @@ import com.posfin.pos_finanzas_backend.repositories.OrdenesWorkspaceRepository;
 import com.posfin.pos_finanzas_backend.repositories.WorkspacesRepository;
 import com.posfin.pos_finanzas_backend.repositories.ProductosRepository;
 import com.posfin.pos_finanzas_backend.repositories.HistorialPreciosRepository;
+import com.posfin.pos_finanzas_backend.services.OrdenesWorkspaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,9 @@ public class OrdenesWorkspaceController {
 
     @Autowired
     private HistorialPreciosRepository historialPreciosRepository;
+
+    @Autowired
+    private OrdenesWorkspaceService ordenesWorkspaceService;
 
     @GetMapping
     public List<OrdenesWorkspaceDTO> getAllOrdenesWorkspace() {
@@ -271,5 +275,110 @@ public class OrdenesWorkspaceController {
         dto.setPrecio(ordenActualizada.getHistorialPrecio().getPrecio());
 
         return ResponseEntity.ok(dto);
+    }
+
+    // ===== ENDPOINTS MEJORADOS PARA PUNTO DE VENTA =====
+
+    /**
+     * Obtener todas las órdenes de un workspace específico.
+     * Endpoint: GET /api/workspaces/{workspaceId}/ordenes
+     */
+    @GetMapping("/workspaces/{workspaceId}/ordenes")
+    public ResponseEntity<List<OrdenesWorkspaceDTO>> getOrdenesByWorkspace(@PathVariable String workspaceId) {
+        try {
+            // Validar que el workspace existe
+            if (!workspacesRepository.existsById(workspaceId)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Buscar órdenes del workspace
+            List<OrdenesWorkspace> ordenes = ordenesWorkspaceRepository.findByWorkspaceId(workspaceId);
+            List<OrdenesWorkspaceDTO> ordenesDTO = new ArrayList<>();
+
+            for (OrdenesWorkspace orden : ordenes) {
+                OrdenesWorkspaceDTO dto = new OrdenesWorkspaceDTO();
+                dto.setId(orden.getId());
+                dto.setCantidadPz(orden.getCantidadPz());
+                dto.setCantidadKg(orden.getCantidadKg());
+                dto.setWorkspaceId(orden.getWorkspace().getId());
+                dto.setWorkspaceNombre(orden.getWorkspace().getNombre());
+                dto.setProductoId(orden.getProducto().getId());
+                dto.setProductoNombre(orden.getProducto().getNombre());
+                dto.setHistorialPrecioId(orden.getHistorialPrecio().getId());
+                dto.setPrecio(orden.getHistorialPrecio().getPrecio());
+                ordenesDTO.add(dto);
+            }
+
+            return ResponseEntity.ok(ordenesDTO);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Limpiar todas las órdenes de un workspace específico.
+     * Endpoint: DELETE /api/workspaces/{workspaceId}/ordenes
+     */
+    @DeleteMapping("/workspaces/{workspaceId}/ordenes")
+    public ResponseEntity<?> limpiarOrdenesWorkspace(@PathVariable String workspaceId) {
+        try {
+            // Validar que el workspace existe
+            if (!workspacesRepository.existsById(workspaceId)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Eliminar todas las órdenes del workspace
+            ordenesWorkspaceRepository.deleteByWorkspaceId(workspaceId);
+
+            return ResponseEntity.noContent().build();
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error al limpiar órdenes del workspace: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Agregar o actualizar un producto en el carrito del workspace.
+     * Si el producto ya existe, suma las cantidades.
+     * Endpoint: POST /api/ordenes-workspace/agregar-producto
+     */
+    @PostMapping("/agregar-producto")
+    public ResponseEntity<?> agregarProductoACarrito(@RequestBody Map<String, Object> requestBody) {
+        try {
+            String workspaceId = (String) requestBody.get("workspaceId");
+            String productoId = (String) requestBody.get("productoId");
+
+            BigDecimal cantidadPz = requestBody.containsKey("cantidadPz") && requestBody.get("cantidadPz") != null
+                    ? new BigDecimal(requestBody.get("cantidadPz").toString())
+                    : BigDecimal.ZERO;
+
+            BigDecimal cantidadKg = requestBody.containsKey("cantidadKg") && requestBody.get("cantidadKg") != null
+                    ? new BigDecimal(requestBody.get("cantidadKg").toString())
+                    : BigDecimal.ZERO;
+
+            // Validar campos requeridos
+            if (workspaceId == null || productoId == null) {
+                return ResponseEntity.badRequest()
+                        .body("Error: workspaceId y productoId son requeridos");
+            }
+
+            // Usar el servicio para agregar/actualizar producto
+            OrdenesWorkspaceDTO resultado = ordenesWorkspaceService.agregarOActualizarProducto(
+                    workspaceId, productoId, cantidadPz, cantidadKg);
+
+            return ResponseEntity.ok(resultado);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body("Error de validación: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error interno del servidor: " + e.getMessage());
+        }
     }
 }

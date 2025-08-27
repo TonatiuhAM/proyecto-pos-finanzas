@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { authService } from '../services/apiService';
-import type { UsuarioDTO } from '../types/index';
+import axios from 'axios';
+import { useAuth } from '../hooks/useAuth';
 import './LoginScreen.css';
 
 interface LoginScreenProps {
-  onLoginSuccess: (usuario: UsuarioDTO) => void;
+  onLoginSuccess: () => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
@@ -14,6 +15,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Usar el hook de autenticación
+  const { login: authLogin } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,10 +40,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
+      // Llamar al servicio de login (nueva respuesta con rol)
       const loginResponse = await authService.login(credentials);
-      onLoginSuccess(loginResponse.usuario);
-    } catch (error: any) {
-      if (error.response?.data) {
+      
+      // Actualizar el contexto de autenticación con los nuevos datos
+      authLogin(loginResponse);
+      
+      // Notificar que el login fue exitoso
+      onLoginSuccess();
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.data) {
         setError(typeof error.response.data === 'string' ? error.response.data : 'Error de autenticación');
       } else {
         setError('Error de conexión');

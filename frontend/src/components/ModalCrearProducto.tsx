@@ -207,7 +207,7 @@ const ModalCrearProducto: React.FC<ModalCrearProductoProps> = ({ isOpen, onClose
           >
             {proveedores.map((proveedor) => (
               <MenuItem key={proveedor.id} value={proveedor.id}>
-                {proveedor.nombre} {proveedor.apellidoPaterno || ''}
+                {proveedor.nombreCompleto || `${proveedor.nombre} ${proveedor.apellidoPaterno || ''}`}
               </MenuItem>
             ))}
           </Select>

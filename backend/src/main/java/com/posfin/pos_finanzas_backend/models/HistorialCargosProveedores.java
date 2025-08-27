@@ -19,6 +19,10 @@ public class HistorialCargosProveedores {
     @JoinColumn(name = "ordenes_de_compras_id", nullable = false)
     private OrdenesDeCompras ordenDeCompra;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "metodos_pago_id", nullable = false)
+    private MetodosPago metodoPago;
+
     @Column(name = "monto_pagado", nullable = false)
     private BigDecimal montoPagado;
 
@@ -60,6 +64,14 @@ public class HistorialCargosProveedores {
 
     public void setOrdenDeCompra(OrdenesDeCompras ordenDeCompra) {
         this.ordenDeCompra = ordenDeCompra;
+    }
+
+    public MetodosPago getMetodoPago() {
+        return metodoPago;
+    }
+
+    public void setMetodoPago(MetodosPago metodoPago) {
+        this.metodoPago = metodoPago;
     }
 
     public BigDecimal getMontoPagado() {

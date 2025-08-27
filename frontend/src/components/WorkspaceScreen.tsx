@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { workspaceService } from '../services/apiService';
-import type { WorkspaceStatus } from '../types/index';
+import TicketVenta from './TicketVenta';
+import { useToast } from '../hooks/useToast';
+import type { WorkspaceStatus, TicketVenta as TicketVentaData, VentaFinalizada } from '../types';
 import './WorkspaceScreen.css';
 
 interface WorkspaceScreenProps {
@@ -12,6 +14,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   onWorkspaceSelect, 
   onBackToMainMenu 
 }) => {
+  const toast = useToast();
   const [workspaces, setWorkspaces] = useState<WorkspaceStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +22,10 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [isPermanent, setIsPermanent] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Estados para el flujo de ticket de venta
+  const [ticketActual, setTicketActual] = useState<TicketVentaData | null>(null);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   const loadWorkspaces = async () => {
     try {
@@ -121,24 +128,77 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     }
   };
 
-  const handleClearAccounts = async () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar todos los workspaces temporales? Esta acción no se puede deshacer.')) {
-      try {
-        // Filtrar workspaces temporales (no permanentes)
-        const temporaryWorkspaces = workspaces.filter(ws => !ws.permanente);
-        
-        // Eliminar cada workspace temporal
-        for (const workspace of temporaryWorkspaces) {
-          await workspaceService.delete(workspace.id);
+    const handleClearAccounts = async () => {
+    toast.showConfirm(
+      '¿Estás seguro de que deseas eliminar todos los workspaces temporales? Esta acción no se puede deshacer.',
+      async () => {
+        try {
+          // Filtrar workspaces temporales (no permanentes)
+          const temporaryWorkspaces = workspaces.filter(ws => !ws.permanente);
+          
+          // Eliminar cada workspace temporal
+          for (const workspace of temporaryWorkspaces) {
+            await workspaceService.delete(workspace.id);
+          }
+          
+          // Recargar la lista
+          toast.showSuccess(`Se eliminaron ${temporaryWorkspaces.length} workspaces temporales
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
+          
+          // ✅ ESPERAR 3 segundos antes de recargar para que el toast sea visible
+          setTimeout(async () => {
+            await loadWorkspaces();
+          }, 3000);
+        } catch (error) {
+          console.error('Error al eliminar workspaces temporales:', error);
+          toast.showError(`Error al eliminar los workspaces temporales
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
         }
-        
-        // Recargar la lista
-        await loadWorkspaces();
-      } catch (error) {
-        setError('Error al limpiar cuentas temporales');
-        console.error('Error clearing temporary workspaces:', error);
       }
+    );
+  };
+
+  // Función para generar ticket de venta
+  const handleGenerarTicket = async (workspaceId: string) => {
+    try {
+      const ticket = await workspaceService.generarTicket(workspaceId);
+      setTicketActual(ticket);
+      setShowTicketModal(true);
+    } catch (error) {
+      toast.showError(`Error al generar el ticket. Por favor, intente nuevamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
+      console.error('Error generating ticket:', error);
     }
+  };
+
+  // Función para manejar venta finalizada
+  const handleVentaFinalizada = (venta: VentaFinalizada) => {
+    setShowTicketModal(false);
+    setTicketActual(null);
+    
+    toast.showSuccess(`🎉 VENTA PROCESADA EXITOSAMENTE
+
+💳 ID: ${venta.ventaId}
+💰 Total: $${venta.totalVenta.toFixed(2)}
+🔄 Método: ${venta.metodoPagoNombre}
+
+La transacción se ha completado correctamente.
+
+👆 HAZ CLIC AQUÍ PARA CERRAR`);
+    
+    // ✅ ESPERAR 4 segundos antes de recargar para que el toast sea visible
+    setTimeout(() => {
+      loadWorkspaces();
+    }, 4000);
+  };
+
+  // Función para cerrar modal de ticket
+  const handleCerrarTicket = () => {
+    setShowTicketModal(false);
+    setTicketActual(null);
   };
 
   if (isLoading) {
@@ -241,14 +301,54 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
           <div className="workspace-screen__grid">
             {workspaces.map((workspace) => {
               const statusInfo = getStatusInfo(workspace.estado);
-              const isAvailable = workspace.estado === 'disponible';
+              const esCuenta = workspace.estado === 'cuenta';
               
+              if (esCuenta) {
+                // Para workspaces con estado "cuenta", mostrar botón para generar ticket
+                return (
+                  <div
+                    key={workspace.id}
+                    className={`workspace-screen__card workspace-screen__card--${statusInfo.color} workspace-screen__card--cuenta`}
+                  >
+                    <div className="workspace-screen__card-header">
+                      <div className={`workspace-screen__card-status workspace-screen__card-status--${statusInfo.color}`}>
+                        {statusInfo.icon}
+                        <span className="md-label-medium">{statusInfo.text}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="workspace-screen__card-content">
+                      <h3 className="md-title-large workspace-screen__card-title">
+                        {workspace.nombre}
+                      </h3>
+                      <div className="workspace-screen__card-meta">
+                        <span className="md-body-small">
+                          {workspace.permanente ? 'Permanente' : 'Temporal'}
+                        </span>
+                        <span className="md-body-small">
+                          {workspace.cantidadOrdenes} productos en cuenta
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="workspace-screen__card-actions">
+                      <button
+                        onClick={() => handleGenerarTicket(workspace.id)}
+                        className="md-button md-button--filled workspace-screen__ticket-btn"
+                      >
+                        📋 Generar Ticket
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Para workspaces normales, comportamiento original
               return (
                 <button
                   key={workspace.id}
-                  onClick={() => isAvailable && onWorkspaceSelect(workspace.id)}
-                  disabled={!isAvailable}
-                  className={`workspace-screen__card workspace-screen__card--${statusInfo.color} ${!isAvailable ? 'workspace-screen__card--disabled' : ''}`}
+                  onClick={() => onWorkspaceSelect(workspace.id)}
+                  className={`workspace-screen__card workspace-screen__card--${statusInfo.color}`}
                   aria-label={`Workspace ${workspace.nombre} - ${statusInfo.text}`}
                 >
                   <div className="workspace-screen__card-header">
@@ -274,13 +374,12 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                     </div>
                   </div>
                   
-                  {isAvailable && (
-                    <div className="workspace-screen__card-arrow">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                      </svg>
-                    </div>
-                  )}
+                  {/* Flecha siempre visible - los usuarios pueden acceder a cualquier workspace */}
+                  <div className="workspace-screen__card-arrow">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                  </div>
                 </button>
               );
             })}
@@ -364,6 +463,15 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Ticket de Venta */}
+      {showTicketModal && ticketActual && (
+        <TicketVenta
+          ticket={ticketActual}
+          onVentaFinalizada={handleVentaFinalizada}
+          onCerrar={handleCerrarTicket}
+        />
       )}
     </div>
   );

@@ -11,4 +11,7 @@ public interface OrdenesWorkspaceRepository extends JpaRepository<OrdenesWorkspa
 
     // Método para encontrar órdenes por workspace ID
     java.util.List<OrdenesWorkspace> findByWorkspaceId(String workspaceId);
+
+    // Método para eliminar órdenes por workspace ID
+    void deleteByWorkspaceId(String workspaceId);
 }

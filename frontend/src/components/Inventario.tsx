@@ -5,7 +5,11 @@ import ModalCrearProducto from './ModalCrearProducto';
 import ModalEditarProducto from './ModalEditarProducto';
 import type { ProductoDTO } from '../services/inventarioService';
 
-const Inventario: React.FC = () => {
+interface InventarioProps {
+  onNavigateToCompras?: () => void;
+}
+
+const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
   // Estados principales
   const [productos, setProductos] = useState<ProductoDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +46,17 @@ const Inventario: React.FC = () => {
   // Abrir modal para crear nuevo producto
   const handleCrearNuevo = () => {
     setShowCreateModal(true);
+  };
+
+  // Navegar a compras a proveedores
+  const handleComprarProducto = () => {
+    console.log('🛒 Botón Comprar Producto clickeado!');
+    console.log('onNavigateToCompras:', onNavigateToCompras);
+    if (onNavigateToCompras) {
+      onNavigateToCompras();
+    } else {
+      console.warn('onNavigateToCompras no está definido');
+    }
   };
 
   // Abrir modal para editar producto
@@ -122,6 +137,37 @@ const Inventario: React.FC = () => {
       )}
 
       <div className="inventory-controls">
+        <button
+          className="purchase-btn"
+          onClick={handleComprarProducto}
+          title="Ir a compras a proveedores"
+          style={{
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#45a049';
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#4CAF50';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+          }}
+        >
+          <span className="btn-icon">🛒</span>
+          Comprar productos
+        </button>
         <button
           className="create-product-btn"
           onClick={handleCrearNuevo}
@@ -268,4 +314,4 @@ const Inventario: React.FC = () => {
     );
   };
 
-  export default Inventario;
+export default Inventario;

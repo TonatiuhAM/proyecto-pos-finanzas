@@ -45,7 +45,7 @@
 /* Header */
 .login-screen__header {
   text-align: center;
-  color: white;
+  color: white; /* Mantenemos blanco para subtítulos */
 }
 
 .login-screen__logo {
@@ -70,19 +70,30 @@
 .login-screen__logo-icon svg {
   width: 40px;
   height: 40px;
-  color: white;
+  color: #1a1a1a; /* Cambiado de white a color oscuro para visibilidad */
 }
 
 .login-screen__title {
   margin: 0 0 var(--md-spacing-sm) 0;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  /* ✅ CORRECCIÓN: Color oscuro con fondo blanco semitransparente para máxima legibilidad */
+  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.95);
+  padding: var(--md-spacing-sm) var(--md-spacing-lg);
+  border-radius: var(--md-border-radius-md);
+  text-shadow: none;
+  font-weight: 700;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .login-screen__subtitle {
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #1a1a1a; /* Cambiado de blanco a color oscuro */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8); /* Sombra blanca para contraste */
+  background: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+  padding: 8px 16px;
+  border-radius: 12px;
+  display: inline-block;
 }
 
 /* Login Card */
@@ -131,24 +142,25 @@
 }
 
 .login-screen__input-container {
-  position: relative;
+  /* ✅ NUEVO: Diseño horizontal con iconos a la izquierda */
   display: flex;
   align-items: center;
+  gap: var(--md-spacing-md); /* Espacio entre icono e input */
 }
 
 .login-screen__input-icon {
-  position: absolute;
-  left: var(--md-spacing-md);
-  width: 20px;
-  height: 20px;
+  /* ✅ NUEVO: Icono posicionado estáticamente a la izquierda */
+  width: 24px;
+  height: 24px;
   color: var(--md-on-surface-variant);
-  z-index: 1;
+  flex-shrink: 0; /* Evitar que el icono se reduzca */
 }
 
 .login-screen__input {
-  width: 100%;
+  /* ✅ NUEVO: Input sin padding izquierdo extra, ocupa espacio restante */
+  flex: 1; /* Ocupa el espacio restante */
   height: 56px;
-  padding: var(--md-spacing-md) var(--md-spacing-md) var(--md-spacing-md) 48px;
+  padding: var(--md-spacing-md);
   border: 1px solid var(--md-outline);
   border-radius: var(--md-border-radius-sm);
   background-color: var(--md-surface);
@@ -285,8 +297,12 @@
 /* Footer */
 .login-screen__footer {
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #1a1a1a; /* Cambiado de blanco a color oscuro */
+  background: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  margin: 0 auto;
 }
 
 .login-screen__footer p {
@@ -342,10 +358,62 @@
   .login-screen__input {
     height: 48px;
     font-size: var(--md-body-medium);
+    /* ✅ NUEVO: Sin padding extra ya que el icono está separado */
+    padding: var(--md-spacing-sm);
+  }
+
+  .login-screen__input-icon {
+    /* ✅ NUEVO: Iconos más pequeños para móviles */
+    width: 20px;
+    height: 20px;
   }
 
   .login-screen__submit-btn {
     height: 48px;
+  }
+
+  /* ✅ CORRECCIÓN: Mejorar spacing en formulario para móviles */
+  .login-screen__form {
+    gap: var(--md-spacing-md);
+    padding: var(--md-spacing-sm);
+  }
+
+  .login-screen__field {
+    gap: var(--md-spacing-xs);
+  }
+}
+
+/* ✅ NUEVA: Media query para pantallas muy pequeñas */
+@media (max-width: 320px) {
+  .login-screen {
+    padding: var(--md-spacing-xs);
+  }
+
+  .login-screen__card-header,
+  .login-screen__form {
+    padding: var(--md-spacing-sm);
+  }
+
+  .login-screen__input {
+    height: 44px;
+    font-size: 14px;
+    /* ✅ NUEVO: Padding uniforme sin espacio extra para icono */
+    padding: var(--md-spacing-xs);
+  }
+
+  .login-screen__input-icon {
+    /* ✅ NUEVO: Iconos más pequeños para pantallas muy pequeñas */
+    width: 18px;
+    height: 18px;
+  }
+
+  .login-screen__submit-btn {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  .login-screen__form {
+    gap: var(--md-spacing-sm);
   }
 }
 

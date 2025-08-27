@@ -1,16 +1,30 @@
 import axios from 'axios';
-import type { LoginCredentials, LoginResponse, WorkspaceStatus, Workspace, CreateWorkspaceRequest } from '../types/index';
+import type { 
+  LoginCredentials, 
+  LoginResponse, 
+  WorkspaceStatus, 
+  Workspace, 
+  CreateWorkspaceRequest,
+  TicketVenta,
+  FinalizarVentaRequest,
+  VentaFinalizada,
+  MetodoPago
+} from '../types/index';
 
 // Obtener la URL del backend dinámicamente en el cliente
 const getBackendUrl = () => {
-  // En producción, la API está en el mismo host, pero en un subdominio o ruta diferente.
-  // Asumimos que el frontend se sirve desde un dominio y el backend desde otro.
-  // La URL del backend de producción se proporciona directamente.
-  if (import.meta.env.PROD) {
-    return 'https://pos-finanzas-q2ddz.ondigitalocean.app/api';
+  // En desarrollo con Docker, usar variable de entorno o localhost
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
-  // En desarrollo, usamos la URL del proxy de Vite.
-  return window.location.origin;
+  
+  // En producción real
+  if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+    return 'https://pos-finanzas-q2ddz.ondigitalocean.app';
+  }
+  
+  // Fallback para desarrollo local
+  return 'http://localhost:8080';
 };
 
 const backendUrl = getBackendUrl();
@@ -25,10 +39,39 @@ const api = axios.create({
 
 // Interceptor para añadir el token JWT a todas las peticiones
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // Buscar token en el nuevo sistema de autenticación primero
+  const authData = localStorage.getItem('pos_auth_data');
+  if (authData) {
+    try {
+      const userData = JSON.parse(authData);
+      if (userData.token) {
+        config.headers.Authorization = `Bearer ${userData.token}`;
+        return config;
+      }
+    } catch (error) {
+      console.warn('Error parsing auth data:', error);
+      // Limpiar datos corruptos
+      localStorage.removeItem('pos_auth_data');
+    }
   }
+  
+  // Fallback al sistema legacy
+  const legacyToken = localStorage.getItem('authToken');
+  if (legacyToken) {
+    try {
+      // Verificar que el token no esté obviously corrupto
+      if (legacyToken.includes('.') && legacyToken.length > 50) {
+        config.headers.Authorization = `Bearer ${legacyToken}`;
+      } else {
+        // Token corrupto, remover
+        localStorage.removeItem('authToken');
+      }
+    } catch (error) {
+      console.warn('Error processing legacy token:', error);
+      localStorage.removeItem('authToken');
+    }
+  }
+  
   return config;
 }, error => {
   return Promise.reject(error);
@@ -38,10 +81,15 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Token expirado, inválido o permisos insuficientes - limpiar todos los datos de autenticación
+      localStorage.removeItem('authToken'); // Legacy
+      localStorage.removeItem('pos_auth_data'); // Nuevo sistema
+      
+      // Solo redirigir a login en 401 (no autenticado), no en 403 (no autorizado)
+      if (error.response?.status === 401) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -52,12 +100,16 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await api.post('/auth/login', credentials);
     
-    // Guardar el token en localStorage
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
+    // La respuesta ahora incluye: token, usuario, rolNombre, rolId, expiresIn
+    const loginData: LoginResponse = response.data;
+    
+    // Guardar el token en localStorage (compatibilidad legacy)
+    if (loginData.token) {
+      localStorage.setItem('authToken', loginData.token);
     }
     
-    return response.data;
+    // Los datos del usuario se manejarán en el AuthContext
+    return loginData;
   },
 };
 
@@ -89,4 +141,38 @@ export const workspaceService = {
     const response = await api.put(`/workspaces/${id}`, workspace);
     return response.data;
   },
+
+  async getById(id: string): Promise<Workspace> {
+    const response = await api.get(`/workspaces/${id}`);
+    return response.data;
+  },
+
+  // ===== SERVICIOS PARA FLUJO DE CUENTA =====
+  
+  async cambiarSolicitudCuenta(id: string, solicitudCuenta: boolean): Promise<WorkspaceStatus> {
+    const response = await api.patch(`/workspaces/${id}/solicitar-cuenta`, {
+      solicitudCuenta: solicitudCuenta
+    });
+    return response.data;
+  },
+
+  async generarTicket(id: string): Promise<TicketVenta> {
+    const response = await api.get(`/workspaces/${id}/ticket`);
+    return response.data;
+  },
+
+  async finalizarVenta(id: string, request: FinalizarVentaRequest): Promise<VentaFinalizada> {
+    const response = await api.post(`/workspaces/${id}/finalizar-venta`, request);
+    return response.data;
+  },
 };
+
+// Servicios para métodos de pago
+export const metodoPagoService = {
+  async getAll(): Promise<MetodoPago[]> {
+    const response = await api.get('/metodos_pago');
+    return response.data;
+  },
+};
+
+export default api;

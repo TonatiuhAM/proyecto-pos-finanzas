@@ -327,4 +327,45 @@ public class MovimientosInventariosController {
 
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/producto/{productoId}")
+    public List<MovimientosInventariosDTO> getMovimientosByProducto(@PathVariable String productoId) {
+        // Buscar el producto primero para validar que existe
+        Optional<Productos> producto = productosRepository.findById(productoId);
+        if (producto.isEmpty()) {
+            return new ArrayList<>(); // Devolver lista vacía si el producto no existe
+        }
+
+        List<MovimientosInventarios> movimientos = movimientosInventariosRepository
+                .findByProductoOrderByFechaMovimientoDesc(producto.get());
+        
+        List<MovimientosInventariosDTO> movimientosDTO = new ArrayList<>();
+
+        for (MovimientosInventarios movimiento : movimientos) {
+            MovimientosInventariosDTO dto = new MovimientosInventariosDTO();
+            dto.setId(movimiento.getId());
+            dto.setCantidad(movimiento.getCantidad());
+            dto.setFechaMovimiento(movimiento.getFechaMovimiento());
+            dto.setClaveMovimiento(movimiento.getClaveMovimiento());
+
+            // Mapear relaciones aplanadas
+            dto.setProductoId(movimiento.getProducto().getId());
+            dto.setProductoNombre(movimiento.getProducto().getNombre());
+
+            dto.setUbicacionId(movimiento.getUbicacion().getId());
+            dto.setUbicacionNombre(movimiento.getUbicacion().getNombre());
+            dto.setUbicacionDescripcion(movimiento.getUbicacion().getUbicacion());
+
+            dto.setTipoMovimientoId(movimiento.getTipoMovimiento().getId());
+            dto.setTipoMovimientoNombre(movimiento.getTipoMovimiento().getMovimiento());
+
+            dto.setUsuarioId(movimiento.getUsuario().getId());
+            dto.setUsuarioNombre(movimiento.getUsuario().getNombre());
+            dto.setUsuarioTelefono(movimiento.getUsuario().getTelefono());
+
+            movimientosDTO.add(dto);
+        }
+
+        return movimientosDTO;
+    }
 }

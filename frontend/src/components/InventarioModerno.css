@@ -138,7 +138,10 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+  max-width: 400px;
+  margin: 0 auto;
   gap: var(--md-spacing-lg);
+  padding: var(--md-spacing-xl);
 }
 
 .loading-spinner {
@@ -218,6 +221,59 @@ body {
   overflow: hidden;
   min-height: 56px;
   letter-spacing: 0.1px;
+}
+
+/* ===== PURCHASE BUTTON (Comprar Producto) ===== */
+.purchase-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+  padding: var(--md-spacing-md) var(--md-spacing-xl);
+  background: var(--md-secondary);
+  color: var(--md-on-secondary);
+  border: none;
+  border-radius: var(--md-border-radius-xl);
+  font-size: var(--md-label-large);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+  box-shadow: var(--md-elevation-1);
+  position: relative;
+  overflow: hidden;
+  min-height: 56px;
+  letter-spacing: 0.1px;
+}
+
+.purchase-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--md-on-secondary);
+  opacity: 0;
+  transition: opacity var(--md-motion-duration-short2) var(--md-motion-easing-standard);
+}
+
+.purchase-btn:hover::before {
+  opacity: 0.08;
+}
+
+.purchase-btn:focus {
+  outline: none;
+  box-shadow: var(--md-elevation-2);
+}
+
+.purchase-btn:active {
+  box-shadow: var(--md-elevation-1);
+}
+
+.purchase-btn .btn-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .create-product-btn::before {
@@ -679,7 +735,8 @@ body {
     font-size: var(--md-headline-small);
   }
   
-  .create-product-btn {
+  .create-product-btn,
+  .purchase-btn {
     font-size: var(--md-label-medium);
     padding: var(--md-spacing-sm) var(--md-spacing-lg);
     min-height: 48px;
@@ -794,6 +851,7 @@ button:focus,
 /* Print styles */
 @media print {
   .create-product-btn,
+  .purchase-btn,
   .action-buttons,
   .quick-stats {
     display: none;
@@ -815,23 +873,6 @@ button:focus,
   }
 }
 
-/* ===== DARK MODE SUPPORT (Future Enhancement) ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --md-primary: #d0bcff;
-    --md-primary-container: #4f378b;
-    --md-on-primary: #371e73;
-    --md-on-primary-container: #eaddff;
-    --md-surface: #1c1b1f;
-    --md-surface-container: #2b2930;
-    --md-surface-container-high: #36343b;
-    --md-on-surface: #e6e0e9;
-    --md-on-surface-variant: #cac4d0;
-    --md-outline: #938f99;
-    --md-outline-variant: #49454f;
-  }
-}
-
 /* ===== INVENTORY CONTENT STYLES ===== */
 .inventory-content {
   max-width: 1400px;
@@ -842,6 +883,8 @@ button:focus,
 .inventory-controls {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: var(--md-spacing-md);
   margin-bottom: var(--md-spacing-xl);
   padding: 0 var(--md-spacing-md);
 }
@@ -855,11 +898,23 @@ button:focus,
   .inventory-controls {
     justify-content: center;
     padding: 0;
+    flex-direction: column;
+    gap: var(--md-spacing-sm);
   }
 }
 
 @media (max-width: 480px) {
   .inventory-content {
     padding: var(--md-spacing-xs);
+  }
+  
+  .inventory-controls {
+    flex-direction: column;
+    gap: var(--md-spacing-sm);
+  }
+  
+  .create-product-btn,
+  .purchase-btn {
+    width: 100%;
   }
 }

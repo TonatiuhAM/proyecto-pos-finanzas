@@ -9,6 +9,7 @@ import com.posfin.pos_finanzas_backend.repositories.OrdenesDeVentasRepository;
 import com.posfin.pos_finanzas_backend.repositories.PersonasRepository;
 import com.posfin.pos_finanzas_backend.repositories.UsuariosRepository;
 import com.posfin.pos_finanzas_backend.repositories.MetodosPagoRepository;
+import com.posfin.pos_finanzas_backend.services.VentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,9 @@ public class OrdenesDeVentasController {
 
     @Autowired
     private MetodosPagoRepository metodosPagoRepository;
+
+    @Autowired
+    private VentaService ventaService;
 
     @GetMapping
     public List<OrdenesDeVentasDTO> getAllOrdenesDeVentas() {
@@ -292,5 +296,54 @@ public class OrdenesDeVentasController {
         dto.setMetodoPagoNombre(ordenActualizada.getMetodoPago().getMetodoPago());
 
         return ResponseEntity.ok(dto);
+    }
+
+    // ===== ENDPOINT ESPECIAL PARA PROCESAR VENTA DESDE WORKSPACE =====
+
+    /**
+     * Procesa una venta completa desde las órdenes de workspace.
+     * Endpoint: POST /api/workspaces/{workspaceId}/finalizar-venta
+     */
+    @PostMapping("/workspaces/{workspaceId}/finalizar-venta")
+    public ResponseEntity<?> finalizarVentaDesdeWorkspace(
+            @PathVariable String workspaceId,
+            @RequestBody Map<String, Object> requestBody) {
+        try {
+            // Obtener parámetros del request (algunos opcionales)
+            String clienteId = (String) requestBody.get("clienteId"); // Puede ser null
+            String usuarioId = (String) requestBody.get("usuarioId");
+            String metodoPagoId = (String) requestBody.get("metodoPagoId");
+
+            // Validar parámetros requeridos
+            if (usuarioId == null || usuarioId.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El ID del usuario es requerido");
+            }
+            if (metodoPagoId == null || metodoPagoId.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Error: El ID del método de pago es requerido");
+            }
+
+            // Si no se proporciona cliente, usar el cliente por defecto
+            if (clienteId == null || clienteId.trim().isEmpty()) {
+                clienteId = ventaService.obtenerClientePorDefecto();
+            }
+
+            // Procesar la venta
+            OrdenesDeVentasDTO ventaProcesada = ventaService.procesarVentaDesdeWorkspace(
+                    workspaceId, clienteId, usuarioId, metodoPagoId);
+
+            return ResponseEntity.ok(ventaProcesada);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body("Error de validación: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body("Error de estado: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error interno del servidor: " + e.getMessage());
+        }
     }
 }

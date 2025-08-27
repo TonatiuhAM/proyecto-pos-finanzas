@@ -18,6 +18,11 @@ public class Workspaces {
     @Column(name = "permanente", nullable = false)
     private Boolean permanente = false;
 
+    // Campo temporal para indicar si el workspace solicita cuenta
+    // Este campo no está en la BD, se maneja en memoria
+    @Column(nullable = true)
+    private Boolean solicitudCuenta = false;
+
     // Constructor
     public Workspaces() {
     }
@@ -53,5 +58,13 @@ public class Workspaces {
 
     public void setPermanente(Boolean permanente) {
         this.permanente = permanente;
+    }
+
+    public Boolean getSolicitudCuenta() {
+        return solicitudCuenta;
+    }
+
+    public void setSolicitudCuenta(Boolean solicitudCuenta) {
+        this.solicitudCuenta = solicitudCuenta;
     }
 }
