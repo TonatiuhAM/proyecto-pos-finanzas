@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -40,34 +42,42 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
 
-        // JWT Token está en el form "Bearer token". Remove Bearer word and get only the
-        // Token
+        // JWT Token está en el form "Bearer token". Remove Bearer word and get only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
                 username = jwtService.extractUsername(jwtToken);
+                logger.debug("JWT Token found for user: " + username + " in request: " + requestPath);
             } catch (Exception e) {
                 logger.warn("JWT Token has expired or is invalid for request: " + request.getRequestURI() + " - " + e.getMessage());
                 // Continue with the filter chain even if token is invalid
                 // The SecurityConfig determines if the route requires authentication
             }
+        } else {
+            logger.debug("No JWT Token found in Authorization header for request: " + requestPath);
         }
 
         // Una vez obtenemos el token, validamos.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                // Si el token es válido, configuramos Spring Security para establecer la
-                // autenticación manualmente
+                // Si el token es válido, configuramos Spring Security para establecer la autenticación manualmente
                 if (jwtService.validateToken(jwtToken, username)) {
+                    logger.debug("JWT Token is valid for user: " + username);
+                    
+                    // Para now, asignamos una autoridad básica. En futuro podríamos extraer roles del token
+                    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                            username, null, new ArrayList<>());
+                            username, null, authorities);
                     usernamePasswordAuthenticationToken
                             .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     // Después de establecer la autenticación en el contexto, especificamos
-                    // que el usuario actual está autenticado. Así pasa los filtros de Spring
-                    // Security.
+                    // que el usuario actual está autenticado. Así pasa los filtros de Spring Security.
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    logger.debug("Authentication set for user: " + username);
+                } else {
+                    logger.warn("JWT Token validation failed for user: " + username);
                 }
             } catch (Exception e) {
                 logger.warn("Error validating JWT token for request: " + request.getRequestURI() + " - " + e.getMessage());

@@ -15,7 +15,10 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // Clave fija para evitar invalidación de tokens al reiniciar la aplicación
+    // En producción, esta clave debería venir de variables de entorno
+    private final String SECRET = "mySecretKeyForJWTTokenSigningMustBe256BitsLongForHS256AlgorithmToWorkProperly";
+    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
     private final long JWT_EXPIRATION = 86400000; // 24 horas en milisegundos
 
     public String generateToken(String username, String userId) {

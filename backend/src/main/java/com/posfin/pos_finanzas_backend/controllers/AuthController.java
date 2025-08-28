@@ -1,9 +1,13 @@
 package com.posfin.pos_finanzas_backend.controllers;
 
 import com.posfin.pos_finanzas_backend.models.Usuarios;
+import com.posfin.pos_finanzas_backend.models.Estados;
+import com.posfin.pos_finanzas_backend.models.Roles;
 import com.posfin.pos_finanzas_backend.dtos.UsuariosDTO;
 import com.posfin.pos_finanzas_backend.dtos.LoginResponseDTO;
 import com.posfin.pos_finanzas_backend.repositories.UsuariosRepository;
+import com.posfin.pos_finanzas_backend.repositories.EstadosRepository;
+import com.posfin.pos_finanzas_backend.repositories.RolesRepository;
 import com.posfin.pos_finanzas_backend.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +26,60 @@ public class AuthController {
     private UsuariosRepository usuariosRepository;
 
     @Autowired
+    private EstadosRepository estadosRepository;
+
+    @Autowired
+    private RolesRepository rolesRepository;
+
+    @Autowired
     private JwtService jwtService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @PostMapping("/create-admin")
+    public ResponseEntity<?> createAdmin() {
+        System.out.println("!!!!!! DEBUG: Creando usuario admin de prueba !!!!!!");
+        try {
+            // Verificar si ya existe el usuario
+            Optional<Usuarios> existingUser = usuariosRepository.findByNombre("admin");
+            if (existingUser.isPresent()) {
+                return ResponseEntity.ok("Usuario admin ya existe");
+            }
+
+            // Crear estados si no existen
+            Estados estadoActivo = estadosRepository.findById("activo-id").orElseGet(() -> {
+                Estados estado = new Estados();
+                estado.setId("activo-id");
+                estado.setEstado("Activo");
+                return estadosRepository.save(estado);
+            });
+
+            // Crear rol admin si no existe
+            Roles rolAdmin = rolesRepository.findById("admin-role-id").orElseGet(() -> {
+                Roles rol = new Roles();
+                rol.setId("admin-role-id");
+                rol.setRoles("Administrador");
+                return rolesRepository.save(rol);
+            });
+
+            // Crear usuario admin básico
+            Usuarios adminUser = new Usuarios();
+            adminUser.setId("admin-user-id");
+            adminUser.setNombre("admin");
+            adminUser.setTelefono("555-0000");
+            adminUser.setContrasena(passwordEncoder.encode("admin"));
+            adminUser.setEstados(estadoActivo);
+            adminUser.setRoles(rolAdmin);
+
+            usuariosRepository.save(adminUser);
+
+            return ResponseEntity.ok("Usuario admin creado exitosamente");
+        } catch (Exception e) {
+            System.err.println("Error creando usuario admin: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al crear usuario admin: " + e.getMessage());
+        }
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
