@@ -3,13 +3,10 @@ package com.posfin.pos_finanzas_backend.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -31,16 +28,6 @@ public class SecurityConfig {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
-
-    @Bean
-    @Primary
-    public UserDetailsService userDetailsService() {
-        System.out.println("=== SecurityConfig: Creando UserDetailsService NULO explícito ===");
-        return username -> {
-            System.out.println("=== UserDetailsService: Se intentó cargar usuario: " + username + " - RECHAZANDO ===");
-            throw new UsernameNotFoundException("No se permite autenticación por username/password - Solo JWT");
-        };
-    }
 
     @Bean
     @Order(1)
