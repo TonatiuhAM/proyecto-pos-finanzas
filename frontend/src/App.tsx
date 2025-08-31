@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
@@ -24,6 +24,22 @@ function App() {
   
   // Usar el hook de autenticación
   const { logout: authLogout, isAuthenticated } = useAuth();
+
+  // Listener para eventos de logout automático (token expirado)
+  useEffect(() => {
+    const handleAuthLogout = (event: CustomEvent) => {
+      console.log('🚪 [App] Logout automático detectado:', event.detail);
+      handleLogout();
+    };
+
+    // Agregar listener para evento personalizado
+    window.addEventListener('auth:logout', handleAuthLogout as EventListener);
+
+    // Cleanup listener al desmontar
+    return () => {
+      window.removeEventListener('auth:logout', handleAuthLogout as EventListener);
+    };
+  }, []);
 
   const handleLoginSuccess = () => {
     // Solo cambiar al menú principal - AuthContext ya tiene la información del usuario

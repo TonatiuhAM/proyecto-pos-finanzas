@@ -122,32 +122,73 @@ public class WorkspacesController {
 
     @GetMapping("/status")
     public List<WorkspaceStatusDTO> getAllWorkspacesWithStatus() {
-        List<Workspaces> workspaces = workspacesRepository.findAll();
+        System.out.println("🏢 [WORKSPACE-DEBUG] === INICIANDO getAllWorkspacesWithStatus ===");
+        
+        try {
+            // Obtener información de seguridad
+            org.springframework.security.core.Authentication auth = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("🏢 [WORKSPACE-DEBUG] Usuario autenticado: " + 
+                (auth != null ? auth.getName() : "null"));
+            System.out.println("🏢 [WORKSPACE-DEBUG] Authorities: " + 
+                (auth != null ? auth.getAuthorities() : "null"));
+            System.out.println("🏢 [WORKSPACE-DEBUG] Is authenticated: " + 
+                (auth != null ? auth.isAuthenticated() : "false"));
+            
+            System.out.println("🏢 [WORKSPACE-DEBUG] Obteniendo lista de workspaces...");
+            List<Workspaces> workspaces = workspacesRepository.findAll();
+            System.out.println("🏢 [WORKSPACE-DEBUG] Workspaces encontrados: " + workspaces.size());
 
-        return workspaces.stream().map(workspace -> {
-            // Contar órdenes asociadas a este workspace
-            long cantidadOrdenes = ordenesWorkspaceRepository.countByWorkspaceId(workspace.getId());
+            List<WorkspaceStatusDTO> result = workspaces.stream().map(workspace -> {
+                try {
+                    System.out.println("🏢 [WORKSPACE-DEBUG] Procesando workspace: " + workspace.getId() + " - " + workspace.getNombre());
+                    
+                    // Contar órdenes asociadas a este workspace
+                    long cantidadOrdenes = ordenesWorkspaceRepository.countByWorkspaceId(workspace.getId());
+                    System.out.println("🏢 [WORKSPACE-DEBUG] Ordenes para workspace " + workspace.getId() + ": " + cantidadOrdenes);
 
-            String estado;
-            if (cantidadOrdenes == 0) {
-                estado = "disponible";
-            } else if (workspace.getSolicitudCuenta() != null && workspace.getSolicitudCuenta()) {
-                // Si tiene órdenes Y solicita cuenta
-                estado = "cuenta";
-            } else if (cantidadOrdenes > 0) {
-                // Si solo tiene órdenes pero no solicita cuenta
-                estado = "ocupado";
-            } else {
-                estado = "disponible";
-            }
+                    String estado;
+                    if (cantidadOrdenes == 0) {
+                        estado = "disponible";
+                    } else if (workspace.getSolicitudCuenta() != null && workspace.getSolicitudCuenta()) {
+                        // Si tiene órdenes Y solicita cuenta
+                        estado = "cuenta";
+                    } else if (cantidadOrdenes > 0) {
+                        // Si solo tiene órdenes pero no solicita cuenta
+                        estado = "ocupado";
+                    } else {
+                        estado = "disponible";
+                    }
+                    
+                    System.out.println("🏢 [WORKSPACE-DEBUG] Estado calculado para " + workspace.getId() + ": " + estado);
 
-            return new WorkspaceStatusDTO(
-                    workspace.getId(),
-                    workspace.getNombre(),
-                    estado,
-                    (int) cantidadOrdenes,
-                    workspace.getPermanente());
-        }).collect(Collectors.toList());
+                    WorkspaceStatusDTO dto = new WorkspaceStatusDTO(
+                            workspace.getId(),
+                            workspace.getNombre(),
+                            estado,
+                            (int) cantidadOrdenes,
+                            workspace.getPermanente());
+                    
+                    System.out.println("🏢 [WORKSPACE-DEBUG] DTO creado exitosamente para: " + workspace.getId());
+                    return dto;
+                    
+                } catch (Exception e) {
+                    System.err.println("🏢 [WORKSPACE-ERROR] Error procesando workspace " + workspace.getId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                    throw new RuntimeException("Error procesando workspace " + workspace.getId(), e);
+                }
+            }).collect(Collectors.toList());
+            
+            System.out.println("🏢 [WORKSPACE-DEBUG] === COMPLETADO getAllWorkspacesWithStatus - Retornando " + result.size() + " elementos ===");
+            return result;
+            
+        } catch (Exception e) {
+            System.err.println("🏢 [WORKSPACE-ERROR] === ERROR GENERAL en getAllWorkspacesWithStatus ===");
+            System.err.println("🏢 [WORKSPACE-ERROR] Mensaje: " + e.getMessage());
+            System.err.println("🏢 [WORKSPACE-ERROR] Tipo: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            throw new RuntimeException("Error obteniendo workspaces con estado", e);
+        }
     }
 
     /**

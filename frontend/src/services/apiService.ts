@@ -92,12 +92,16 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    // 401 = No autenticado (token inválido/expirado) -> Limpiar token y redirigir
+    // 401 = No autenticado (token inválido/expirado) -> Limpiar token y triggear logout
     if (error.response?.status === 401) {
       console.warn('🔑 Token inválido o expirado (401), limpiando autenticación');
       localStorage.removeItem('authToken'); // Legacy
       localStorage.removeItem('pos_auth_data'); // Nuevo sistema
-      window.location.href = '/login';
+      
+      // En lugar de window.location.href, disparar evento personalizado para que el App maneje el logout
+      window.dispatchEvent(new CustomEvent('auth:logout', { 
+        detail: { reason: 'token_expired' } 
+      }));
     }
     
     // 403 = No autorizado (token válido pero sin permisos) -> NO limpiar token

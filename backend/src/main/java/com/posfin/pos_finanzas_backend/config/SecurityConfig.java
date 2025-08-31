@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(OPTIONS, "/**").permitAll() // Permitir todas las peticiones OPTIONS
+                        .requestMatchers("/error").permitAll() // Permitir acceso a la página de error de Spring Boot
                         .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a la autenticación
                         .requestMatchers("/auth/**").permitAll() // Permitir acceso directo sin /api (para routing issues)
                         .anyRequest().authenticated() // Requerir autenticación para el resto
