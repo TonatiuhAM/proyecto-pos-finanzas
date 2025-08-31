@@ -70,15 +70,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     // Para now, asignamos una autoridad básica. En futuro podríamos extraer roles del token
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    System.out.println("=== JwtRequestFilter: Authorities asignadas: " + authorities);
 
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                             username, null, authorities);
                     usernamePasswordAuthenticationToken
                             .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
                     // Después de establecer la autenticación en el contexto, especificamos
                     // que el usuario actual está autenticado. Así pasa los filtros de Spring Security.
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                     System.out.println("=== JwtRequestFilter: Authentication establecida exitosamente para: " + username);
+                    System.out.println("=== JwtRequestFilter: SecurityContext principal: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+                    System.out.println("=== JwtRequestFilter: SecurityContext authorities: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+                    System.out.println("=== JwtRequestFilter: SecurityContext authenticated: " + SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
                 } else {
                     System.out.println("=== JwtRequestFilter: Token inválido para usuario: " + username);
                 }
@@ -88,11 +93,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         } else if (username != null) {
             System.out.println("=== JwtRequestFilter: Usuario ya autenticado en contexto: " + username);
+            System.out.println("=== JwtRequestFilter: Contexto actual - Principal: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            System.out.println("=== JwtRequestFilter: Contexto actual - Authorities: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
         } else {
             System.out.println("=== JwtRequestFilter: No username extraído, continuando sin autenticación");
         }
         
         System.out.println("=== JwtRequestFilter: Continuando con filter chain para: " + requestPath);
+        System.out.println("=== JwtRequestFilter: Estado final - Authentication: " + 
+            (SecurityContextHolder.getContext().getAuthentication() != null ? 
+             SecurityContextHolder.getContext().getAuthentication().getName() + " [" + 
+             SecurityContextHolder.getContext().getAuthentication().getAuthorities() + "]" : "null"));
+        
         chain.doFilter(request, response);
     }
 }
