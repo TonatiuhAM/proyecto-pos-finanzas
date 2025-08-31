@@ -32,6 +32,42 @@ public class WorkspacesController {
 
     @Autowired
     private VentaService ventaService;
+    
+    public WorkspacesController() {
+        System.out.println("🏗️ [STARTUP] WorkspacesController constructor llamado");
+    }
+    
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        System.out.println("🏗️ [STARTUP] WorkspacesController inicializado");
+        System.out.println("🏗️ [STARTUP] Base URL: /api/workspaces");
+        System.out.println("🏗️ [STARTUP] Endpoints disponibles:");
+        System.out.println("🏗️ [STARTUP]   - GET /api/workspaces/test");
+        System.out.println("🏗️ [STARTUP]   - GET /api/workspaces/status");
+        System.out.println("🏗️ [STARTUP]   - GET /api/workspaces");
+    }
+
+    /**
+     * Endpoint de prueba simple para verificar conectividad
+     */
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, Object>> testEndpoint() {
+        System.out.println("🧪 [TEST] Endpoint de prueba accedido");
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "OK");
+        response.put("message", "WorkspacesController funcionando correctamente");
+        response.put("timestamp", java.time.LocalDateTime.now().toString());
+        
+        // Obtener información de seguridad
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        response.put("user", auth != null ? auth.getName() : "anonymous");
+        response.put("authorities", auth != null ? auth.getAuthorities().toString() : "none");
+        
+        System.out.println("🧪 [TEST] Respuesta preparada: " + response);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping
     public List<WorkspacesDTO> getAllWorkspaces() {
@@ -122,6 +158,7 @@ public class WorkspacesController {
 
     @GetMapping("/status")
     public List<WorkspaceStatusDTO> getAllWorkspacesWithStatus() {
+        System.out.println("🏢 [WORKSPACE-DEBUG] === ENDPOINT /status ACCEDIDO ===");
         System.out.println("🏢 [WORKSPACE-DEBUG] === INICIANDO getAllWorkspacesWithStatus ===");
         
         try {
