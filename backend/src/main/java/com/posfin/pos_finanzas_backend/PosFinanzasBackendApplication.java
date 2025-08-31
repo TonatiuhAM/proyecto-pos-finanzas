@@ -52,4 +52,3 @@ public class PosFinanzasBackendApplication {
 		System.out.println("🔍 [STARTUP-DEBUG] === FIN DE CONTROLLERS REGISTRADOS ===");
 	}
 }
-}

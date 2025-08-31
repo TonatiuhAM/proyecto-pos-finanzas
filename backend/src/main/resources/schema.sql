@@ -1,2 +1,2 @@
--- Schema.sql completamente deshabilitado para desarrollo
--- Hibernate creará las tablas automáticamente con JPA
+-- Archivo vacío para desarrollo
+SELECT 1;
