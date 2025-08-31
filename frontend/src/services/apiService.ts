@@ -49,10 +49,11 @@ api.interceptors.request.use(config => {
       const userData = JSON.parse(authData);
       if (userData.token) {
         config.headers.Authorization = `Bearer ${userData.token}`;
+        console.log('🔐 [Frontend] Token agregado desde pos_auth_data para:', config.url);
         return config;
       }
     } catch (error) {
-      console.warn('Error parsing auth data:', error);
+      console.warn('❌ [Frontend] Error parsing auth data:', error);
       // Limpiar datos corruptos
       localStorage.removeItem('pos_auth_data');
     }
@@ -65,14 +66,21 @@ api.interceptors.request.use(config => {
       // Verificar que el token no esté obviously corrupto
       if (legacyToken.includes('.') && legacyToken.length > 50) {
         config.headers.Authorization = `Bearer ${legacyToken}`;
+        console.log('🔐 [Frontend] Token agregado desde authToken legacy para:', config.url);
       } else {
         // Token corrupto, remover
+        console.warn('🗑️ [Frontend] Token legacy corrupto removido');
         localStorage.removeItem('authToken');
       }
     } catch (error) {
-      console.warn('Error processing legacy token:', error);
+      console.warn('❌ [Frontend] Error processing legacy token:', error);
       localStorage.removeItem('authToken');
     }
+  }
+  
+  // Si no hay token, loguear para debug
+  if (!config.headers.Authorization) {
+    console.log('⚠️ [Frontend] No hay token disponible para:', config.url);
   }
   
   return config;
@@ -84,16 +92,21 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      // Token expirado, inválido o permisos insuficientes - limpiar todos los datos de autenticación
+    // 401 = No autenticado (token inválido/expirado) -> Limpiar token y redirigir
+    if (error.response?.status === 401) {
+      console.warn('🔑 Token inválido o expirado (401), limpiando autenticación');
       localStorage.removeItem('authToken'); // Legacy
       localStorage.removeItem('pos_auth_data'); // Nuevo sistema
-      
-      // Solo redirigir a login en 401 (no autenticado), no en 403 (no autorizado)
-      if (error.response?.status === 401) {
-        window.location.href = '/login';
-      }
+      window.location.href = '/login';
     }
+    
+    // 403 = No autorizado (token válido pero sin permisos) -> NO limpiar token
+    // El usuario está autenticado pero no tiene permisos para esta acción específica
+    if (error.response?.status === 403) {
+      console.warn('⚠️ Acceso denegado (403), token válido pero sin permisos para esta acción');
+      // No limpiamos el token, solo logueamos el error
+    }
+    
     return Promise.reject(error);
   }
 );
