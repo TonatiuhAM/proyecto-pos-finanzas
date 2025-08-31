@@ -30,5 +30,5 @@ COPY --from=build /app/target/*.jar app.jar
 # Exponemos el puerto en el que corre la aplicación Spring Boot
 EXPOSE 8080
 
-# Comando para ejecutar la aplicación cuando el contenedor se inicie
-CMD ["java", "-jar", "app.jar"]
+# Comando para ejecutar la aplicación con perfil de producción y configuraciones específicas
+CMD ["java", "-Dspring.profiles.active=prod", "-Dspring.security.user.name=", "-Dspring.security.user.password=", "-jar", "app.jar"]
