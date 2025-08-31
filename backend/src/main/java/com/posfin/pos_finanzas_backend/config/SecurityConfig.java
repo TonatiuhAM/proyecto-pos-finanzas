@@ -65,6 +65,7 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
+        System.out.println("=== SecurityConfig: Configurando CORS ===");
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "https://pos-finanzas-q2ddz.ondigitalocean.app",
@@ -75,6 +76,7 @@ public class SecurityConfig {
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        System.out.println("=== SecurityConfig: CORS configurado exitosamente ===");
         return source;
     }
 

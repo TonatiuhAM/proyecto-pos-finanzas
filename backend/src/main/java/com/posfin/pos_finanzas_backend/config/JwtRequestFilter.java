@@ -31,13 +31,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Excluir rutas de autenticación del procesamiento JWT
         String requestPath = request.getRequestURI();
+        System.out.println("=== JwtRequestFilter: Procesando request: " + requestPath);
+        
         if (requestPath.startsWith("/api/auth/") || requestPath.startsWith("/auth/")) {
-            logger.debug("Skipping JWT processing for auth endpoint: " + requestPath);
+            System.out.println("=== JwtRequestFilter: Skipping JWT processing for auth endpoint: " + requestPath);
             chain.doFilter(request, response);
             return;
         }
 
         final String requestTokenHeader = request.getHeader("Authorization");
+        System.out.println("=== JwtRequestFilter: Authorization header: " + (requestTokenHeader != null ? "Present" : "Missing"));
 
         String username = null;
         String jwtToken = null;
@@ -45,24 +48,24 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // JWT Token está en el form "Bearer token". Remove Bearer word and get only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
+            System.out.println("=== JwtRequestFilter: Token extraído: " + jwtToken.substring(0, Math.min(20, jwtToken.length())) + "...");
             try {
                 username = jwtService.extractUsername(jwtToken);
-                logger.debug("JWT Token found for user: " + username + " in request: " + requestPath);
+                System.out.println("=== JwtRequestFilter: Username extraído del token: " + username);
             } catch (Exception e) {
-                logger.warn("JWT Token has expired or is invalid for request: " + request.getRequestURI() + " - " + e.getMessage());
-                // Continue with the filter chain even if token is invalid
-                // The SecurityConfig determines if the route requires authentication
+                System.out.println("=== JwtRequestFilter: Error extrayendo username: " + e.getMessage());
             }
         } else {
-            logger.debug("No JWT Token found in Authorization header for request: " + requestPath);
+            System.out.println("=== JwtRequestFilter: No JWT Token found in Authorization header");
         }
 
         // Una vez obtenemos el token, validamos.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            System.out.println("=== JwtRequestFilter: Validando token para usuario: " + username);
             try {
                 // Si el token es válido, configuramos Spring Security para establecer la autenticación manualmente
                 if (jwtService.validateToken(jwtToken, username)) {
-                    logger.debug("JWT Token is valid for user: " + username);
+                    System.out.println("=== JwtRequestFilter: Token válido para usuario: " + username);
                     
                     // Para now, asignamos una autoridad básica. En futuro podríamos extraer roles del token
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -75,16 +78,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     // Después de establecer la autenticación en el contexto, especificamos
                     // que el usuario actual está autenticado. Así pasa los filtros de Spring Security.
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                    logger.debug("Authentication set for user: " + username);
+                    System.out.println("=== JwtRequestFilter: Authentication establecida exitosamente para: " + username);
                 } else {
-                    logger.warn("JWT Token validation failed for user: " + username);
+                    System.out.println("=== JwtRequestFilter: Token inválido para usuario: " + username);
                 }
             } catch (Exception e) {
-                logger.warn("Error validating JWT token for request: " + request.getRequestURI() + " - " + e.getMessage());
-                // Continue with the filter chain even if validation fails
-                // The SecurityConfig determines if the route requires authentication
+                System.out.println("=== JwtRequestFilter: Error validando token: " + e.getMessage());
+                e.printStackTrace();
             }
+        } else if (username != null) {
+            System.out.println("=== JwtRequestFilter: Usuario ya autenticado en contexto: " + username);
+        } else {
+            System.out.println("=== JwtRequestFilter: No username extraído, continuando sin autenticación");
         }
+        
+        System.out.println("=== JwtRequestFilter: Continuando con filter chain para: " + requestPath);
         chain.doFilter(request, response);
     }
 }
