@@ -1,35 +1,9 @@
-import axios from 'axios';
 import type { 
   Empleado, 
   EmpleadoCreate, 
   EmpleadoEstadoRequest 
 } from '../types/index';
-
-// Obtener la URL del backend dinámicamente en el cliente
-const getBackendUrl = () => {
-  // En desarrollo con Docker, usar variable de entorno o localhost
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // En producción real
-  if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
-    return 'https://pos-finanzas-q2ddz.ondigitalocean.app';
-  }
-  
-  // Fallback para desarrollo local
-  return 'http://localhost:8080';
-};
-
-const backendUrl = getBackendUrl();
-
-const axiosInstance = axios.create({
-  baseURL: backendUrl,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import apiService from './apiService';
 
 export const empleadoService = {
   /**
@@ -39,7 +13,7 @@ export const empleadoService = {
    */
   async obtenerEmpleados(): Promise<Empleado[]> {
     try {
-      const response = await axiosInstance.get('/api/empleados');
+      const response = await apiService.get('/empleados');
       return response.data;
     } catch (error) {
       console.error('Error al obtener empleados:', error);
@@ -55,15 +29,18 @@ export const empleadoService = {
    */
   async crearEmpleado(empleadoData: EmpleadoCreate): Promise<Empleado> {
     try {
-      const response = await axiosInstance.post('/api/empleados', empleadoData);
+      const response = await apiService.post('/empleados', empleadoData);
       return response.data;
     } catch (error: unknown) {
       console.error('Error al crear empleado:', error);
       
       // Manejar errores específicos del servidor
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        const errorMessage = error.response.data || 'Datos inválidos para crear el empleado';
-        throw new Error(errorMessage);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.status === 400) {
+          const errorMessage = axiosError.response.data || 'Datos inválidos para crear el empleado';
+          throw new Error(errorMessage);
+        }
       }
       
       throw new Error('No se pudo crear el empleado');
@@ -79,19 +56,22 @@ export const empleadoService = {
   async cambiarEstadoEmpleado(empleadoId: string, nuevoEstado: string): Promise<Empleado> {
     try {
       const estadoRequest: EmpleadoEstadoRequest = { estado: nuevoEstado };
-      const response = await axiosInstance.put(`/api/empleados/${empleadoId}/estado`, estadoRequest);
+      const response = await apiService.put(`/empleados/${empleadoId}/estado`, estadoRequest);
       return response.data;
     } catch (error: unknown) {
       console.error('Error al cambiar estado del empleado:', error);
       
       // Manejar errores específicos del servidor
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        const errorMessage = error.response.data || 'No se pudo cambiar el estado del empleado';
-        throw new Error(errorMessage);
-      }
-      
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        throw new Error('Empleado no encontrado');
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.status === 400) {
+          const errorMessage = axiosError.response.data || 'No se pudo cambiar el estado del empleado';
+          throw new Error(errorMessage);
+        }
+        
+        if (axiosError.response?.status === 404) {
+          throw new Error('Empleado no encontrado');
+        }
       }
       
       throw new Error('No se pudo cambiar el estado del empleado');
@@ -105,13 +85,16 @@ export const empleadoService = {
    */
   async obtenerEmpleadoPorId(empleadoId: number): Promise<Empleado> {
     try {
-      const response = await axiosInstance.get(`/api/empleados/${empleadoId}`);
+      const response = await apiService.get(`/empleados/${empleadoId}`);
       return response.data;
     } catch (error: unknown) {
       console.error('Error al obtener empleado por ID:', error);
       
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        throw new Error('Empleado no encontrado');
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.status === 404) {
+          throw new Error('Empleado no encontrado');
+        }
       }
       
       throw new Error('No se pudo obtener la información del empleado');

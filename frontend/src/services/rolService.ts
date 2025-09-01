@@ -1,31 +1,5 @@
-import axios from 'axios';
 import type { Rol } from '../types/index';
-
-// Obtener la URL del backend dinámicamente en el cliente
-const getBackendUrl = () => {
-  // En desarrollo con Docker, usar variable de entorno o localhost
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // En producción real
-  if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
-    return 'https://pos-finanzas-q2ddz.ondigitalocean.app';
-  }
-  
-  // Fallback para desarrollo local
-  return 'http://localhost:8080';
-};
-
-const backendUrl = getBackendUrl();
-
-const axiosInstance = axios.create({
-  baseURL: backendUrl,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import apiService from './apiService';
 
 export const rolService = {
   /**
@@ -35,7 +9,7 @@ export const rolService = {
    */
   async obtenerRoles(): Promise<Rol[]> {
     try {
-      const response = await axiosInstance.get('/api/roles');
+      const response = await apiService.get('/roles');
       return response.data;
     } catch (error) {
       console.error('Error al obtener roles:', error);
@@ -50,13 +24,16 @@ export const rolService = {
    */
   async obtenerRolPorId(rolId: number): Promise<Rol> {
     try {
-      const response = await axiosInstance.get(`/api/roles/${rolId}`);
+      const response = await apiService.get(`/roles/${rolId}`);
       return response.data;
     } catch (error: unknown) {
       console.error('Error al obtener rol por ID:', error);
       
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        throw new Error('Rol no encontrado');
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response?.status === 404) {
+          throw new Error('Rol no encontrado');
+        }
       }
       
       throw new Error('No se pudo obtener la información del rol');

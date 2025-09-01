@@ -1,10 +1,4 @@
 {
-  "routes": [
-    {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous"]
-    }
-  ],
   "mimeTypes": {
     ".js": "text/javascript",
     ".css": "text/css"

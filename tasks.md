@@ -1056,6 +1056,137 @@ Se modernizó completamente la interfaz de `PuntoDeCompras.tsx` aplicando Materi
 
 ## 🔄 TAREAS ACTIVAS
 
+## 🚨 ERROR CRÍTICO: Problema de Routing DigitalOcean - Frontend no incluye /api/ en requests
+
+### Descripción del Problema
+
+**Error 404**: El endpoint `/api/workspaces/status` no se encuentra en producción DigitalOcean.
+
+### 🔍 Diagnóstico Completado
+
+#### **Arquitectura DigitalOcean Confirmada:**
+- **Static Site**: `https://pos-finanzas-q2ddz.ondigitalocean.app` (frontend React)
+- **Web Service**: `https://pos-finanzas-q2ddz.ondigitalocean.app/api` (backend Spring Boot)
+- **HTTP Routes**: `/api` → Web Service, `/` → Static Site
+
+#### **Causa Raíz Identificada:**
+Los logs del backend muestran que las requests llegan como `/workspaces/status` (sin `/api/`) en lugar de `/api/workspaces/status`. Esto indica que DigitalOcean App Platform no está agregando el prefijo `/api/` cuando routea del Static Site al Web Service.
+
+#### **Configuración Actual Incorrecta:**
+- Frontend envía requests a `/api/workspaces/status`
+- DigitalOcean debe routear `/api/*` al Web Service
+- Pero las requests llegan al backend sin el prefijo `/api/`
+
+### Plan de Solución
+
+#### **Fase 1: Verificar Configuración de HTTP Routes**
+
+- [ ] **Revisar configuración en DigitalOcean Console**
+  - [ ] Acceder a App Platform → pos-finanzas-q2ddz
+  - [ ] Verificar sección "HTTP Routes" 
+  - [ ] Confirmar que `/api` está configurado para routear al Web Service
+  - [ ] Verificar que `/` está configurado para routear al Static Site
+
+- [ ] **Validar configuración de Web Service**
+  - [ ] Verificar que el Web Service esté configurado correctamente
+  - [ ] Confirmar puerto y path de salud del servicio
+  - [ ] Revisar variables de entorno del Web Service
+
+#### **Fase 2: Corregir Configuración de Routing**
+
+- [ ] **Opción A: Reconfigurar HTTP Routes en DigitalOcean**
+  - [ ] Modificar el route `/api` para preservar el prefijo
+  - [ ] Investigar configuración "Strip Prefix" si está habilitada
+  - [ ] Asegurar que el path completo `/api/*` se mantenga
+
+- [ ] **Opción B: Configurar Proxy Reverse en Web Service**
+  - [ ] Añadir configuración de proxy en el backend
+  - [ ] Permitir que el backend maneje requests tanto con como sin `/api/`
+  - [ ] Usar Spring Boot profile para producción con routing flexible
+
+#### **Fase 3: Solución Temporal - Endpoints Duplicados**
+
+- [ ] **Crear endpoints duplicados sin /api/ en controladores**
+  - [ ] Modificar `WorkspacesController.java` para soportar ambos paths
+  - [ ] Añadir `@RequestMapping` adicionales sin `/api` prefix
+  - [ ] Mantener compatibilidad con desarrollo local
+
+- [ ] **Implementar endpoints temporales**
+  ```java
+  @GetMapping("/workspaces/status")  // Sin /api/
+  @GetMapping("/api/workspaces/status")  // Con /api/
+  public ResponseEntity<Map<String, String>> getStatus() {
+      // Mismo método, dos rutas
+  }
+  ```
+
+#### **Fase 4: Corrección de Frontend**
+
+- [ ] **Actualizar baseURL para producción**
+  - [ ] Modificar `apiService.ts` para usar URL absoluta en producción
+  - [ ] Configurar `VITE_API_URL` específica para DigitalOcean
+  - [ ] Usar `https://pos-finanzas-q2ddz.ondigitalocean.app/api` directamente
+
+- [ ] **Variables de entorno por ambiente**
+  ```typescript
+  const baseURL = import.meta.env.PROD 
+    ? 'https://pos-finanzas-q2ddz.ondigitalocean.app/api'
+    : '/api';
+  ```
+
+#### **Fase 5: Redeployment y Pruebas**
+
+- [ ] **Redesplegar aplicación con cambios**
+  - [ ] Commit cambios en repositorio
+  - [ ] Trigger redeploy automático en DigitalOcean
+  - [ ] Verificar que ambos servicios se redesplieguen
+
+- [ ] **Pruebas de conectividad**
+  - [ ] Probar endpoint directo: `https://pos-finanzas-q2ddz.ondigitalocean.app/api/workspaces/status`
+  - [ ] Probar desde frontend: Login y navegación
+  - [ ] Verificar logs de ambos servicios
+
+#### **Fase 6: Monitoreo y Validación**
+
+- [ ] **Verificar logs de routing**
+  - [ ] Revisar logs del Web Service para confirmar prefijos correctos
+  - [ ] Monitorear requests entrantes para validar routing
+  - [ ] Confirmar que no hay más errores 404
+
+- [ ] **Pruebas de funcionalidad completa**
+  - [ ] Login completo funcionando
+  - [ ] Navegación entre pantallas
+  - [ ] Operaciones CRUD básicas
+  - [ ] Confirmación de que todas las APIs respondan correctamente
+
+### Archivos a Modificar
+
+#### **Backend (Si se elige solución temporal)**
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/controllers/WorkspacesController.java`
+- Otros controladores según sea necesario
+
+#### **Frontend (Para baseURL absoluta)**
+- `frontend/src/services/apiService.ts`
+- `frontend/.env.production` (nuevo archivo)
+
+### Métricas de Éxito
+
+- ✅ **Error 404 resuelto**: `/api/workspaces/status` responde correctamente
+- ✅ **Login funcional**: Usuarios pueden autenticarse sin errores
+- ✅ **Navegación completa**: Todas las pantallas cargan correctamente
+- ✅ **APIs funcionando**: Todos los endpoints responden apropiadamente
+- ✅ **Logs limpios**: No más errores de routing en logs del backend
+
+### Estado de Implementación
+
+- [ ] **Diagnóstico**: ✅ COMPLETADO - Causa raíz identificada
+- [ ] **Configuración DigitalOcean**: Pendiente - Revisar HTTP Routes
+- [ ] **Corrección Backend**: Pendiente - Endpoints o proxy
+- [ ] **Corrección Frontend**: Pendiente - baseURL absoluta
+- [ ] **Deploy y Pruebas**: Pendiente - Validación completa
+
+---
+
 ## Tarea: Sistema Unificado de Gestión de Personas - Empleados, Proveedores y Clientes
 
 ### Descripción del Objetivo
