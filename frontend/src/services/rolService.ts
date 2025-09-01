@@ -9,6 +9,7 @@ export const rolService = {
    */
   async obtenerRoles(): Promise<Rol[]> {
     try {
+      console.log('🔧 [FIXED] rolService usando apiService compartido con auth');
       const response = await apiService.get('/roles');
       return response.data;
     } catch (error) {

@@ -13,6 +13,7 @@ export const empleadoService = {
    */
   async obtenerEmpleados(): Promise<Empleado[]> {
     try {
+      console.log('🔧 [FIXED] empleadoService usando apiService compartido con auth');
       const response = await apiService.get('/empleados');
       return response.data;
     } catch (error) {
