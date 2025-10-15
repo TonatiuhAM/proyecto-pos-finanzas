@@ -7,7 +7,7 @@
 ```
 [Inicio] → [Usuario hace clic] → [Frontend pide datos] → [Backend consulta BD] → [Frontend envía a ML] → [ML procesa] → [ML predice] → [Frontend formatea] → [Usuario ve resultados] → [Fin]
 ```
-
+hola
 ---
 
 ## **PASO 1: Usuario Presiona "Predicciones ML"**
