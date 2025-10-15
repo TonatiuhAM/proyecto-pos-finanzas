@@ -11,6 +11,8 @@ services:
       - ./.env # Pasa las variables de entorno a la aplicación Spring Boot
     ports:
       - "8080:8080"
+    networks:
+      - pos-network
 
   # Servicio del Frontend de React/Nginx
   frontend:
@@ -24,3 +26,30 @@ services:
       - "5173:80" # Mapea el puerto 80 del contenedor al 5173 de tu máquina
     depends_on:
       - backend # Se asegura de que el backend se inicie antes que el frontend
+    networks:
+      - pos-network
+
+  # Servicio de Machine Learning
+  ml-prediction:
+    container_name: pos_ml_prediction_api
+    build:
+      context: ./ml-prediction-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Variables específicas del servicio ML
+      - PYTHONPATH=/home/app
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8002:8000"  # Cambiado a 8002 para evitar conflicto
+    volumes:
+      # Persistir modelos entrenados
+      - ./ml-prediction-service/models:/home/app/models
+    depends_on:
+      - backend
+    networks:
+      - pos-network
+
+networks:
+  pos-network:
+    driver: bridge

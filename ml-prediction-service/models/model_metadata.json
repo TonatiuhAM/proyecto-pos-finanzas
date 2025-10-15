@@ -1,0 +1,60 @@
+{
+  "created_date": "2025-10-03T06:11:39.801486",
+  "model_type": "production_models",
+  "xgboost_version": "3.0.5",
+  "python_version": "3.11.13",
+  "features": [
+    "precio_venta",
+    "dia_semana",
+    "dia_mes",
+    "mes",
+    "trimestre",
+    "semana_año",
+    "dia_semana_sin",
+    "dia_semana_cos",
+    "mes_sin",
+    "mes_cos",
+    "es_fin_semana",
+    "es_lunes",
+    "es_viernes",
+    "es_feriado",
+    "dia_antes_feriado",
+    "dia_despues_feriado",
+    "temperatura_simulada",
+    "lluvia_simulada",
+    "clima_caluroso",
+    "clima_frio",
+    "lag_cantidad_7d",
+    "lag_cantidad_14d",
+    "lag_cantidad_30d",
+    "media_movil_7d",
+    "media_movil_14d",
+    "media_movil_30d",
+    "tendencia_7d",
+    "volatilidad_7d",
+    "estacion_invierno",
+    "estacion_otoño",
+    "estacion_primavera",
+    "estacion_verano"
+  ],
+  "metrics": {
+    "regressor_metrics": {
+      "rmse": 6.063249050153676,
+      "mae": 4.556171417236328,
+      "r2_score": 0.5191686153411865
+    },
+    "ranker_metrics": {
+      "rmse": 0.7657105448541042,
+      "mae": 0.6059001003985778,
+      "r2_score": 0.39012842732593356
+    },
+    "training_samples": 31962,
+    "test_samples": 7991,
+    "features_count": 32
+  },
+  "model_files": {
+    "regressor": "regressor_cantidad.json",
+    "ranker": "ranker_prioridad.json",
+    "features": "model_features.txt"
+  }
+}

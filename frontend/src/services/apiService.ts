@@ -1,9 +1,9 @@
 import axios from 'axios';
-import type { 
-  LoginCredentials, 
-  LoginResponse, 
-  WorkspaceStatus, 
-  Workspace, 
+import type {
+  LoginCredentials,
+  LoginResponse,
+  WorkspaceStatus,
+  Workspace,
   CreateWorkspaceRequest,
   TicketVenta,
   FinalizarVentaRequest,
@@ -17,7 +17,7 @@ const getBackendUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  
+
   // En producción real
   if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
     // En producción, usamos una ruta relativa para que el navegador
@@ -25,7 +25,7 @@ const getBackendUrl = () => {
     // se encargará de dirigir /api al backend.
     return '';
   }
-  
+
   // Fallback para desarrollo local
   return 'http://localhost:8080';
 };
@@ -58,7 +58,7 @@ api.interceptors.request.use(config => {
       localStorage.removeItem('pos_auth_data');
     }
   }
-  
+
   // Fallback al sistema legacy
   const legacyToken = localStorage.getItem('authToken');
   if (legacyToken) {
@@ -77,12 +77,12 @@ api.interceptors.request.use(config => {
       localStorage.removeItem('authToken');
     }
   }
-  
+
   // Si no hay token, loguear para debug
   if (!config.headers.Authorization) {
     console.log('⚠️ [Frontend] No hay token disponible para:', config.url);
   }
-  
+
   return config;
 }, error => {
   return Promise.reject(error);
@@ -97,20 +97,20 @@ api.interceptors.response.use(
       console.warn('🔑 Token inválido o expirado (401), limpiando autenticación');
       localStorage.removeItem('authToken'); // Legacy
       localStorage.removeItem('pos_auth_data'); // Nuevo sistema
-      
+
       // En lugar de window.location.href, disparar evento personalizado para que el App maneje el logout
-      window.dispatchEvent(new CustomEvent('auth:logout', { 
-        detail: { reason: 'token_expired' } 
+      window.dispatchEvent(new CustomEvent('auth:logout', {
+        detail: { reason: 'token_expired' }
       }));
     }
-    
+
     // 403 = No autorizado (token válido pero sin permisos) -> NO limpiar token
     // El usuario está autenticado pero no tiene permisos para esta acción específica
     if (error.response?.status === 403) {
       console.warn('⚠️ Acceso denegado (403), token válido pero sin permisos para esta acción');
       // No limpiamos el token, solo logueamos el error
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -119,15 +119,15 @@ api.interceptors.response.use(
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const response = await api.post('/auth/login', credentials);
-    
+
     // La respuesta ahora incluye: token, usuario, rolNombre, rolId, expiresIn
     const loginData: LoginResponse = response.data;
-    
+
     // Guardar el token en localStorage (compatibilidad legacy)
     if (loginData.token) {
       localStorage.setItem('authToken', loginData.token);
     }
-    
+
     // Los datos del usuario se manejarán en el AuthContext
     return loginData;
   },
@@ -168,7 +168,7 @@ export const workspaceService = {
   },
 
   // ===== SERVICIOS PARA FLUJO DE CUENTA =====
-  
+
   async cambiarSolicitudCuenta(id: string, solicitudCuenta: boolean): Promise<WorkspaceStatus> {
     const response = await api.patch(`/workspaces/${id}/solicitar-cuenta`, {
       solicitudCuenta: solicitudCuenta

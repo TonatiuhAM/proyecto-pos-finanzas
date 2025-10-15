@@ -34,7 +34,7 @@ public class PersonaService {
             .orElseThrow(() -> new IllegalArgumentException("La categoría de persona no existe"));
 
         // Obtener el estado "Activo" (nombre = 'Activo')
-        Estados estadoActivo = estadosRepository.findByEstado("Activo")
+        Estados estadoActivo = estadosRepository.findFirstByEstado("Activo")
             .orElseThrow(() -> new IllegalArgumentException("No se encontró el estado activo"));
 
         // Validar que no existe otra persona con el mismo RFC (si se proporciona)
@@ -137,19 +137,42 @@ public class PersonaService {
      * Actualizar el estado de una persona
      */
     public PersonaResponseDTO actualizarEstadoPersona(String id, String nuevoEstadoNombre) {
+        System.out.println("🔧 [PERSONA-DEBUG] Iniciando cambio de estado - personaId: " + id + ", nuevoEstado: " + nuevoEstadoNombre);
+        
         // Validar que la persona existe
         Personas persona = personasRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("La persona no existe"));
+            .orElseThrow(() -> {
+                System.err.println("❌ [PERSONA-ERROR] Persona no encontrada con ID: " + id);
+                return new IllegalArgumentException("La persona no existe");
+            });
+            
+        System.out.println("✅ [PERSONA-DEBUG] Persona encontrada: " + persona.getNombre());
 
         // Validar que el estado existe
-        Estados nuevoEstado = estadosRepository.findByEstado(nuevoEstadoNombre)
-            .orElseThrow(() -> new IllegalArgumentException("El estado no existe"));
+        Estados nuevoEstado = estadosRepository.findFirstByEstado(nuevoEstadoNombre)
+            .orElseThrow(() -> {
+                System.err.println("❌ [PERSONA-ERROR] Estado no encontrado: " + nuevoEstadoNombre);
+                return new IllegalArgumentException("El estado no existe");
+            });
+            
+        System.out.println("✅ [PERSONA-DEBUG] Estado encontrado: " + nuevoEstado.getEstado());
 
         // Actualizar estado
+        Estados estadoAnterior = persona.getEstados();
+        System.out.println("🔄 [PERSONA-DEBUG] Cambiando estado de '" + 
+            (estadoAnterior != null ? estadoAnterior.getEstado() : "null") + "' a '" + nuevoEstadoNombre + "'");
+            
         persona.setEstados(nuevoEstado);
 
-        Personas personaActualizada = personasRepository.save(persona);
-        return convertirAPersonaResponseDTO(personaActualizada);
+        try {
+            Personas personaActualizada = personasRepository.save(persona);
+            System.out.println("✅ [PERSONA-DEBUG] Estado actualizado exitosamente");
+            return convertirAPersonaResponseDTO(personaActualizada);
+        } catch (Exception e) {
+            System.err.println("❌ [PERSONA-ERROR] Error al guardar persona: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error al actualizar el estado de la persona: " + e.getMessage());
+        }
     }
 
     /**
@@ -161,7 +184,7 @@ public class PersonaService {
             .orElseThrow(() -> new IllegalArgumentException("La persona no existe"));
 
         // Obtener estado inactivo
-        Estados estadoInactivo = estadosRepository.findByEstado("Inactivo")
+        Estados estadoInactivo = estadosRepository.findFirstByEstado("Inactivo")
             .orElseThrow(() -> new IllegalArgumentException("No se encontró el estado inactivo"));
 
         // Cambiar estado a inactivo

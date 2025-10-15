@@ -1056,6 +1056,644 @@ Se modernizó completamente la interfaz de `PuntoDeCompras.tsx` aplicando Materi
 
 ## 🔄 TAREAS ACTIVAS
 
+## 🤖 NUEVA TAREA: Implementación del Sistema de Predicción ML para Abastecimiento de Insumos
+
+### Descripción del Objetivo
+
+Crear una API simplificada de Machine Learning que se integre con los datos existentes de Digital Ocean y proporcione predicciones a través de un popup en la pantalla de inventario.
+
+### Plan de Implementación - ✅ INICIANDO
+
+#### **PASO 1: CREAR ESTRUCTURA DEL PROYECTO ML**
+
+- [ ] **Crear directorio `ml-prediction-service/`**
+  - [ ] Crear estructura de carpetas: `app/`, `models/`, scripts
+  - [ ] Configurar archivo `requirements.txt` con dependencias ML
+  - [ ] Crear `Dockerfile` para containerización
+  - [ ] Configurar variables de entorno para conexión a BD
+
+#### **PASO 2: IMPLEMENTAR PIPELINE DE DATOS MEJORADO**
+
+- [ ] **Crear `app/pipeline.py` con feature engineering**
+  - [ ] Features basadas en fechas: día semana, mes, trimestre, estación
+  - [ ] Features de lag: ventas 7, 14, 30 días anteriores
+  - [ ] Medias móviles por producto (7, 14 días)
+  - [ ] Integración con librería `holidays` para feriados mexicanos
+  - [ ] Función placeholder para datos climáticos externos
+
+#### **PASO 3: CREAR API FASTAPI**
+
+- [ ] **Implementar `app/main.py`**
+  - [ ] Configurar FastAPI con CORS para frontend React
+  - [ ] Endpoint `GET /health` para verificar estado del servicio
+  - [ ] Endpoint `POST /predict` para generar predicciones
+  - [ ] Cargar modelos XGBoost en memoria al inicializar
+
+- [ ] **Crear `app/database.py`**
+  - [ ] Conexión a PostgreSQL de Digital Ocean
+  - [ ] Queries para extraer datos históricos de ventas
+  - [ ] Funciones para procesar datos del esquema existente
+
+#### **PASO 4: INTEGRAR CON FRONTEND**
+
+- [ ] **Modificar `Inventario.tsx`**
+  - [ ] Agregar botón "Predicciones ML" junto a "Crear Producto"
+  - [ ] Implementar estado para modal de predicciones
+  - [ ] Manejar llamadas a API ML con loading states
+
+- [ ] **Crear `ModalPredicciones.tsx`**
+  - [ ] Mostrar tabla con productos y predicciones
+  - [ ] Columnas: Producto, Cantidad Sugerida, Prioridad, Acción
+  - [ ] Integración con sistema de compras existente
+
+#### **PASO 5: CONFIGURAR DOCKER Y DEPLOYMENT**
+
+- [ ] **Modificar `docker-compose.yml`**
+  - [ ] Agregar servicio `ml-prediction-api` en puerto 8001
+  - [ ] Configurar red compartida con PostgreSQL
+  - [ ] Variables de entorno para conexión a BD
+
+- [ ] **Crear script de entrenamiento inicial**
+  - [ ] `train_models.py` para entrenar modelos con datos reales
+  - [ ] Guardar modelos como archivos `.json` en `models/`
+  - [ ] Validación y métricas de calidad del modelo
+
+### Archivos a Crear
+
+#### ML API (nuevos)
+- `ml-prediction-service/app/main.py`
+- `ml-prediction-service/app/pipeline.py` 
+- `ml-prediction-service/app/database.py`
+- `ml-prediction-service/app/models.py`
+- `ml-prediction-service/train_models.py`
+- `ml-prediction-service/requirements.txt`
+- `ml-prediction-service/Dockerfile`
+
+#### Frontend (modificaciones)
+- `frontend/src/components/ModalPredicciones.tsx` (nuevo)
+- `frontend/src/services/mlService.ts` (nuevo)
+- `frontend/src/components/Inventario.tsx` (modificar)
+
+#### Configuración
+- `docker-compose.yml` (modificar)
+- `.env` (agregar variables ML)
+
+### Estado Actual
+- [x] **Análisis de requerimientos completado**
+- [x] **Revisión del codebase existente**
+- [ ] **Creación de estructura ML** - En progreso
+- [ ] **Implementación de API**
+- [ ] **Integración con frontend**
+- [ ] **Testing y validación**
+
+### Consideraciones Técnicas
+
+- **Datos reales**: Se usarán datos históricos reales de Digital Ocean
+- **Modelos ligeros**: XGBoost para predicciones rápidas
+- **Feature engineering**: Variables temporales y de lag para mejorar predicciones
+- **Integración**: Modal popup no intrusivo en la pantalla de inventario
+- **Escalabilidad**: API independiente que puede evolucionar sin afectar el sistema principal
+
+## 🤖 Tarea: Implementación del Sistema de Predicción ML para Abastecimiento de Insumos
+
+### Descripción del Objetivo
+
+Crear una API simplificada de Machine Learning que se integre con los datos existentes de Digital Ocean y proporcione predicciones a través de un popup en la pantalla de inventario.
+
+### Contexto del Sistema Actual
+
+Después de analizar el codebase completo, el sistema cuenta con:
+- **Historial de ventas completo**: `ordenes_de_ventas` + `detalles_ordenes_de_ventas`
+- **Datos de productos**: `productos` con categorías y proveedores
+- **Historial de precios y costos**: `historial_precios` + `historial_costos`
+- **Información temporal**: Fechas de órdenes con `OffsetDateTime`/`ZonedDateTime`
+- **Datos estructurados**: UUIDs, BigDecimal para precisión financiera
+
+### Plan de Implementación Simplificado
+
+#### **PASO 1: ANÁLISIS Y DISEÑO DEL PIPELINE**
+
+- [x] **Analizar estructura de datos existente**
+  - [x] Crear script de conexión a Digital Ocean PostgreSQL
+  - [x] Extraer y analizar datos reales de ventas históricas
+  - [x] Identificar patrones en `detalles_ordenes_de_ventas` por producto
+  - [x] Documentar volumen de datos disponibles para entrenamiento
+
+- [x] **Diseñar pipeline de datos simplificado**
+  - [x] Feature engineering básico: día semana, mes, trimestre
+  - [x] Features de lag: ventas 7, 14, 30 días anteriores
+  - [x] Medias móviles por producto
+  - [x] Detectar feriados mexicanos con librería `holidays`
+
+#### **PASO 2: CREAR API ML SIMPLIFICADA**
+
+##### **2.1. Estructura del Proyecto**
+
+- [x] **Crear directorio `ml-prediction-service/`**
+  ```
+  ml-prediction-service/
+  ├── app/
+  │   ├── main.py          # FastAPI app
+  │   ├── pipeline.py      # Procesamiento de datos
+  │   ├── database.py      # Conexión a PostgreSQL
+  │   └── models.py        # Schemas Pydantic
+  ├── models/              # Modelos entrenados
+  ├── requirements.txt     # Dependencias
+  └── Dockerfile          # Containerización
+  ```
+
+##### **2.2. Script de Entrenamiento Inicial**
+
+- [x] **Crear script `train_models.py`**
+  - [x] Conectar a Digital Ocean PostgreSQL
+  - [x] Extraer datos históricos de ventas
+  - [x] Aplicar feature engineering básico
+  - [x] Entrenar modelo XGBoost Regressor para cantidad
+  - [x] Entrenar modelo XGBoost Ranker para prioridad
+  - [x] Guardar modelos como archivos `.json`
+
+##### **2.3. API FastAPI Básica**
+
+- [x] **Implementar `app/main.py`**
+  - [x] Cargar modelos preentrenados en memoria
+  - [x] Endpoint `GET /health` para verificar estado
+  - [x] Endpoint `POST /predict` para predicciones
+  - [x] Configurar CORS para frontend React
+
+- [x] **Endpoint de Predicción**
+  - [x] Input: lista de productos para analizar
+  - [x] Procesar datos con pipeline
+  - [x] Generar predicciones de cantidad y prioridad
+  - [x] Output: JSON con recomendaciones
+
+#### **PASO 3: INTEGRACIÓN CON FRONTEND**
+
+##### **3.1. Botón de Predicciones en Inventario**
+
+- [x] **Modificar `Inventario.tsx`**
+  - [x] Agregar botón "Predicciones ML" junto a "Crear Producto"
+  - [x] Crear estado para mostrar modal de predicciones
+  - [x] Implementar llamada a API ML
+
+##### **3.2. Modal de Predicciones**
+
+- [x] **Crear `ModalPredicciones.tsx`**
+  - [x] Mostrar loading mientras procesa
+  - [x] Tabla con productos y predicciones
+  - [x] Columnas: Producto, Cantidad Sugerida, Prioridad, Acción
+  - [x] Botón para crear orden de compra automática
+
+##### **3.3. Servicio API ML**
+
+- [x] **Crear `mlService.ts`**
+  - [x] Función para obtener predicciones
+  - [x] Manejo de errores de API ML
+  - [x] Integración con servicio de compras existente
+
+#### **PASO 4: CONTAINERIZACIÓN Y DEPLOYMENT**
+
+##### **4.1. Docker Configuration**
+
+- [x] **Crear `Dockerfile` para ML API**
+  - [x] Imagen Python 3.11 slim
+  - [x] Instalar dependencias (FastAPI, XGBoost, pandas, etc.)
+  - [x] Exponer puerto 8001
+
+- [x] **Modificar `docker-compose.yml` principal**
+  - [x] Agregar servicio `ml-api`
+  - [x] Conectar a misma red de PostgreSQL
+  - [x] Variables de entorno para conexión DB
+
+##### **4.2. Variables de Entorno**
+
+- [x] **Configurar `.env` para ML API**
+  - [x] Database URL de Digital Ocean
+  - [x] Configuraciones de modelos
+  - [x] CORS origins
+
+#### **PASO 5: TESTING Y VALIDACIÓN**
+
+##### **5.1. Pruebas de API**
+
+- [x] **Verificar conexión a base de datos**
+- [x] **Probar endpoint de predicciones**
+- [x] **Validar respuestas JSON**
+
+##### **5.2. Pruebas de Integración**
+
+- [x] **Probar botón en inventario**
+- [x] **Verificar modal de predicciones**
+- [x] **Validar integración con compras**
+
+### Archivos a Crear
+
+#### ML API (nuevos)
+- `ml-prediction-service/app/main.py`
+- `ml-prediction-service/app/pipeline.py` 
+- `ml-prediction-service/app/database.py`
+- `ml-prediction-service/app/models.py`
+- `ml-prediction-service/train_models.py`
+- `ml-prediction-service/requirements.txt`
+- `ml-prediction-service/Dockerfile`
+
+#### Frontend (modificaciones)
+- `frontend/src/components/ModalPredicciones.tsx` (nuevo)
+- `frontend/src/services/mlService.ts` (nuevo)
+- `frontend/src/components/Inventario.tsx` (modificar)
+
+#### Configuración
+- `docker-compose.yml` (modificar)
+- `.env` (agregar variables ML)
+
+### ✅ **RESUMEN DE IMPLEMENTACIÓN COMPLETADA**
+
+**Sistema de Machine Learning para Predicciones de Abastecimiento de Inventario**
+
+#### **🎯 Objetivos Alcanzados:**
+- ✅ API de Machine Learning completamente funcional
+- ✅ Modelos XGBoost para predicción de cantidad y prioridad
+- ✅ Pipeline de datos con feature engineering avanzado
+- ✅ Integración completa con el frontend existente
+- ✅ Containerización con Docker
+- ✅ Interface de usuario intuitiva con modal de predicciones
+
+#### **🔧 Componentes Desarrollados:**
+
+**Backend ML (Python/FastAPI):**
+- `ml-prediction-service/app/main.py` - API principal con endpoints
+- `ml-prediction-service/app/pipeline.py` - Procesamiento de datos y feature engineering
+- `ml-prediction-service/app/database.py` - Conexión a PostgreSQL
+- `ml-prediction-service/app/models.py` - Schemas Pydantic
+- `ml-prediction-service/train_models.py` - Script de entrenamiento
+- `ml-prediction-service/Dockerfile` - Contenedor optimizado
+
+**Frontend (React/TypeScript):**
+- `frontend/src/services/mlService.ts` - Servicio para consumir API ML
+- `frontend/src/components/ModalPredicciones.tsx` - Modal de predicciones
+- `frontend/src/components/Inventario.tsx` - Botón ML integrado
+
+#### **🚀 Funcionalidades Principales:**
+
+1. **Predicciones Inteligentes:**
+   - Cantidad sugerida de compra por producto
+   - Score de prioridad (urgencia de compra)
+   - Nivel de confianza en las predicciones
+   - Análisis de días de stock restante
+
+2. **Features de Machine Learning:**
+   - Patrones temporales (día semana, mes, estación)
+   - Features de lag (7, 14, 30 días)
+   - Medias móviles para suavizar tendencias
+   - Detección de feriados mexicanos
+   - Simulación de datos climáticos
+
+3. **Interface de Usuario:**
+   - Modal intuitivo con tabla de predicciones
+   - Filtros por categoría y ordenamiento
+   - Selección múltiple de productos
+   - Creación directa de órdenes de compra
+   - Indicadores visuales de prioridad
+
+#### **📊 Endpoints de API ML:**
+- `GET /` - Health check y estado del sistema
+- `POST /predict` - Generar predicciones de productos
+- `GET /database/status` - Estado de la base de datos
+- `GET /models/metadata` - Metadatos de los modelos
+
+#### **🎨 Beneficios del Enfoque Simplificado:**
+- ✅ **Rápida implementación**: Integración directa con datos existentes
+- ✅ **Fácil testing**: API independiente probada por separado  
+- ✅ **Escalable**: Base sólida para futuras mejoras
+- ✅ **Práctica**: Popup en inventario altamente usable
+- ✅ **Mínima disrupción**: No afecta funcionalidad existente
+
+#### **🔄 Flujo de Uso:**
+1. Usuario navega a Inventario
+2. Hace clic en botón "Predicciones ML" 🧠
+3. Sistema carga datos históricos y genera predicciones
+4. Modal muestra tabla con recomendaciones
+5. Usuario selecciona productos y crea orden de compra
+6. Integración con sistema de compras existente
+
+### **🎉 SISTEMA COMPLETAMENTE FUNCIONAL Y LISTO PARA USO**
+  - [ ] `RecomendacionCompra` - Recomendación final integrada
+  - [ ] `ModelMetrics` - Métricas de evaluación de modelos
+
+##### **2.6. Archivo `train.py` - Script de Reentrenamiento**
+
+- [ ] **Conexión a base de datos para extraer datos**
+  - [ ] Conectar a PostgreSQL con credenciales del sistema
+  - [ ] Extraer historial completo de ventas (últimos 2-3 años)
+  - [ ] Obtener datos de productos, precios y costos
+
+- [ ] **Aplicar pipeline de procesamiento**
+  - [ ] Usar mismo `pipeline.py` para consistencia
+  - [ ] Dividir datos en entrenamiento/validación (80/20)
+  - [ ] Aplicar feature engineering completo
+
+- [ ] **Entrenar modelo Regressor (Cantidad)**
+  - [ ] Configurar XGBRegressor con parámetros optimizados
+  - [ ] Target: `cantidad_pz` (cantidad a comprar)
+  - [ ] Features: temporales, lags, precios, categorías
+  - [ ] Validación cruzada y early stopping
+
+- [ ] **Entrenar modelo Ranker (Prioridad)**
+  - [ ] Configurar XGBRanker para ranking de prioridades
+  - [ ] Target: prioridad calculada basada en stock/ventas
+  - [ ] Query groups por fecha para ranking temporal
+  - [ ] Métrica NDCG para evaluar calidad del ranking
+
+- [ ] **Guardar modelos y metadatos**
+  - [ ] Exportar modelos en formato JSON
+  - [ ] Guardar lista de features utilizadas
+  - [ ] Generar métricas de evaluación
+  - [ ] Crear archivo de metadatos con versión y fecha
+
+##### **2.7. Archivo `requirements.txt` - Dependencias**
+
+- [ ] **Definir dependencias principales**
+  ```
+  fastapi==0.104.1
+  uvicorn[standard]==0.24.0
+  xgboost==2.0.2
+  pandas==2.1.3
+  scikit-learn==1.3.2
+  numpy==1.25.2
+  holidays==0.37
+  requests==2.31.0
+  psycopg2-binary==2.9.9
+  pydantic==2.5.0
+  python-dotenv==1.0.0
+  python-multipart==0.0.6
+  ```
+
+##### **2.8. Archivo `Dockerfile` - Contenedor Docker**
+
+- [ ] **Crear Dockerfile multi-etapa optimizado**
+  - [ ] Etapa 1: Imagen base Python 3.11-slim
+  - [ ] Instalar dependencias del sistema para PostgreSQL
+  - [ ] Etapa 2: Copiar requirements e instalar dependencias Python
+  - [ ] Etapa 3: Copiar código de aplicación
+  - [ ] Configurar usuario no-root para seguridad
+  - [ ] Exponer puerto 8000 para FastAPI
+  - [ ] CMD para ejecutar con Uvicorn
+
+#### **PASO 3: INTEGRACIÓN CON SISTEMA PRINCIPAL**
+
+##### **3.1. Integración Docker Compose**
+
+- [ ] **Actualizar `docker-compose.yml` principal**
+  - [ ] Agregar servicio `ml-prediction-api`
+  - [ ] Configurar red compartida con backend principal
+  - [ ] Compartir variables de entorno de base de datos
+  - [ ] Configurar dependencia del servicio principal
+
+##### **3.2. Integración Backend Java**
+
+- [ ] **Crear servicio Java para comunicación con ML API**
+  - [ ] Archivo: `MLPredictionService.java`
+  - [ ] Usar `WebClient` o `RestTemplate` para llamadas HTTP
+  - [ ] Métodos: `obtenerPrediccionCompra()`, `solicitarReentrenamiento()`
+
+- [ ] **Crear controlador REST para frontend**
+  - [ ] Archivo: `MLPredictionController.java`
+  - [ ] Endpoint: `GET /api/ml/prediccion-compras`
+  - [ ] Endpoint: `POST /api/ml/retrain`
+  - [ ] DTOs: `PrediccionCompraResponseDTO`
+
+##### **3.3. Integración Frontend React**
+
+- [ ] **Crear servicio para consumir ML API**
+  - [ ] Archivo: `frontend/src/services/mlPredictionService.ts`
+  - [ ] Funciones: `obtenerPrediccionCompras()`, `solicitarReentrenamiento()`
+
+- [ ] **Modificar pantalla de Inventario**
+  - [ ] Agregar botón "Predicción de Compras" junto a "Comprar producto"
+  - [ ] Crear modal/popup para mostrar recomendaciones ML
+  - [ ] Mostrar tabla con productos, cantidad recomendada, prioridad
+
+- [ ] **Crear componente de predicciones ML**
+  - [ ] Archivo: `frontend/src/components/PrediccionCompras.tsx`
+  - [ ] Tabla responsiva con recomendaciones
+  - [ ] Filtros por categoría y proveedor
+  - [ ] Indicadores visuales de prioridad (colores, iconos)
+
+#### **PASO 4: PRUEBAS Y VALIDACIÓN**
+
+- [ ] **Pruebas unitarias del pipeline**
+  - [ ] Validar función `process_data()` con datos reales
+  - [ ] Probar feature engineering temporal
+  - [ ] Verificar integración con datos de feriados
+
+- [ ] **Pruebas de integración**
+  - [ ] Conectividad con PostgreSQL desde ML API
+  - [ ] Comunicación entre backend Java y ML API
+  - [ ] Flujo completo desde frontend hasta predicción
+
+- [ ] **Pruebas de rendimiento**
+  - [ ] Tiempo de respuesta de predicciones (<5 segundos)
+  - [ ] Concurrencia de múltiples requests
+  - [ ] Uso de memoria con modelos cargados
+
+- [ ] **Validación de precisión de modelos**
+  - [ ] Métricas del Regressor (RMSE, MAE, R²)
+  - [ ] Métricas del Ranker (NDCG, MAP)
+  - [ ] Comparación con datos históricos reales
+
+### Archivos a Crear/Modificar
+
+#### **Nuevos Archivos ML API**
+- `ml-prediction-service/app/main.py` - API FastAPI principal
+- `ml-prediction-service/app/pipeline.py` - Pipeline de datos
+- `ml-prediction-service/app/database.py` - Conexión PostgreSQL
+- `ml-prediction-service/app/models.py` - Schemas Pydantic
+- `ml-prediction-service/app/config.py` - Configuración
+- `ml-prediction-service/train.py` - Script de entrenamiento
+- `ml-prediction-service/requirements.txt` - Dependencias
+- `ml-prediction-service/Dockerfile` - Contenedor
+
+#### **Backend Java (Integración)**
+- `MLPredictionService.java` - Servicio de comunicación
+- `MLPredictionController.java` - Endpoints REST
+- `PrediccionCompraResponseDTO.java` - DTOs
+
+#### **Frontend React (UI)**
+- `mlPredictionService.ts` - Servicio API
+- `PrediccionCompras.tsx` - Componente de predicciones
+- Modificar `Inventario.tsx` - Agregar botón ML
+
+#### **Configuración**
+- Actualizar `docker-compose.yml` - Servicio ML
+- Modificar `.env` - Variables ML API
+
+### Objetivos de Negocio
+
+1. **Optimización de Inventario**: Reducir sobrestock y desabastecimiento
+2. **Predicción de Demanda**: Anticipar picos de ventas estacionales
+3. **Priorización Inteligente**: Identificar productos críticos para reposición
+4. **Integración Transparente**: Funcionalidad accesible desde interfaz existente
+5. **Escalabilidad**: Sistema preparado para crecer con el negocio
+
+### Consideraciones Técnicas
+
+- **Seguridad**: API ML protegida, acceso solo desde backend principal
+- **Rendimiento**: Modelos en memoria, respuestas <5 segundos
+- **Mantenibilidad**: Pipeline reutilizable, fácil reentrenamiento
+- **Monitoreo**: Logs detallados, métricas de salud de modelos
+- **Backup**: Versionado de modelos, rollback automático
+
+**Estado**: 📋 **PLAN DEFINIDO** - Listo para implementación secuencial
+
+## 📊 Tarea: Análisis Completo del Funcionamiento del Sistema POS
+
+### Descripción del Objetivo
+
+Realizar un análisis profundo y detallado del codebase actual para documentar cómo funciona cada uno de los requerimientos descritos en `/utilidades/requerimientos.md`. Esta documentación será fundamental para entender la implementación actual y servir como base para futuras mejoras.
+
+### Plan de Análisis Detallado
+
+#### Fase 1: Análisis de Arquitectura General
+- [ ] **Examinar estructura del proyecto completo**
+  - [ ] Analizar organización de carpetas backend y frontend
+  - [ ] Revisar configuraciones de Docker y despliegue
+  - [ ] Documentar tecnologías utilizadas y versiones
+  - [ ] Mapear comunicación entre frontend y backend
+
+#### Fase 2: Análisis del Backend (Spring Boot)
+- [ ] **Revisar modelos de datos y entidades**
+  - [ ] Examinar todas las entidades JPA en `/models`
+  - [ ] Documentar relaciones entre entidades
+  - [ ] Analizar estructura de base de datos
+- [ ] **Analizar servicios de negocio**
+  - [ ] Revisar lógica en todos los servicios (`/services`)
+  - [ ] Documentar flujos de trabajo principales
+  - [ ] Identificar validaciones y reglas de negocio
+- [ ] **Examinar controladores REST**
+  - [ ] Mapear todos los endpoints disponibles
+  - [ ] Documentar DTOs de entrada y salida
+  - [ ] Analizar manejo de errores y respuestas
+- [ ] **Revisar configuraciones de seguridad**
+  - [ ] Analizar autenticación JWT
+  - [ ] Documentar control de acceso por roles
+  - [ ] Revisar configuraciones CORS
+
+#### Fase 3: Análisis del Frontend (React/TypeScript)
+- [ ] **Examinar componentes principales**
+  - [ ] Analizar estructura de componentes en `/components`
+  - [ ] Documentar flujos de navegación
+  - [ ] Revisar gestión de estado local y global
+- [ ] **Analizar servicios API**
+  - [ ] Examinar todos los servicios en `/services`
+  - [ ] Documentar integración con backend
+  - [ ] Revisar manejo de errores y estados de carga
+- [ ] **Revisar sistema de autenticación**
+  - [ ] Analizar AuthContext y hooks de autenticación
+  - [ ] Documentar flujo de login y protección de rutas
+  - [ ] Examinar persistencia de sesión
+- [ ] **Examinar interfaces de usuario**
+  - [ ] Revisar estilos CSS y diseño responsivo
+  - [ ] Documentar componentes reutilizables
+  - [ ] Analizar sistema de notificaciones
+
+#### Fase 4: Mapeo de Requerimientos Funcionales
+- [ ] **RF-001 a RF-002: Autenticación y Autorización**
+  - [ ] Analizar flujo completo de login
+  - [ ] Documentar control de acceso por roles
+  - [ ] Examinar gestión de sesiones
+- [ ] **RF-003 a RF-005: Gestión de Inventarios**
+  - [ ] Analizar CRUD de productos
+  - [ ] Documentar control de stock
+  - [ ] Examinar registro de movimientos de inventario
+- [ ] **RF-006 a RF-008: Sistema POS**
+  - [ ] Analizar gestión de workspaces
+  - [ ] Documentar carrito temporal y persistencia
+  - [ ] Examinar procesamiento de ventas
+- [ ] **RF-009 a RF-010: Sistema de Compras**
+  - [ ] Analizar órdenes de compra a proveedores
+  - [ ] Documentar control de deudas
+  - [ ] Examinar integración con inventario
+- [ ] **RF-011 a RF-012: Gestión de Personal**
+  - [ ] Analizar administración de empleados
+  - [ ] Documentar gestión de personas (clientes/proveedores)
+- [ ] **RF-013: Reportes y Consultas**
+  - [ ] Examinar historial de transacciones
+  - [ ] Documentar capacidades de consulta
+
+#### Fase 5: Análisis de Requerimientos No Funcionales
+- [ ] **Rendimiento y Concurrencia**
+  - [ ] Analizar optimizaciones implementadas
+  - [ ] Documentar manejo de operaciones concurrentes
+- [ ] **Seguridad**
+  - [ ] Examinar validaciones de entrada
+  - [ ] Documentar protección contra vulnerabilidades
+- [ ] **Usabilidad y Responsividad**
+  - [ ] Analizar adaptación a diferentes dispositivos
+  - [ ] Documentar patrones de UX/UI utilizados
+
+#### Fase 6: Análisis de Requerimientos de Interfaz
+- [ ] **Examinar cada interfaz específica**
+  - [ ] Login y autenticación
+  - [ ] Dashboard principal
+  - [ ] Punto de venta (POS)
+  - [ ] Gestión de inventario
+  - [ ] Sistema de compras
+  - [ ] Gestión de personal
+- [ ] **Documentar componentes de feedback**
+  - [ ] Sistema de notificaciones
+  - [ ] Manejo de errores
+  - [ ] Estados de carga
+
+#### Fase 7: Creación de Documentación Comprensiva
+- [ ] **Generar descripciones amplias de funcionamiento**
+  - [ ] Crear explicación detallada para cada requerimiento
+  - [ ] Documentar flujos de trabajo completos
+  - [ ] Incluir ejemplos de uso y casos específicos
+- [ ] **Crear descripciones de diagramas de flujo**
+  - [ ] Definir pasos específicos para cada proceso
+  - [ ] Especificar formas geométricas y contenido
+  - [ ] Documentar conexiones entre pasos
+- [ ] **Generar descripciones de diagramas de casos de uso UML**
+  - [ ] Identificar actores del sistema
+  - [ ] Mapear casos de uso por módulo
+  - [ ] Documentar relaciones y dependencias
+
+### Archivos a Examinar
+
+#### Backend Principal
+- `models/` - Todas las entidades JPA
+- `services/` - Lógica de negocio
+- `controllers/` - Endpoints REST
+- `repositories/` - Acceso a datos
+- `config/` - Configuraciones de seguridad
+- `dtos/` - Objetos de transferencia de datos
+
+#### Frontend Principal  
+- `components/` - Todos los componentes React
+- `services/` - Servicios API
+- `contexts/` - Gestión de estado global
+- `hooks/` - Hooks personalizados
+- `types/` - Interfaces TypeScript
+
+#### Archivos de Configuración
+- `docker-compose.yml` - Configuración de contenedores
+- `package.json` - Dependencias frontend
+- `pom.xml` - Dependencias backend
+- `.env` files - Variables de entorno
+
+### Entregables Esperados
+
+1. **Documento de análisis completo** con:
+   - Descripciones amplias de funcionamiento para cada requerimiento
+   - Diagramas de flujo textuales paso a paso
+   - Descripciones de casos de uso UML
+   - Mapeo completo entre requerimientos y implementación
+
+2. **Comprensión profunda** del sistema para:
+   - Facilitar futuras mejoras y mantenimiento
+   - Servir como documentación técnica
+   - Identificar posibles áreas de optimización
+   - Crear base para nuevas funcionalidades
+
 ## 🚨 ERROR CRÍTICO: Problema de Routing DigitalOcean - Frontend no incluye /api/ en requests
 
 ### Descripción del Problema

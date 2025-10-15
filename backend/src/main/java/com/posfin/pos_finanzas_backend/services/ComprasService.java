@@ -138,7 +138,7 @@ public class ComprasService {
         }
         
         // Obtener estado "activo"
-        Estados estadoActivo = estadosRepository.findByEstado("Activo")
+        Estados estadoActivo = estadosRepository.findFirstByEstado("Activo")
             .orElseThrow(() -> new IllegalStateException("Estado 'Activo' no encontrado"));
         
         // Obtener método de pago por defecto (Efectivo)

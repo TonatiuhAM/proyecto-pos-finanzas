@@ -81,22 +81,29 @@ public class EmpleadoController {
     public ResponseEntity<?> cambiarEstadoEmpleado(@PathVariable String id,
             @RequestBody EmpleadoEstadoRequestDTO request) {
         try {
+            System.out.println("🔧 [CONTROLLER-DEBUG] Recibida petición cambio de estado - ID: " + id);
+            System.out.println("🔧 [CONTROLLER-DEBUG] Estado solicitado: " + (request != null ? request.getEstado() : "null"));
+            
             // Validaciones básicas
             if (request.getEstado() == null || request.getEstado().trim().isEmpty()) {
+                System.err.println("❌ [CONTROLLER-ERROR] Estado vacío o nulo");
                 return ResponseEntity.badRequest().body("El estado es requerido");
             }
             if (!"Activo".equals(request.getEstado()) && !"Inactivo".equals(request.getEstado())) {
+                System.err.println("❌ [CONTROLLER-ERROR] Estado inválido: " + request.getEstado());
                 return ResponseEntity.badRequest().body("Estado inválido. Debe ser 'Activo' o 'Inactivo'");
             }
 
             EmpleadoResponseDTO empleado = empleadoService.cambiarEstadoEmpleado(id, request.getEstado());
+            System.out.println("✅ [CONTROLLER-DEBUG] Cambio de estado exitoso");
             return ResponseEntity.ok(empleado);
         } catch (IllegalArgumentException e) {
             // Errores de validación (ej: empleado no encontrado, estado no existe)
+            System.err.println("❌ [CONTROLLER-ERROR] Error de validación: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             // Log del error para debugging
-            System.err.println("Error al cambiar estado del empleado: " + e.getMessage());
+            System.err.println("❌ [CONTROLLER-ERROR] Error interno al cambiar estado del empleado: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Error interno del servidor");
         }

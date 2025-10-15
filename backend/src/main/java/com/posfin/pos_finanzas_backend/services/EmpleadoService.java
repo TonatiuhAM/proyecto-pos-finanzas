@@ -55,7 +55,7 @@ public class EmpleadoService {
         }
 
         // Obtener el estado "Activo" (por defecto para nuevos empleados)
-        Optional<Estados> estadoActivoOpt = estadosRepository.findByEstado("Activo");
+        Optional<Estados> estadoActivoOpt = estadosRepository.findFirstByEstado("Activo");
         if (estadoActivoOpt.isEmpty()) {
             throw new RuntimeException("No se encontró el estado 'Activo' en la base de datos");
         }
@@ -89,25 +89,43 @@ public class EmpleadoService {
      * Cambiar el estado de un empleado
      */
     public EmpleadoResponseDTO cambiarEstadoEmpleado(String empleadoId, String nuevoEstado) {
+        System.out.println("🔧 [DEBUG] Iniciando cambio de estado - empleadoId: " + empleadoId + ", nuevoEstado: " + nuevoEstado);
+        
         // Verificar que el empleado existe
         Optional<Usuarios> usuarioOpt = usuariosRepository.findById(empleadoId);
         if (usuarioOpt.isEmpty()) {
+            System.err.println("❌ [ERROR] Empleado no encontrado con ID: " + empleadoId);
             throw new RuntimeException("Empleado no encontrado");
         }
+        
+        System.out.println("✅ [DEBUG] Empleado encontrado: " + usuarioOpt.get().getNombre());
 
-        // Verificar que el estado existe
-        Optional<Estados> estadoOpt = estadosRepository.findByEstado(nuevoEstado);
+        // Verificar que el estado existe (usar findFirstByEstado para evitar error de duplicados)
+        Optional<Estados> estadoOpt = estadosRepository.findFirstByEstado(nuevoEstado);
         if (estadoOpt.isEmpty()) {
+            System.err.println("❌ [ERROR] Estado no encontrado: " + nuevoEstado);
             throw new RuntimeException("El estado especificado no existe");
         }
+        
+        System.out.println("✅ [DEBUG] Estado encontrado: " + estadoOpt.get().getEstado());
 
         // Actualizar el estado del usuario
         Usuarios usuario = usuarioOpt.get();
+        Estados estadoAnterior = usuario.getEstados();
+        System.out.println("🔄 [DEBUG] Cambiando estado de '" + 
+            (estadoAnterior != null ? estadoAnterior.getEstado() : "null") + "' a '" + nuevoEstado + "'");
+            
         usuario.setEstados(estadoOpt.get());
 
-        Usuarios usuarioActualizado = usuariosRepository.save(usuario);
-
-        return convertirAEmpleadoResponseDTO(usuarioActualizado);
+        try {
+            Usuarios usuarioActualizado = usuariosRepository.save(usuario);
+            System.out.println("✅ [DEBUG] Estado actualizado exitosamente");
+            return convertirAEmpleadoResponseDTO(usuarioActualizado);
+        } catch (Exception e) {
+            System.err.println("❌ [ERROR] Error al guardar usuario: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error al actualizar el estado del empleado: " + e.getMessage());
+        }
     }
 
     /**

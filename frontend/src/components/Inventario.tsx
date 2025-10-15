@@ -3,6 +3,7 @@ import './InventarioModerno.css';
 import { inventarioService } from '../services/inventarioService';
 import ModalCrearProducto from './ModalCrearProducto';
 import ModalEditarProducto from './ModalEditarProducto';
+import ModalPredicciones from './ModalPredicciones';
 import type { ProductoDTO } from '../services/inventarioService';
 
 interface InventarioProps {
@@ -18,6 +19,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
   // Estados de los modales
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductoDTO | null>(null);
 
   // Cargar datos iniciales
@@ -94,6 +96,24 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
     loadProductos();
   };
 
+  // Abrir modal de predicciones ML
+  const handleShowPredictions = () => {
+    setShowPredictionsModal(true);
+  };
+
+  // Manejar creación de orden de compra desde predicciones
+  const handleCreatePurchaseOrder = (productosSeleccionados: any[]) => {
+    console.log('🛒 Creando orden de compra con productos:', productosSeleccionados);
+    
+    // Aquí podrías mostrar un mensaje de éxito o redirigir
+    alert(`Orden de compra creada para ${productosSeleccionados.length} productos`);
+    
+    // Opcionalmente navegar a la sección de compras
+    if (onNavigateToCompras) {
+      onNavigateToCompras();
+    }
+  };
+
   // Función para formatear precio
   const formatPrice = (price: number | undefined) => {
     if (price === undefined || price === null) return 'N/A';
@@ -168,6 +188,39 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
           <span className="btn-icon">🛒</span>
           Comprar productos
         </button>
+        
+        <button
+          className="predictions-btn"
+          onClick={handleShowPredictions}
+          title="Ver predicciones de Machine Learning"
+          style={{
+            backgroundColor: '#6366f1',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#5048e5';
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#6366f1';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+          }}
+        >
+          <span className="btn-icon">🧠</span>
+          Predicciones ML
+        </button>
+        
         <button
           className="create-product-btn"
           onClick={handleCrearNuevo}
@@ -309,6 +362,13 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
           onClose={() => setShowEditModal(false)}
           onSuccess={handleModalSuccess}
           producto={selectedProduct}
+        />
+
+        {/* Modal para predicciones ML */}
+        <ModalPredicciones
+          isOpen={showPredictionsModal}
+          onClose={() => setShowPredictionsModal(false)}
+          onCreatePurchaseOrder={handleCreatePurchaseOrder}
         />
       </div>
     );

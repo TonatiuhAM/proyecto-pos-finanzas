@@ -97,16 +97,26 @@ public class PersonaController {
             @PathVariable String id, 
             @RequestBody Map<String, String> request) {
         try {
+            System.out.println("🔧 [PERSONA-CONTROLLER-DEBUG] Recibida petición cambio de estado - ID: " + id);
+            System.out.println("🔧 [PERSONA-CONTROLLER-DEBUG] Request body: " + request);
+            
             String nuevoEstadoNombre = request.get("estadoNombre");
             if (nuevoEstadoNombre == null) {
+                System.err.println("❌ [PERSONA-CONTROLLER-ERROR] estadoNombre no encontrado en request");
                 return ResponseEntity.badRequest().build();
             }
             
+            System.out.println("🔧 [PERSONA-CONTROLLER-DEBUG] Estado solicitado: " + nuevoEstadoNombre);
+            
             PersonaResponseDTO persona = personaService.actualizarEstadoPersona(id, nuevoEstadoNombre);
+            System.out.println("✅ [PERSONA-CONTROLLER-DEBUG] Cambio de estado exitoso");
             return ResponseEntity.ok(persona);
         } catch (IllegalArgumentException e) {
+            System.err.println("❌ [PERSONA-CONTROLLER-ERROR] Error de validación: " + e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            System.err.println("❌ [PERSONA-CONTROLLER-ERROR] Error interno: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

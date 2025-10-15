@@ -4,11 +4,13 @@ import com.posfin.pos_finanzas_backend.models.OrdenesDeVentas;
 import com.posfin.pos_finanzas_backend.models.Personas;
 import com.posfin.pos_finanzas_backend.models.Usuarios;
 import com.posfin.pos_finanzas_backend.models.MetodosPago;
+import com.posfin.pos_finanzas_backend.models.DetallesOrdenesDeVentas;
 import com.posfin.pos_finanzas_backend.dtos.OrdenesDeVentasDTO;
 import com.posfin.pos_finanzas_backend.repositories.OrdenesDeVentasRepository;
 import com.posfin.pos_finanzas_backend.repositories.PersonasRepository;
 import com.posfin.pos_finanzas_backend.repositories.UsuariosRepository;
 import com.posfin.pos_finanzas_backend.repositories.MetodosPagoRepository;
+import com.posfin.pos_finanzas_backend.repositories.DetallesOrdenesDeVentasRepository;
 import com.posfin.pos_finanzas_backend.services.VentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +20,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/ordenes-de-ventas")
@@ -36,6 +40,9 @@ public class OrdenesDeVentasController {
 
     @Autowired
     private MetodosPagoRepository metodosPagoRepository;
+
+    @Autowired
+    private DetallesOrdenesDeVentasRepository detallesOrdenesDeVentasRepository;
 
     @Autowired
     private VentaService ventaService;
@@ -296,6 +303,82 @@ public class OrdenesDeVentasController {
         dto.setMetodoPagoNombre(ordenActualizada.getMetodoPago().getMetodoPago());
 
         return ResponseEntity.ok(dto);
+    }
+
+    // ===== ENDPOINT ESPECIAL PARA MACHINE LEARNING =====
+
+    /**
+     * Obtiene el historial de ventas en el formato requerido por la API de Machine Learning.
+     * Endpoint: GET /api/ordenes-de-ventas/historial-ml
+     */
+    @GetMapping("/historial-ml")
+    public ResponseEntity<List<Map<String, Object>>> getHistorialVentasParaML(
+            @RequestParam(required = false) String fechaDesde,
+            @RequestParam(required = false) Integer limite) {
+        try {
+            // Configurar límite por defecto
+            if (limite == null || limite <= 0) {
+                limite = 1000;
+            }
+
+            // Obtener todas las órdenes de ventas (o aplicar filtro de fecha si se proporciona)
+            List<OrdenesDeVentas> ordenes;
+            if (fechaDesde != null && !fechaDesde.trim().isEmpty()) {
+                OffsetDateTime fechaLimite = OffsetDateTime.parse(fechaDesde + "T00:00:00Z");
+                ordenes = ordenesDeVentasRepository.findByFechaOrdenGreaterThanEqualOrderByFechaOrdenDesc(fechaLimite);
+            } else {
+                ordenes = ordenesDeVentasRepository.findAllByOrderByFechaOrdenDesc();
+            }
+
+            // Limitar resultados
+            if (ordenes.size() > limite) {
+                ordenes = ordenes.subList(0, limite);
+            }
+
+            List<Map<String, Object>> historialML = new ArrayList<>();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            // Procesar cada orden de venta
+            for (OrdenesDeVentas orden : ordenes) {
+                // Obtener todos los detalles de esta orden
+                List<DetallesOrdenesDeVentas> detalles = detallesOrdenesDeVentasRepository.findByOrdenDeVenta(orden);
+
+                // Crear un registro por cada producto vendido
+                for (DetallesOrdenesDeVentas detalle : detalles) {
+                    Map<String, Object> registroML = new HashMap<>();
+                    
+                    // Datos requeridos por la API ML
+                    registroML.put("fecha_orden", orden.getFechaOrden().format(formatter));
+                    registroML.put("productos_id", detalle.getProducto().getId());
+                    registroML.put("cantidad_pz", detalle.getCantidadPz() != null ? detalle.getCantidadPz().intValue() : 0);
+                    
+                    // Precios desde el historial de precios
+                    if (detalle.getHistorialPrecio() != null) {
+                        registroML.put("precio_venta", detalle.getHistorialPrecio().getPrecio().doubleValue());
+                        // HistorialPrecios no tiene costo, usar precio como referencia
+                        registroML.put("costo_compra", detalle.getHistorialPrecio().getPrecio().doubleValue() * 0.7); // Estimación 70%
+                    } else {
+                        registroML.put("precio_venta", 0.0);
+                        registroML.put("costo_compra", 0.0);
+                    }
+                    
+                    // Información adicional útil para ML (opcional)
+                    registroML.put("producto_nombre", detalle.getProducto().getNombre());
+                    if (detalle.getProducto().getCategoriasProductos() != null) {
+                        registroML.put("categoria", detalle.getProducto().getCategoriasProductos().getCategoria());
+                    } else {
+                        registroML.put("categoria", "Sin categoría");
+                    }
+
+                    historialML.add(registroML);
+                }
+            }
+
+            return ResponseEntity.ok(historialML);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     // ===== ENDPOINT ESPECIAL PARA PROCESAR VENTA DESDE WORKSPACE =====
