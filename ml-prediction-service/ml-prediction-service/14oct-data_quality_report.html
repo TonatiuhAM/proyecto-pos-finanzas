@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Calidad de Datos - Sistema POS</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header .subtitle {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 30px;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        
+        .metric-card {
+            display: inline-block;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            text-align: center;
+            min-width: 150px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .recommendations {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .recommendation {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background-color: white;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .timestamp {
+            color: #999;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Reporte de Calidad de Datos</h1>
+            <div class="subtitle">Sistema POS & Gestión Integral - Motor de Predicciones ML</div>
+            <div class="subtitle">Generado el 14 de October de 2025 a las 23:04</div>
+        </div>
+        <div class="content">
+
+            <div class="section">
+                <h2 class="section-title">📋 Resumen Ejecutivo</h2>
+                
+                <div class="metric-card">
+                    <div class="metric-value" style="color: #dc3545;">48.82</div>
+                    <div class="metric-label">Puntuación de Calidad</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">1,000</div>
+                    <div class="metric-label">Registros</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">21</div>
+                    <div class="metric-label">Características</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">20</div>
+                    <div class="metric-label">Numéricas</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Categóricas</div>
+                </div>
+        
+                <div class="alert alert-warning">
+                    🎯 <strong>Outliers Excesivos:</strong> Se encontraron outliers en cantidades que podrían indicar problemas de calidad de datos.
+                </div>
+            
+                <div class="alert alert-danger">
+                    🔗 <strong>Multicolinealidad:</strong> Se detectaron variables altamente correlacionadas que podrían afectar el rendimiento del modelo.
+                </div>
+            
+                <div class="alert alert-warning">
+                    ⏰ <strong>Data Drift:</strong> Se detectó deriva temporal en los datos que podría requerir reentrenamiento del modelo.
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">📊 Análisis de Completitud</h2>
+                
+                <p><strong>Completitud General:</strong> 98.24%</p>
+        
+                <h3>Completitud por Característica</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Valores Completos</th>
+                            <th>Valores Faltantes</th>
+                            <th>% Completitud</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                    <tr style='background-color: #f8f9fa;'>
+                        <td>patron_estacional</td>
+                        <td>902</td>
+                        <td>98</td>
+                        <td>90.20%</td>
+                    </tr>
+                
+                    <tr style='background-color: #f8f9fa;'>
+                        <td>estacionalidad_dia_semana</td>
+                        <td>903</td>
+                        <td>97</td>
+                        <td>90.30%</td>
+                    </tr>
+                
+                    <tr style='background-color: #f8f9fa;'>
+                        <td>stock_minimo</td>
+                        <td>905</td>
+                        <td>95</td>
+                        <td>90.50%</td>
+                    </tr>
+                
+                    <tr style='background-color: #f8f9fa;'>
+                        <td>rotacion_inventario</td>
+                        <td>920</td>
+                        <td>80</td>
+                        <td>92.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>precio_producto</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>confiabilidad_proveedor</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>volatilidad_demanda</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>demanda_predicha</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>precio_proveedor_normalizado</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>descuento_volumen</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>calidad_historial</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>tiempo_entrega_promedio</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>estacionalidad_mes</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>costo_producto</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    <tr >
+                        <td>tendencia_ventas</td>
+                        <td>1,000</td>
+                        <td>0</td>
+                        <td>100.00%</td>
+                    </tr>
+                
+                    </tbody>
+                </table>
+            <p><em>Mostrando las primeras 15 características de 21 totales.</em></p>
+                <h3>Características con Problemas de Completitud (&lt; 95%)</h3>
+                <ul>
+            <li>patron_estacional</li><li>estacionalidad_dia_semana</li><li>stock_minimo</li><li>rotacion_inventario</li></ul></div>
+            <div class="section">
+                <h2 class="section-title">🎯 Análisis de Outliers</h2>
+                
+                <div class="metric-card">
+                    <div class="metric-value">503</div>
+                    <div class="metric-label">Total Outliers</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">20</div>
+                    <div class="metric-label">Columnas Afectadas</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">100.0%</div>
+                    <div class="metric-label">% Columnas con Outliers</div>
+                </div>
+        
+                <h3>Características con Outliers Detectados</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Outliers Detectados</th>
+                            <th>% Outliers</th>
+                            <th>Método</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                    <tr style='background-color: #f8d7da;'>
+                        <td>precio_producto</td>
+                        <td>94</td>
+                        <td>9.40%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr style='background-color: #f8d7da;'>
+                        <td>costo_producto</td>
+                        <td>53</td>
+                        <td>5.30%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>margen_ganancia</td>
+                        <td>21</td>
+                        <td>2.10%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>stock_actual</td>
+                        <td>7</td>
+                        <td>0.70%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>stock_minimo</td>
+                        <td>7</td>
+                        <td>0.77%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>rotacion_inventario</td>
+                        <td>4</td>
+                        <td>0.43%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr style='background-color: #f8d7da;'>
+                        <td>dias_desde_ultima_venta</td>
+                        <td>53</td>
+                        <td>5.30%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>ventas_ultimos_7_dias</td>
+                        <td>40</td>
+                        <td>4.00%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>ventas_ultimos_30_dias</td>
+                        <td>36</td>
+                        <td>3.60%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>tendencia_ventas</td>
+                        <td>8</td>
+                        <td>0.80%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>estacionalidad_mes</td>
+                        <td>2</td>
+                        <td>0.20%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>estacionalidad_dia_semana</td>
+                        <td>11</td>
+                        <td>1.22%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>confiabilidad_proveedor</td>
+                        <td>7</td>
+                        <td>0.70%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>tiempo_entrega_promedio</td>
+                        <td>46</td>
+                        <td>4.60%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    <tr >
+                        <td>calidad_historial</td>
+                        <td>6</td>
+                        <td>0.60%</td>
+                        <td>iqr</td>
+                    </tr>
+                
+                    </tbody>
+                </table>
+            <p><em>Mostrando las primeras 15 características de 20 con outliers.</em></p></div>
+            <div class="section">
+                <h2 class="section-title">🔗 Análisis de Correlaciones</h2>
+                
+                <div class="metric-card">
+                    <div class="metric-value">190</div>
+                    <div class="metric-label">Pares Evaluados</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">1</div>
+                    <div class="metric-label">Correlaciones Altas</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">1</div>
+                    <div class="metric-label">Multicolinealidad</div>
+                </div>
+        
+                <div class="alert alert-danger">
+                    🚨 <strong>Alerta de Multicolinealidad:</strong> Se detectaron variables con correlación extrema (&gt; 0.95) que podrían causar problemas en el modelo.
+                </div>
+                
+                <h3>Problemas de Multicolinealidad</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Variable 1</th>
+                            <th>Variable 2</th>
+                            <th>Correlación</th>
+                            <th>Problema</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                    <tr style='background-color: #f8d7da;'>
+                        <td>precio_producto</td>
+                        <td>costo_producto</td>
+                        <td>0.9929</td>
+                        <td>Posible multicolinealidad extrema</td>
+                    </tr>
+                </tbody></table></div>
+            <div class="section">
+                <h2 class="section-title">📈 Análisis de Distribuciones</h2>
+                
+                <div class="metric-card">
+                    <div class="metric-value">20</div>
+                    <div class="metric-label">Features Analizadas</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">8</div>
+                    <div class="metric-label">Distribuciones Normales</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">8</div>
+                    <div class="metric-label">Distribuciones Asimétricas</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">40.0%</div>
+                    <div class="metric-label">% Normales</div>
+                </div>
+        
+                <h3>Resumen de Distribuciones por Característica</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Media</th>
+                            <th>Desv. Estándar</th>
+                            <th>Asimetría</th>
+                            <th>Normalidad</th>
+                            <th>Clasificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                    <tr style='background-color: #fff3cd;'>
+                        <td>precio_producto</td>
+                        <td>60.98</td>
+                        <td>278.18</td>
+                        <td>20.738</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>costo_producto</td>
+                        <td>58.12</td>
+                        <td>267.10</td>
+                        <td>20.072</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>margen_ganancia</td>
+                        <td>0.45</td>
+                        <td>1.36</td>
+                        <td>9.328</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>stock_actual</td>
+                        <td>49.88</td>
+                        <td>6.69</td>
+                        <td>0.200</td>
+                        <td>❌</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>stock_minimo</td>
+                        <td>50.00</td>
+                        <td>6.88</td>
+                        <td>0.154</td>
+                        <td>❌</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr >
+                        <td>rotacion_inventario</td>
+                        <td>99.74</td>
+                        <td>19.16</td>
+                        <td>0.022</td>
+                        <td>✅</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>dias_desde_ultima_venta</td>
+                        <td>9.88</td>
+                        <td>9.89</td>
+                        <td>1.793</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>ventas_ultimos_7_dias</td>
+                        <td>10.11</td>
+                        <td>10.33</td>
+                        <td>2.138</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>ventas_ultimos_30_dias</td>
+                        <td>10.10</td>
+                        <td>10.16</td>
+                        <td>2.195</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr >
+                        <td>tendencia_ventas</td>
+                        <td>101.29</td>
+                        <td>20.60</td>
+                        <td>-0.113</td>
+                        <td>✅</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr >
+                        <td>estacionalidad_mes</td>
+                        <td>100.29</td>
+                        <td>19.88</td>
+                        <td>-0.067</td>
+                        <td>✅</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>estacionalidad_dia_semana</td>
+                        <td>99.49</td>
+                        <td>20.40</td>
+                        <td>-0.201</td>
+                        <td>❌</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr >
+                        <td>confiabilidad_proveedor</td>
+                        <td>100.47</td>
+                        <td>19.97</td>
+                        <td>-0.031</td>
+                        <td>✅</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>tiempo_entrega_promedio</td>
+                        <td>10.49</td>
+                        <td>10.29</td>
+                        <td>1.961</td>
+                        <td>❌</td>
+                        <td>Altamente asimétrica</td>
+                    </tr>
+                
+                    <tr >
+                        <td>calidad_historial</td>
+                        <td>100.92</td>
+                        <td>19.52</td>
+                        <td>-0.041</td>
+                        <td>✅</td>
+                        <td>Aproximadamente normal</td>
+                    </tr>
+                </tbody></table><p><em>Mostrando las primeras 15 características de 20 analizadas.</em></p></div>
+            <div class="section">
+                <h2 class="section-title">⏰ Análisis de Data Drift</h2>
+                
+                <div class="metric-card">
+                    <div class="metric-value">20</div>
+                    <div class="metric-label">Features Analizadas</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">2</div>
+                    <div class="metric-label">Con Drift Detectado</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">10.0%</div>
+                    <div class="metric-label">% Con Drift</div>
+                </div>
+                
+                <p><strong>Columna Temporal:</strong> timestamp</p>
+                <p><strong>Períodos Comparados:</strong> 4</p>
+        
+                <div class="alert alert-warning">
+                    ⚠️ <strong>Data Drift Detectado:</strong> Las siguientes características muestran cambios significativos a lo largo del tiempo.
+                </div>
+                
+                <h3>Características con Drift Temporal</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Coef. Variación</th>
+                            <th>Cambio Relativo (%)</th>
+                            <th>Rango de Medias</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                    <tr style='background-color: #fff3cd;'>
+                        <td>costo_producto</td>
+                        <td>0.1064</td>
+                        <td>1.83%</td>
+                        <td>15.09</td>
+                    </tr>
+                
+                    <tr style='background-color: #fff3cd;'>
+                        <td>margen_ganancia</td>
+                        <td>0.1344</td>
+                        <td>-17.68%</td>
+                        <td>0.16</td>
+                    </tr>
+                </tbody></table></div>
+            <div class="section">
+                <h2 class="section-title">💡 Recomendaciones</h2>
+                <div class="recommendations">
+        
+                <div class="recommendation alert alert-warning">
+                    <strong>1.</strong> 🔍 Revisar 503 outliers detectados. Verificar si son errores de datos o valores legítimos.
+                </div>
+            
+                <div class="recommendation alert alert-warning">
+                    <strong>2.</strong> ⚠️ Detectada multicolinealidad en 1 pares de variables. Considerar eliminación de variables redundantes o técnicas de reducción de dimensionalidad.
+                </div>
+            
+                <div class="recommendation alert alert-warning">
+                    <strong>3.</strong> ⏰ Detectado drift temporal en 2 características. Revisar estabilidad del modelo y considerar reentrenamiento.
+                </div>
+            
+                </div>
+            </div>
+        
+            <div class="timestamp">
+                Reporte generado automáticamente el 2025-10-14T23:04:08.111539<br>
+                Sistema POS & Gestión Integral - Analizador de Calidad de Datos v1.0.0
+            </div>
+        </div>
+    </div>
+</body>
+</html>
