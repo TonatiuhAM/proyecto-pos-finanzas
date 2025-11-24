@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './InventarioModerno.css';
 import { inventarioService } from '../services/inventarioService';
+import { stockService } from '../services/stockService';
+import { useToast } from '../hooks/useToast';
 import ModalCrearProducto from './ModalCrearProducto';
 import ModalEditarProducto from './ModalEditarProducto';
 import ModalPredicciones from './ModalPredicciones';
 import type { ProductoDTO } from '../services/inventarioService';
+import type { ProductoStockBajo, ResultadoVerificacionStock } from '../types/index';
 
 interface InventarioProps {
   onNavigateToCompras?: () => void;
@@ -22,6 +25,13 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductoDTO | null>(null);
 
+  // Estados para alertas de stock
+  const [stockVerificado, setStockVerificado] = useState(false);
+  const [resultadoStock, setResultadoStock] = useState<ResultadoVerificacionStock | null>(null);
+
+  // Hook de toasts
+  const toast = useToast();
+
   // Cargar datos iniciales
   useEffect(() => {
     loadProductos();
@@ -37,11 +47,75 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
       );
       setProductos(productosActivos);
       setError(null);
+      
+      // Verificar stock después de cargar productos
+      verificarStockBajo(productosActivos);
+      
     } catch (err) {
       setError('Error al cargar los productos');
       console.error('Error loading productos:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para verificar stock bajo y mostrar alertas
+  const verificarStockBajo = useCallback((productosParaVerificar?: ProductoDTO[]) => {
+    const productosActuales = productosParaVerificar || productos;
+    
+    // No verificar si no hay productos o ya se verificó en esta sesión
+    if (productosActuales.length === 0 || stockVerificado) {
+      return;
+    }
+
+    console.log('🔍 Verificando stock bajo para', productosActuales.length, 'productos');
+
+    // Usar el servicio de stock para verificar
+    const resultado = stockService.verificarStockBajo(productosActuales);
+    setResultadoStock(resultado);
+
+    if (resultado.tieneProductosBajos) {
+      console.log('⚠️ Stock bajo detectado:', {
+        criticos: resultado.cantidadProductosCriticos,
+        bajos: resultado.cantidadProductosBajos
+      });
+
+      // Filtrar productos que pueden generar alertas (considerando throttle)
+      const productosParaAlertar = stockService.obtenerProductosParaAlertar(resultado.productosBajos);
+      
+      if (productosParaAlertar.length > 0) {
+        mostrarAlertasStock(productosParaAlertar);
+      } else {
+        console.log('🕒 Alertas de stock en throttle, no mostrando alertas');
+      }
+    } else {
+      console.log('✅ Todos los productos tienen stock suficiente');
+    }
+
+    // Marcar como verificado para esta sesión
+    setStockVerificado(true);
+  }, [productos, stockVerificado, toast]);
+
+  // Función para mostrar alertas de stock
+  const mostrarAlertasStock = (productosConStockBajo: ProductoStockBajo[]) => {
+    const tipoAlerta = stockService.determinarTipoAlerta(productosConStockBajo);
+    
+    if (tipoAlerta === 'agrupada') {
+      // Mostrar alerta agrupada para múltiples productos
+      toast.showMultipleStockWarning(
+        productosConStockBajo.map(p => ({ nombre: p.nombre, cantidad: p.cantidadActual }))
+      );
+      
+      console.log('🚨 Alerta agrupada mostrada para', productosConStockBajo.length, 'productos');
+    } else {
+      // Mostrar alertas individuales
+      productosConStockBajo.forEach((producto, index) => {
+        // Agregar pequeño delay entre alertas para evitar superposición
+        setTimeout(() => {
+          toast.showStockWarning(producto.nombre, producto.cantidadActual);
+          console.log(`🚨 Alerta individual mostrada para: ${producto.nombre} (${producto.cantidadActual} unidades)`);
+        }, index * 300); // 300ms entre cada alerta
+      });
     }
   };
 
@@ -93,6 +167,8 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
 
   // Manejar éxito en creación/edición
   const handleModalSuccess = () => {
+    // Resetear verificación de stock para permitir nuevas alertas
+    setStockVerificado(false);
     loadProductos();
   };
 
@@ -221,6 +297,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
           Predicciones ML
         </button>
         
+
         <button
           className="create-product-btn"
           onClick={handleCrearNuevo}
@@ -342,10 +419,22 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
             <div className="stat-label">Activos</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value">
-              {productos.filter(p => (p.cantidadInventario || 0) <= 10).length}
+            <div className="stat-value" style={{
+              color: resultadoStock?.tieneProductosBajos ? '#f44336' : '#4caf50'
+            }}>
+              {resultadoStock?.cantidadProductosBajos || productos.filter(p => (p.cantidadInventario || 0) <= 5).length}
             </div>
             <div className="stat-label">Stock Bajo</div>
+            {resultadoStock && resultadoStock.cantidadProductosCriticos > 0 && (
+              <div style={{
+                fontSize: '12px',
+                color: '#f44336',
+                fontWeight: 'bold',
+                marginTop: '4px'
+              }}>
+                {resultadoStock.cantidadProductosCriticos} críticos
+              </div>
+            )}
           </div>
         </div>
 

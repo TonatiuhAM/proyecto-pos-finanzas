@@ -10,7 +10,7 @@ services:
     env_file:
       - ./.env # Pasa las variables de entorno a la aplicación Spring Boot
     ports:
-      - "8080:8080"
+      - "8084:8080"
     networks:
       - pos-network
 
@@ -18,7 +18,7 @@ services:
   frontend:
     container_name: pos_frontend
     environment:
-      - VITE_API_URL=http://localhost:8080 # URL del backend para el frontend desde el navegador
+      - VITE_API_URL=http://100.101.201.102:8084 # URL del backend para el frontend desde el navegador
     build:
       context: ./frontend
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
       - PYTHONPATH=/home/app
       - PYTHONUNBUFFERED=1
     ports:
-      - "8002:8000"  # Cambiado a 8002 para evitar conflicto
+      - "8004:8000"  # Cambiado a 8002 para evitar conflicto
     volumes:
       # Persistir modelos entrenados
       - ./ml-prediction-service/models:/home/app/models

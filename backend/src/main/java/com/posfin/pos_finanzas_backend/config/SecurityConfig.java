@@ -99,7 +99,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "https://pos-finanzas-q2ddz.ondigitalocean.app",
-                "http://localhost:5173"));
+                "http://localhost:5173",
+                "http://100.101.201.102:5173",
+                "http://192.168.*:5173",
+                "http://10.*:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

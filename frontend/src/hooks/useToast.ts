@@ -95,11 +95,77 @@ export const useToast = () => {
     return result;
   };
 
+  /**
+   * Toast especializado para alertas de stock bajo
+   * @param nombreProducto - Nombre del producto con stock bajo
+   * @param cantidadActual - Cantidad actual en inventario
+   * @param options - Opciones adicionales de toast
+   */
+   const showStockWarning = (nombreProducto: string, cantidadActual: number, options?: ToastOptions) => {
+     const message = `⚠️ STOCK BAJO
+
+📦 ${nombreProducto}
+📊 Cantidad: ${cantidadActual} unidades
+🔴 Stock crítico
+
+Considera reabastecer este producto pronto.
+
+👆 Haz clic para cerrar`;
+
+    toast.warning(message, { 
+      ...defaultOptions, 
+      style: {
+        ...defaultOptions.style,
+        backgroundColor: '#ff9800',
+        color: 'white',
+        fontSize: '16px',
+        fontWeight: '700',
+        border: '3px solid #e65100',
+        lineHeight: '1.4',
+      },
+      ...options 
+    });
+  };
+
+  /**
+   * Toast para múltiples productos con stock bajo (agrupado)
+   * @param productos - Array de productos con stock bajo
+   * @param options - Opciones adicionales de toast
+   */
+   const showMultipleStockWarning = (productos: Array<{nombre: string, cantidad: number}>, options?: ToastOptions) => {
+     const count = productos.length;
+     const message = `⚠️ ${count} PRODUCTOS CON STOCK BAJO
+
+${productos.slice(0, 3).map(p => `📦 ${p.nombre}: ${p.cantidad} unidades`).join('\n')}
+${count > 3 ? `\n... y ${count - 3} productos más` : ''}
+
+🔍 Revisa el inventario para reabastecer.
+
+👆 Haz clic para cerrar`;
+
+    toast.warning(message, { 
+      ...defaultOptions, 
+      style: {
+        ...defaultOptions.style,
+        backgroundColor: '#ff9800',
+        color: 'white',
+        fontSize: '15px',
+        fontWeight: '700',
+        border: '3px solid #e65100',
+        lineHeight: '1.4',
+        minWidth: '450px',
+      },
+      ...options 
+    });
+  };
+
   return {
     showSuccess,
     showError,
     showInfo,
     showWarning,
-    showConfirm
+    showConfirm,
+    showStockWarning,
+    showMultipleStockWarning
   };
 };

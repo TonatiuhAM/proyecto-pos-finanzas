@@ -464,3 +464,58 @@ export interface FiltrosPersonas {
   estado: string | null;
   busqueda: string;
 }
+
+// ==================== TIPOS PARA SISTEMA DE ALERTAS DE STOCK ====================
+
+// Interface para productos con stock bajo
+export interface ProductoStockBajo {
+  id: string;
+  nombre: string;
+  cantidadActual: number;
+  umbralMinimo: number;
+  categoria?: string;
+  proveedor?: string;
+  nivelCriticidad: 'critico' | 'bajo' | 'medio';
+}
+
+// Interface para configuración de umbrales de stock
+export interface ConfiguracionStock {
+  umbralCritico: number;    // Por defecto: 3
+  umbralBajo: number;       // Por defecto: 5
+  umbralMedio: number;      // Por defecto: 10
+}
+
+// Interface para resultado de verificación de stock
+export interface ResultadoVerificacionStock {
+  tieneProductosBajos: boolean;
+  cantidadProductosCriticos: number;
+  cantidadProductosBajos: number;
+  productosCriticos: ProductoStockBajo[];
+  productosBajos: ProductoStockBajo[];
+  todosLosProductos: ProductoStockBajo[];
+}
+
+// Interface para estadísticas de stock
+export interface EstadisticasStock {
+  totalProductos: number;
+  productosCriticos: number;
+  productosBajos: number;
+  productosOk: number;
+  stockPromedioGeneral: number;
+}
+
+// Interface para configuración de alertas de stock
+export interface ConfiguracionAlertas {
+  alertasHabilitadas: boolean;
+  alertasSonido: boolean;
+  alertasTemporales: boolean;
+  tiempoThrottle: number; // en minutos
+  mostrarAlertsAgrupadas: boolean;
+  umbralAlertaAgrupada: number; // cantidad de productos para agrupar
+}
+
+// Types para niveles de criticidad
+export type NivelCriticidad = 'critico' | 'bajo' | 'medio';
+
+// Types para tipos de alerta
+export type TipoAlertaStock = 'individual' | 'agrupada';
