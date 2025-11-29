@@ -15,16 +15,17 @@ WORKDIR /home/app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código de la aplicación
-COPY main.py .
-COPY pipeline.py .
-COPY regenerar_modelos.py .
+# Copiar estructura completa del proyecto
+COPY app/ ./app/
+COPY data/ ./data/
+COPY scripts/ ./scripts/
+COPY models/ ./models/
 
-# Crear directorio para modelos
-RUN mkdir -p models
+# Crear directorios adicionales si no existen
+RUN mkdir -p models reports/html
 
 # Exponer puerto
 EXPOSE 8000
 
-# Comando para iniciar la aplicación
-CMD ["python", "main.py"]
+# Comando para iniciar la aplicación (ahora desde app/)
+CMD ["python", "app/main.py"]

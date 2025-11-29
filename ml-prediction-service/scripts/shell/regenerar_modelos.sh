@@ -20,9 +20,9 @@ fi
 echo "📦 Verificando dependencias..."
 pip3 install -r requirements.txt
 
-# Ejecutar script de regeneración
+# Ejecutar script de regeneración desde su nueva ubicación
 echo "🧠 Ejecutando regeneración de modelos..."
-python3 regenerar_modelos.py
+python3 scripts/training/regenerar_modelos.py
 
 if [ $? -eq 0 ]; then
     echo "✅ ¡Modelos regenerados exitosamente!"

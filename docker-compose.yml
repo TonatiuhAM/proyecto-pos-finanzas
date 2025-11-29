@@ -17,8 +17,6 @@ services:
   # Servicio del Frontend de React/Nginx
   frontend:
     container_name: pos_frontend
-    environment:
-      - VITE_API_URL=http://100.101.201.102:8084 # URL del backend para el frontend desde el navegador
     build:
       context: ./frontend
     restart: unless-stopped
@@ -26,6 +24,7 @@ services:
       - "5173:80" # Mapea el puerto 80 del contenedor al 5173 de tu máquina
     depends_on:
       - backend # Se asegura de que el backend se inicie antes que el frontend
+      - ml-prediction # Se asegura de que el servicio ML se inicie antes que el frontend
     networks:
       - pos-network
 

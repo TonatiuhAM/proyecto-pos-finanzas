@@ -9,9 +9,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copiamos el resto del código fuente
+# Copiamos el resto del código fuente incluyendo .env.production
 COPY . .
-# Construimos la versión de producción
+
+# Construimos la versión de producción (Vite cargará .env.production automáticamente)
 RUN npm run build
 
 # ---- Etapa de Ejecución (Runtime Stage) ----
