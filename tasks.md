@@ -444,3 +444,283 @@ docker logs pos_frontend
 ### Fecha de completación: 29 Nov 2025  
 ### Duración: ~25 minutos  
 ### Estado: ✅ Solución completa implementada
+
+---
+
+## 🚨 CRÍTICO: Debugging Fallo de Autenticación Usuario "Tona" (10 Ene 2026)
+
+### Descripción del Problema Crítico
+
+**SÍNTOMAS OBSERVADOS:**
+1. Usuario "Tona" existe en base de datos con contraseña "123456" y status "Activo" 
+2. Frontend envía POST correcto a `/api/auth/login` con `{"nombre":"Tona","contrasena":"123456"}`
+3. Backend responde con HTTP 400 "Usuario no encontrado"
+4. Logs de Hibernate muestran consulta ejecutada: `select u1_0.id, u1_0.contrasena, u1_0.estados_id, u1_0.nombre, u1_0.roles_id, u1_0.telefono from usuarios u1_0 where u1_0.nombre=?`
+5. **PARADOJA:** La consulta se ejecuta pero `usuariosRepository.findByNombre("Tona")` retorna `Optional.empty()`
+
+### Análisis de Código Realizado
+
+#### ✅ Componentes Analizados:
+
+1. **AuthController.login()** (línea 96):
+   - Usa `usuariosRepository.findByNombre(nombre)` correctamente
+   - Valida `usuarioOpt.isEmpty()` en línea 98
+   - Retorna "Usuario no encontrado" si `Optional` está vacío
+
+2. **UsuariosRepository**:
+   - Método `findByNombre(String nombre)` declarado correctamente
+   - Extiende `JpaRepository<Usuarios, String>`
+   - No usa `@Query` personalizado, confía en Spring Data JPA
+
+3. **Entidad Usuarios**:
+   - Campo `nombre` mapeado como `@Column(name = "nombre", nullable = false)`
+   - Tipo de dato: `String` 
+   - Sin configuraciones especiales de case sensitivity
+
+4. **Base de Datos PostgreSQL**:
+   - Tabla `usuarios` con columna `nombre` tipo `character varying`
+   - Consulta Hibernate ejecutándose correctamente según logs
+
+### Hipótesis de Causas Raíz
+
+#### 🔍 HIPÓTESIS PRIMARIAS:
+
+1. **Case Sensitivity Mismatch**
+   - PostgreSQL por defecto es case-sensitive en comparaciones
+   - Usuario podría estar almacenado como "TONA", "tona", o "Tona"
+   - Spring JPA podría no estar manejando correctamente el case matching
+
+2. **Encoding/Charset Issues**
+   - Caracteres especiales ocultos en el nombre
+   - UTF-8 vs Latin1 encoding problems
+   - Espacios en blanco al inicio/final del nombre
+
+3. **Transaction/Connection Pool Issues**  
+   - Consulta ejecutándose en diferente esquema/base de datos
+   - Connection pool apuntando a BD diferente
+   - Transacción rollback automático
+
+4. **JPA/Hibernate Configuration Problems**
+   - Caché de primer nivel interfiriendo
+   - Lazy loading causando problemas
+   - Dialect configuration mismatch
+
+5. **Data Type Coercion**
+   - Hibernate convirtiendo el parámetro String de manera inesperada
+   - PostgreSQL JDBC driver type conversion issues
+
+### Plan de Debugging Exhaustivo
+
+#### FASE 1: Verificación Directa de Datos
+
+- [ ] **Paso 1.1: Verificar datos exactos en PostgreSQL**
+  ```sql
+  SELECT id, nombre, LENGTH(nombre), ASCII(LEFT(nombre,1)), 
+         ENCODE(nombre::bytea, 'hex') as hex_encoding,
+         estados_id, roles_id
+  FROM usuarios 
+  WHERE nombre LIKE '%ona%' OR nombre LIKE '%TONA%' OR nombre LIKE '%tona%';
+  
+  SELECT COUNT(*) FROM usuarios WHERE nombre = 'Tona';
+  SELECT COUNT(*) FROM usuarios WHERE LOWER(nombre) = 'tona';
+  SELECT COUNT(*) FROM usuarios WHERE UPPER(nombre) = 'TONA';
+  ```
+
+- [ ] **Paso 1.2: Verificar conexión exacta que usa la aplicación**
+  ```sql
+  SELECT current_database(), current_schema(), current_user;
+  SHOW search_path;
+  ```
+
+#### FASE 2: Debugging a Nivel de JPA/Hibernate
+
+- [ ] **Paso 2.1: Habilitar logging SQL completo**
+  - [ ] Añadir a `application.properties`:
+    ```properties
+    spring.jpa.show-sql=true
+    spring.jpa.properties.hibernate.format_sql=true  
+    logging.level.org.hibernate.SQL=DEBUG
+    logging.level.org.hibernate.type.descriptor.sql=TRACE
+    logging.level.org.springframework.jdbc.core=DEBUG
+    ```
+
+- [ ] **Paso 2.2: Crear método de testing directo en AuthController**
+  ```java
+  @PostMapping("/debug-user")
+  public ResponseEntity<?> debugUser(@RequestParam String nombre) {
+      System.out.println("=== DEBUG: Buscando usuario: [" + nombre + "]");
+      System.out.println("=== DEBUG: Length: " + nombre.length());
+      System.out.println("=== DEBUG: Bytes: " + Arrays.toString(nombre.getBytes()));
+      
+      Optional<Usuarios> result = usuariosRepository.findByNombre(nombre);
+      System.out.println("=== DEBUG: Resultado: " + result.isPresent());
+      
+      if (result.isPresent()) {
+          Usuarios user = result.get();
+          System.out.println("=== DEBUG: Usuario encontrado: " + user.getNombre());
+          System.out.println("=== DEBUG: ID: " + user.getId());
+      }
+      
+      // Probar variaciones
+      Optional<Usuarios> upperCase = usuariosRepository.findByNombre(nombre.toUpperCase());
+      Optional<Usuarios> lowerCase = usuariosRepository.findByNombre(nombre.toLowerCase());
+      
+      return ResponseEntity.ok(Map.of(
+          "original", result.isPresent(),
+          "upperCase", upperCase.isPresent(), 
+          "lowerCase", lowerCase.isPresent(),
+          "searchTerm", nombre
+      ));
+  }
+  ```
+
+- [ ] **Paso 2.3: Crear query nativo para comparación**
+  ```java
+  @Query(value = "SELECT * FROM usuarios WHERE nombre = :nombre", nativeQuery = true)
+  Optional<Usuarios> findByNombreNativo(@Param("nombre") String nombre);
+  
+  @Query(value = "SELECT * FROM usuarios WHERE LOWER(nombre) = LOWER(:nombre)", nativeQuery = true)  
+  Optional<Usuarios> findByNombreIgnoreCase(@Param("nombre") String nombre);
+  ```
+
+#### FASE 3: Verificación de Configuración de Sistema
+
+- [ ] **Paso 3.1: Verificar profile activo**
+  ```bash
+  # En logs de startup buscar:
+  # "The following profiles are active: [profile-name]"
+  grep -r "profiles are active" /home/tona/dev/proyecto-pos-finanzas/
+  ```
+
+- [ ] **Paso 3.2: Verificar variables de entorno de BD**
+  ```bash
+  docker exec pos_backend env | grep -E "(DB_|SPRING_)"
+  ```
+
+- [ ] **Paso 3.3: Verificar conexión real desde contenedor**
+  ```bash
+  docker exec -it pos_backend bash
+  # Dentro del contenedor, instalar psql si no está:
+  apt-get update && apt-get install -y postgresql-client
+  # Conectar usando las mismas credenciales de la app:
+  psql $DB_URL -c "SELECT nombre FROM usuarios WHERE nombre ILIKE '%tona%';"
+  ```
+
+#### FASE 4: Testing Programático de Casos Límite
+
+- [ ] **Paso 4.1: Test unitario específico**
+  ```java
+  @Test
+  void testFindByNombre_CaseTona() {
+      // Arrange - Datos de prueba exactos  
+      Estados estadoActivo = new Estados();
+      estadoActivo.setId("test-estado-id");
+      estadoActivo.setEstado("Activo");
+      estadosRepository.save(estadoActivo);
+      
+      Roles rolTest = new Roles();  
+      rolTest.setId("test-rol-id");
+      rolTest.setRoles("TestRole");
+      rolesRepository.save(rolTest);
+      
+      Usuarios usuarioTona = new Usuarios();
+      usuarioTona.setId("test-tona-id");
+      usuarioTona.setNombre("Tona");  // Exactamente como en producción
+      usuarioTona.setContrasena("123456");
+      usuarioTona.setTelefono("555-0000");
+      usuarioTona.setEstados(estadoActivo);
+      usuarioTona.setRoles(rolTest);
+      
+      usuariosRepository.save(usuarioTona);
+      usuariosRepository.flush();
+      
+      // Act - Búsqueda exacta como en AuthController
+      Optional<Usuarios> result = usuariosRepository.findByNombre("Tona");
+      
+      // Assert
+      assertTrue(result.isPresent(), "Usuario Tona debería encontrarse");
+      assertEquals("Tona", result.get().getNombre());
+      
+      // Test variaciones
+      assertFalse(usuariosRepository.findByNombre("tona").isPresent());
+      assertFalse(usuariosRepository.findByNombre("TONA").isPresent());
+      assertFalse(usuariosRepository.findByNombre(" Tona").isPresent());
+      assertFalse(usuariosRepository.findByNombre("Tona ").isPresent());
+  }
+  ```
+
+- [ ] **Paso 4.2: Integration test completo**
+  ```java
+  @Test  
+  void testLoginFlow_UsuarioTona() {
+      // Crear usuario real en BD de test
+      setupUsuarioTona();
+      
+      // Simular request exacto del frontend
+      Map<String, String> credentials = Map.of(
+          "nombre", "Tona",
+          "contrasena", "123456"
+      );
+      
+      // Enviar al endpoint
+      ResponseEntity<?> response = authController.login(credentials);
+      
+      // Verificar que NO es 400 "Usuario no encontrado"
+      assertNotEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+      
+      // Verificar llamadas a repositorio
+      verify(usuariosRepository).findByNombre("Tona");
+  }
+  ```
+
+### Comandos de Debugging Inmediato
+
+```bash
+# 1. Ejecutar query directa en BD
+docker exec -it pos_db psql -U postgres -d pos_fin -c "
+SELECT 'Found: ' || nombre || ' (ID: ' || id || ')' as result 
+FROM usuarios 
+WHERE nombre = 'Tona' 
+   OR nombre = 'tona' 
+   OR nombre = 'TONA'
+   OR nombre ILIKE '%tona%';"
+
+# 2. Verificar logs de backend en tiempo real  
+docker logs -f pos_backend | grep -E "(DEBUG|Tona|findByNombre)"
+
+# 3. Hacer request de test directo
+curl -X POST http://api.tonatiuham.dev/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Tona","contrasena":"123456"}' \
+  -v
+
+# 4. Verificar estado de contenedores
+docker-compose ps
+```
+
+### Criterios de Éxito para Debugging
+
+#### ✅ **Identificación de Causa Raíz:**
+- [ ] Determinar por qué la consulta SQL no retorna resultado a pesar de ejecutarse
+- [ ] Confirmar el valor exacto del campo `nombre` en la base de datos  
+- [ ] Identificar si hay problemas de encoding, case sensitivity, o configuración
+
+#### ✅ **Solución Implementada:**
+- [ ] Usuario "Tona" puede autenticarse exitosamente
+- [ ] Respuesta HTTP 200 con token JWT válido
+- [ ] No más errores de "Usuario no encontrado"
+
+#### ✅ **Prevención de Regresión:**
+- [ ] Test automatizado que cubre este caso específico
+- [ ] Documentación del problema y solución
+- [ ] Logging mejorado para debugging futuro
+
+### Estado: 🔄 EN PROGRESO
+
+### Notas de Debugging
+- **Prioridad Máxima**: Bloquea completamente el acceso del usuario principal
+- **Impacto**: Crítico - funcionalidad de login rota
+- **Complejidad**: Alta - discrepancia entre logs de SQL y resultado de JPA
+- **Tiempo Estimado**: 2-4 horas para identificación y resolución completa
+
+---

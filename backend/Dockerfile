@@ -15,8 +15,8 @@ RUN mvn dependency:go-offline
 # Copiamos el resto del código fuente
 COPY src ./src
 
-# Empaquetamos la aplicación, saltando los tests para acelerar la construcción
-RUN mvn package -DskipTests
+# Empaquetamos la aplicación, omitiendo completamente cualquier compilación o ejecución de tests
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true -Dmaven.compile.skip=false -Dmaven.test.compile.skip=true
 
 # ---- Etapa de Ejecución (Runtime Stage) ----
 # Usamos una imagen mucho más ligera solo con el entorno de ejecución de Java (JRE)

@@ -1,8 +1,8 @@
 // Servicio para consumir la API de Machine Learning
 import axios from 'axios';
 
-// URL base de la API de ML
-const ML_API_BASE_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:8002';
+// URL base de la API de ML (a través del proxy del backend)
+const ML_API_BASE_URL = import.meta.env.VITE_ML_API_URL || (import.meta.env.VITE_API_URL || 'https://api.tonatiuham.dev') + '/api/ml';
 
 // Cliente axios configurado para ML API
 const mlApiClient = axios.create({
@@ -57,7 +57,7 @@ class MLService {
    */
   async getHealth(): Promise<HealthResponse> {
     try {
-      const response = await mlApiClient.get<HealthResponse>('/');
+      const response = await mlApiClient.get<HealthResponse>('/health');
       return response.data;
     } catch (error) {
       console.error('Error verificando salud de ML API:', error);

@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll() // Permitir acceso a la página de error de Spring Boot
                         .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a la autenticación
                         .requestMatchers("/auth/**").permitAll() // Permitir acceso directo sin /api (para routing issues)
+                        .requestMatchers("/api/ml/test-connection").permitAll() // Permitir test de conectividad ML
                         .anyRequest().authenticated() // Requerir autenticación para el resto
                 )
                 .exceptionHandling(exceptions -> exceptions
@@ -102,7 +103,15 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://100.101.201.102:5173",
                 "http://192.168.*:5173",
-                "http://10.*:5173"));
+                "http://10.*:5173",
+                "https://*.tu-dominio.com:5173",
+                "http://*.tu-dominio.com:5173",
+                "https://tu-dominio.com:5173",
+                "http://tu-dominio.com:5173",
+                "https://pos.tu-dominio.com",
+                "http://pos.tu-dominio.com",
+                "https://pos.tonatiuham.dev",
+                "https://*.tonatiuham.dev"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
