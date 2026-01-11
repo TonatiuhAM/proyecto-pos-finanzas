@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { authService } from '../services/apiService';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
+import { 
+  Store, 
+  User, 
+  Lock, 
+  LogIn, 
+  AlertCircle,
+  ChevronRight,
+  Menu
+} from 'lucide-react';
 import './LoginScreen.css';
 
 interface LoginScreenProps {
@@ -60,108 +69,145 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="login-screen">
-      <div className="login-screen__background">
-        <div className="login-screen__background-pattern"></div>
+    <div className="modern-login">
+      {/* Background con gradient animado */}
+      <div className="modern-login__background">
+        <div className="modern-login__gradient"></div>
+        <div className="modern-login__pattern"></div>
       </div>
-      
-      <div className="login-screen__container">
-        {/* Logo and Brand */}
-        <div className="login-screen__header">
-          <div className="login-screen__logo">
-            <div className="login-screen__logo-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
+
+      {/* Contenido principal */}
+      <div className="modern-login__container">
+        
+        {/* Panel izquierdo - Branding */}
+        <div className="modern-login__branding">
+          <div className="modern-login__brand-content">
+            {/* Logo */}
+            <div className="modern-login__logo">
+              <div className="modern-login__logo-icon">
+                <Menu className="w-8 h-8 md:w-10 md:h-10" />
+              </div>
+            </div>
+            
+            {/* Título principal */}
+            <div className="modern-login__brand-text">
+              <h1 className="modern-login__title">Sistema POS</h1>
+              <p className="modern-login__subtitle">Punto de Venta Moderno</p>
+            </div>
+            
+            {/* Características destacadas */}
+            <div className="modern-login__features">
+              <div className="modern-login__feature">
+                <div className="modern-login__feature-icon">
+                  <Store className="w-5 h-5" />
+                </div>
+                <span>Gestión completa de ventas</span>
+              </div>
+              <div className="modern-login__feature">
+                <div className="modern-login__feature-icon">
+                  <ChevronRight className="w-5 h-5" />
+                </div>
+                <span>Inventario inteligente</span>
+              </div>
+              <div className="modern-login__feature">
+                <div className="modern-login__feature-icon">
+                  <User className="w-5 h-5" />
+                </div>
+                <span>Control de empleados</span>
+              </div>
             </div>
           </div>
-          <h1 className="md-headline-medium login-screen__title">Sistema POS</h1>
-          <p className="md-body-large login-screen__subtitle">Punto de Venta Moderno</p>
         </div>
 
-        {/* Login Card */}
-        <div className="login-screen__card">
-          <div className="login-screen__card-header">
-            <h2 className="md-title-large">Iniciar Sesión</h2>
-            <p className="md-body-medium">Ingresa tus credenciales para continuar</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="login-screen__form">
-            {/* Username Field */}
-            <div className="login-screen__field">
-              <label htmlFor="nombre" className="login-screen__label md-body-medium">
-                Usuario
-              </label>
-              <div className="login-screen__input-container">
-                <svg className="login-screen__input-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
-                <input
-                  type="text"
-                  id="nombre"
-                  name="nombre"
-                  value={credentials.nombre}
-                  onChange={handleInputChange}
-                  className="login-screen__input md-body-large"
-                  placeholder="Ingresa tu usuario"
-                  disabled={isLoading}
-                  required
-                />
-              </div>
+        {/* Panel derecho - Formulario de login */}
+        <div className="modern-login__form-panel">
+          <div className="modern-login__form-container">
+            
+            {/* Header del formulario */}
+            <div className="modern-login__form-header">
+              <h2 className="modern-login__form-title">Bienvenido de nuevo</h2>
+              <p className="modern-login__form-subtitle">Ingresa tus credenciales para acceder al sistema</p>
             </div>
 
-            {/* Password Field */}
-            <div className="login-screen__field">
-              <label htmlFor="contrasena" className="login-screen__label md-body-medium">
-                Contraseña
-              </label>
-              <div className="login-screen__input-container">
-                <svg className="login-screen__input-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18,8h-1V6c0-2.76-2.24-5-5-5S7,3.24,7,6v2H6c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V10C20,8.9,19.1,8,18,8z M12,17c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,17,12,17z M15.1,8H8.9V6c0-1.71,1.39-3.1,3.1-3.1s3.1,1.39,3.1,3.1V8z"/>
-                </svg>
-                <input
-                  type="password"
-                  id="contrasena"
-                  name="contrasena"
-                  value={credentials.contrasena}
-                  onChange={handleInputChange}
-                  className="login-screen__input md-body-large"
-                  placeholder="Ingresa tu contraseña"
-                  disabled={isLoading}
-                  required
-                />
+            {/* Formulario */}
+            <form onSubmit={handleSubmit} className="modern-login__form" noValidate>
+              
+              {/* Campo Usuario */}
+              <div className="modern-login__field">
+                <label htmlFor="nombre" className="modern-login__label">
+                  Usuario
+                </label>
+                <div className="modern-login__input-wrapper">
+                  <div className="modern-login__input-icon">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value={credentials.nombre}
+                    onChange={handleInputChange}
+                    className="modern-login__input"
+                    placeholder="Ingresa tu usuario"
+                    disabled={isLoading}
+                    required
+                    autoComplete="username"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="login-screen__error" role="alert">
-                <svg className="login-screen__error-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
-                </svg>
-                <span className="md-body-medium">{error}</span>
+              {/* Campo Contraseña */}
+              <div className="modern-login__field">
+                <label htmlFor="contrasena" className="modern-login__label">
+                  Contraseña
+                </label>
+                <div className="modern-login__input-wrapper">
+                  <div className="modern-login__input-icon">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="password"
+                    id="contrasena"
+                    name="contrasena"
+                    value={credentials.contrasena}
+                    onChange={handleInputChange}
+                    className="modern-login__input"
+                    placeholder="Ingresa tu contraseña"
+                    disabled={isLoading}
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
               </div>
-            )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="md-button md-button--filled login-screen__submit-btn"
-            >
-              {isLoading && (
-                <svg className="login-screen__loading-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
-                </svg>
+              {/* Mensaje de error */}
+              {error && (
+                <div className="modern-login__error" role="alert">
+                  <AlertCircle className="modern-login__error-icon w-5 h-5" />
+                  <span>{error}</span>
+                </div>
               )}
-              <span>{isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}</span>
-            </button>
-          </form>
-        </div>
 
-        {/* Footer */}
-        <div className="login-screen__footer">
-          <p className="md-body-small">© 2024 Sistema POS. Todos los derechos reservados.</p>
+              {/* Botón de envío */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="modern-login__submit-btn"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="modern-login__loading-spinner"></div>
+                    <span>Iniciando sesión...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    <span>Iniciar Sesión</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

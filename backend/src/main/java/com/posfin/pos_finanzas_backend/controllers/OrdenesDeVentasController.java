@@ -429,4 +429,143 @@ public class OrdenesDeVentasController {
                     .body("Error interno del servidor: " + e.getMessage());
         }
     }
+
+    // ===== ENDPOINT PARA DASHBOARD - ÓRDENES RECIENTES =====
+
+    /**
+     * Obtiene las órdenes de venta más recientes para mostrar en el dashboard.
+     * Endpoint: GET /api/ordenes-de-ventas/recientes
+     */
+    @GetMapping("/recientes")
+    public ResponseEntity<List<Map<String, Object>>> getOrdenesRecientes(
+            @RequestParam(required = false, defaultValue = "5") Integer limite) {
+        try {
+            // Configurar límite seguro
+            if (limite == null || limite <= 0 || limite > 50) {
+                limite = 5;
+            }
+
+            // Obtener las órdenes más recientes
+            List<OrdenesDeVentas> ordenesRecientes = ordenesDeVentasRepository.findAllByOrderByFechaOrdenDesc();
+            
+            // Limitar resultados
+            if (ordenesRecientes.size() > limite) {
+                ordenesRecientes = ordenesRecientes.subList(0, limite);
+            }
+
+            List<Map<String, Object>> ordenesDTO = new ArrayList<>();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+
+            // Procesar cada orden
+            for (OrdenesDeVentas orden : ordenesRecientes) {
+                Map<String, Object> ordenDTO = new HashMap<>();
+                
+                // Datos básicos de la orden
+                ordenDTO.put("id", orden.getId());
+                ordenDTO.put("fechaVenta", orden.getFechaOrden().format(formatter));
+                ordenDTO.put("total", orden.getTotalVenta().doubleValue());
+                
+                // Información del usuario que realizó la venta
+                ordenDTO.put("usuarioNombre", orden.getUsuario().getNombre());
+                
+                // Mesa/ubicación (simulada - podríamos obtener esto de algún campo adicional)
+                // Por ahora, generar información de mesa de forma dinámica
+                String mesa = generarMesaSimulada(orden.getId());
+                ordenDTO.put("mesa", mesa);
+                
+                // Estado de la orden (fijo por ahora)
+                ordenDTO.put("estado", "Completada");
+
+                ordenesDTO.add(ordenDTO);
+            }
+
+            return ResponseEntity.ok(ordenesDTO);
+
+        } catch (Exception e) {
+            // En caso de error, devolver lista vacía para no romper el frontend
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    /**
+     * Método auxiliar para generar información de mesa simulada basada en el ID de la orden.
+     * En el futuro, esto podría venir de un campo real en la base de datos.
+     */
+    private String generarMesaSimulada(String ordenId) {
+        // Usar el último carácter del ID para determinar el tipo de ubicación
+        int ultimoCaracter = ordenId.charAt(ordenId.length() - 1) % 10;
+        
+        switch (ultimoCaracter) {
+            case 0:
+            case 1:
+                return "Delivery";
+            case 2:
+            case 3:
+                return "Barra";
+            case 4:
+                return "Mesa 1";
+            case 5:
+                return "Mesa 2";
+            case 6:
+                return "Mesa 3";
+            case 7:
+                return "Mesa 4";
+            case 8:
+                return "Mesa 5";
+            case 9:
+                return "Mesa 6";
+            default:
+                return "Mesa General";
+        }
+    }
+
+    // ===== ENDPOINT PARA ESTADÍSTICAS DEL DASHBOARD =====
+
+    /**
+     * Obtiene estadísticas básicas para el dashboard.
+     * Endpoint: GET /api/ordenes-de-ventas/estadisticas-dashboard
+     */
+    @GetMapping("/estadisticas-dashboard")
+    public ResponseEntity<Map<String, Object>> getEstadisticasDashboard() {
+        try {
+            Map<String, Object> estadisticas = new HashMap<>();
+            
+            // Obtener fecha de hoy
+            OffsetDateTime inicioHoy = OffsetDateTime.now().toLocalDate().atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
+            OffsetDateTime finHoy = inicioHoy.plusDays(1);
+            
+            // Estadísticas del día
+            List<OrdenesDeVentas> ventasHoy = ordenesDeVentasRepository.findByFechaOrdenBetween(inicioHoy, finHoy);
+            
+            int totalVentasHoy = ventasHoy.size();
+            double totalIngresosHoy = ventasHoy.stream()
+                .mapToDouble(orden -> orden.getTotalVenta().doubleValue())
+                .sum();
+            
+            double promedioTicket = totalVentasHoy > 0 ? totalIngresosHoy / totalVentasHoy : 0.0;
+            
+            // Clientes únicos atendidos (contando personas distintas)
+            long clientesAtendidos = ventasHoy.stream()
+                .map(orden -> orden.getPersona().getId())
+                .distinct()
+                .count();
+            
+            estadisticas.put("ventasHoy", totalVentasHoy);
+            estadisticas.put("totalHoy", Math.round(totalIngresosHoy * 100.0) / 100.0); // Redondear a 2 decimales
+            estadisticas.put("clientesAtendidos", (int) clientesAtendidos);
+            estadisticas.put("promedioTicket", Math.round(promedioTicket * 100.0) / 100.0); // Redondear a 2 decimales
+            
+            return ResponseEntity.ok(estadisticas);
+            
+        } catch (Exception e) {
+            // En caso de error, devolver estadísticas por defecto
+            Map<String, Object> estadisticasDefault = new HashMap<>();
+            estadisticasDefault.put("ventasHoy", 0);
+            estadisticasDefault.put("totalHoy", 0.0);
+            estadisticasDefault.put("clientesAtendidos", 0);
+            estadisticasDefault.put("promedioTicket", 0.0);
+            
+            return ResponseEntity.ok(estadisticasDefault);
+        }
+    }
 }

@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast';
 import type { ProductoDTO, CategoriaDTO } from '../services/inventarioService';
 import type { ItemCarrito } from '../types';
 import axios from 'axios';
+import SidebarNavigation from './SidebarNavigation';
 import './PuntoDeVenta.css';
 
 interface PuntoDeVentaProps {
@@ -420,164 +421,167 @@ No se pudo procesar la solicitud. Intente nuevamente.
 
   return (
     <div className="punto-venta">
-      {/* Header */}
-      <header className="punto-venta__header">
-        <div className="header-content">
-          <div className="header-left">
-            <button onClick={onBackToWorkspaces} className="btn btn-back">
-              ← Regresar
-            </button>
-            <h1>Punto de Venta - {workspaceName || `Mesa ${workspaceIdFinal}`}</h1>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="punto-venta__main">
-        {/* Panel Izquierdo - Menú de Productos */}
-        <div className="panel-productos">
-          <div className="panel-header">
-            <h2>Menú de Productos</h2>
-          </div>
-
-          {/* Filtros de Categorías */}
-          <div className="categorias-filter">
-            <button
-              onClick={() => handleCategoriaSelect('')}
-              className={`categoria-btn ${categoriaSeleccionada === '' ? 'active' : ''}`}
-            >
-              Todas
-            </button>
-            {categorias.map(categoria => (
-              <button
-                key={categoria.id}
-                onClick={() => handleCategoriaSelect(categoria.id)}
-                className={`categoria-btn ${categoriaSeleccionada === categoria.id ? 'active' : ''}`}
-              >
-                {categoria.categoria}
+      <SidebarNavigation />
+      <div className="punto-venta-content">
+        {/* Header */}
+        <header className="punto-venta__header">
+          <div className="header-content">
+            <div className="header-left">
+              <button onClick={onBackToWorkspaces} className="btn btn-back">
+                ← Regresar
               </button>
-            ))}
-          </div>
-
-          {/* Lista de Productos */}
-          <div className="productos-lista">
-            {productosFiltrados.map(producto => (
-              <div
-                key={producto.id}
-                onClick={() => handleProductoSelect(producto.id)}
-                className={`producto-item ${productoSeleccionado === producto.id ? 'selected' : ''}`}
-              >
-                <div className="producto-info">
-                  <h3>{producto.nombre}</h3>
-                  <p className="stock">Stock: {producto.cantidadInventario || 0}</p>
-                  <p className="precio">${producto.precioVentaActual || 0}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Controles de Cantidad */}
-          {productoSeleccionado && (
-            <div className="cantidad-controls">
-              <h3>Cantidad</h3>
-              <div className="cantidad-input">
-                <button
-                  onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                  className="btn btn-sm"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  value={cantidad}
-                  onChange={(e) => setCantidad(Math.max(1, parseInt(e.target.value) || 1))}
-                  min="1"
-                  max={getProductoSeleccionado()?.cantidadInventario || 1}
-                />
-                <button
-                  onClick={() => {
-                    const maxStock = getProductoSeleccionado()?.cantidadInventario || 1;
-                    setCantidad(Math.min(maxStock, cantidad + 1));
-                  }}
-                  className="btn btn-sm"
-                >
-                  +
-                </button>
-              </div>
-              <button onClick={agregarAlCarrito} className="btn btn-primary btn-block">
-                Agregar al Carrito
-              </button>
+              <h1>Punto de Venta - {workspaceName || `Mesa ${workspaceIdFinal}`}</h1>
             </div>
-          )}
-        </div>
-
-        {/* Panel Derecho - Carrito de Compras */}
-        <div className="panel-carrito">
-          <div className="panel-header">
-            <h2>Carrito de Compras</h2>
           </div>
+        </header>
 
-          {/* Lista del Carrito */}
-          <div className="carrito-lista">
-            {carrito.length === 0 ? (
-              <div className="carrito-vacio">
-                <p>El carrito está vacío</p>
-                <p>Selecciona productos del menú para agregar</p>
-              </div>
-            ) : (
-              carrito.map(item => (
-                <div key={item.productoId} className="carrito-item">
-                  <div className="item-info">
-                    <h4>{item.productoNombre}</h4>
-                    <p className="cantidad">{item.cantidadPz}x ${item.precio}</p>
-                    <p className="subtotal">${(item.precio * item.cantidadPz).toFixed(2)}</p>
+        {/* Main Content */}
+        <main className="punto-venta__main">
+          {/* Panel Izquierdo - Menú de Productos */}
+          <div className="panel-productos">
+            <div className="panel-header">
+              <h2>Menú de Productos</h2>
+            </div>
+
+            {/* Filtros de Categorías */}
+            <div className="categorias-filter">
+              <button
+                onClick={() => handleCategoriaSelect('')}
+                className={`categoria-btn ${categoriaSeleccionada === '' ? 'active' : ''}`}
+              >
+                Todas
+              </button>
+              {categorias.map(categoria => (
+                <button
+                  key={categoria.id}
+                  onClick={() => handleCategoriaSelect(categoria.id)}
+                  className={`categoria-btn ${categoriaSeleccionada === categoria.id ? 'active' : ''}`}
+                >
+                  {categoria.categoria}
+                </button>
+              ))}
+            </div>
+
+            {/* Lista de Productos */}
+            <div className="productos-lista">
+              {productosFiltrados.map(producto => (
+                <div
+                  key={producto.id}
+                  onClick={() => handleProductoSelect(producto.id)}
+                  className={`producto-item ${productoSeleccionado === producto.id ? 'selected' : ''}`}
+                >
+                  <div className="producto-info">
+                    <h3>{producto.nombre}</h3>
+                    <p className="stock">Stock: {producto.cantidadInventario || 0}</p>
+                    <p className="precio">${producto.precioVentaActual || 0}</p>
                   </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Controles de Cantidad */}
+            {productoSeleccionado && (
+              <div className="cantidad-controls">
+                <h3>Cantidad</h3>
+                <div className="cantidad-input">
                   <button
-                    onClick={() => removerDelCarrito(item.productoId)}
-                    className="btn btn-danger btn-sm"
+                    onClick={() => setCantidad(Math.max(1, cantidad - 1))}
+                    className="btn btn-sm"
                   >
-                    ×
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={cantidad}
+                    onChange={(e) => setCantidad(Math.max(1, parseInt(e.target.value) || 1))}
+                    min="1"
+                    max={getProductoSeleccionado()?.cantidadInventario || 1}
+                  />
+                  <button
+                    onClick={() => {
+                      const maxStock = getProductoSeleccionado()?.cantidadInventario || 1;
+                      setCantidad(Math.min(maxStock, cantidad + 1));
+                    }}
+                    className="btn btn-sm"
+                  >
+                    +
                   </button>
                 </div>
-              ))
+                <button onClick={agregarAlCarrito} className="btn btn-primary btn-block">
+                  Agregar al Carrito
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Total y Acciones */}
-          <div className="carrito-footer">
-            <div className="total">
-              <h3>Total: ${calcularTotal().toFixed(2)}</h3>
+          {/* Panel Derecho - Carrito de Compras */}
+          <div className="panel-carrito">
+            <div className="panel-header">
+              <h2>Carrito de Compras</h2>
             </div>
-            <div className="acciones">
-              <button
-                onClick={guardarOrden}
-                disabled={carrito.length === 0 || isSaving}
-                className="btn btn-success btn-block"
-              >
-                {isSaving ? 'Guardando...' : 'Guardar Orden'}
-              </button>
-              <button
-                onClick={solicitarCuenta}
-                disabled={carrito.length === 0 || isSaving || !ordenGuardada}
-                className={`btn btn-block ${!ordenGuardada ? 'btn-secondary' : 'btn-primary'}`}
-                title={!ordenGuardada ? 'Debe guardar la orden primero' : 'Solicitar cuenta para proceder al pago'}
-              >
-                {isSaving ? 'Procesando...' : !ordenGuardada ? 'Guardar Orden Primero' : 'Solicitar Cuenta'}
-              </button>
+
+            {/* Lista del Carrito */}
+            <div className="carrito-lista">
+              {carrito.length === 0 ? (
+                <div className="carrito-vacio">
+                  <p>El carrito está vacío</p>
+                  <p>Selecciona productos del menú para agregar</p>
+                </div>
+              ) : (
+                carrito.map(item => (
+                  <div key={item.productoId} className="carrito-item">
+                    <div className="item-info">
+                      <h4>{item.productoNombre}</h4>
+                      <p className="cantidad">{item.cantidadPz}x ${item.precio}</p>
+                      <p className="subtotal">${(item.precio * item.cantidadPz).toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => removerDelCarrito(item.productoId)}
+                      className="btn btn-danger btn-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Total y Acciones */}
+            <div className="carrito-footer">
+              <div className="total">
+                <h3>Total: ${calcularTotal().toFixed(2)}</h3>
+              </div>
+              <div className="acciones">
+                <button
+                  onClick={guardarOrden}
+                  disabled={carrito.length === 0 || isSaving}
+                  className="btn btn-success btn-block"
+                >
+                  {isSaving ? 'Guardando...' : 'Guardar Orden'}
+                </button>
+                <button
+                  onClick={solicitarCuenta}
+                  disabled={carrito.length === 0 || isSaving || !ordenGuardada}
+                  className={`btn btn-block ${!ordenGuardada ? 'btn-secondary' : 'btn-primary'}`}
+                  title={!ordenGuardada ? 'Debe guardar la orden primero' : 'Solicitar cuenta para proceder al pago'}
+                >
+                  {isSaving ? 'Procesando...' : !ordenGuardada ? 'Guardar Orden Primero' : 'Solicitar Cuenta'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-      
-      {/* Overlay sutil para operaciones de guardado - permite que los toasts sean visibles */}
-      {isSaving && (
-        <div className="saving-overlay">
-          <div className="saving-indicator">
-            <div className="loading-spinner"></div>
-            <p>Procesando operación...</p>
+        </main>
+        
+        {/* Overlay sutil para operaciones de guardado - permite que los toasts sean visibles */}
+        {isSaving && (
+          <div className="saving-overlay">
+            <div className="saving-indicator">
+              <div className="loading-spinner"></div>
+              <p>Procesando operación...</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

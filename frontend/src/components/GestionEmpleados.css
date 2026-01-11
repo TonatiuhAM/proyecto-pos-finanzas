@@ -1,13 +1,31 @@
 /* ==================== GESTIÓN UNIFICADA DE PERSONAS ==================== */
 
+.gestion-empleados-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+
 .gestion-empleados {
-  max-width: 1400px;
-  margin: 0 auto;
+  flex: 1;
+  margin-left: 80px; /* Space for sidebar on mobile */
+  max-width: calc(100vw - 80px);
   padding: 2rem;
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  margin-top: 1rem;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+  .gestion-empleados {
+    margin-left: 96px; /* Space for sidebar on desktop */
+    max-width: calc(100vw - 96px);
+  }
 }
 
 /* ==================== HEADER Y NAVEGACIÓN ==================== */

@@ -14,6 +14,7 @@ import type {
 import { TipoCategoriaPersona } from '../types/index';
 import ModalCrearEmpleado from './ModalCrearEmpleado';
 import ModalCrearPersona from './ModalCrearPersona';
+import SidebarNavigation from './SidebarNavigation';
 
 type TabActiva = 'empleados' | 'proveedores' | 'clientes';
 
@@ -334,9 +335,11 @@ const GestionEmpleados: React.FC = () => {
   const config = obtenerConfigTab();
 
   return (
-    <div className="gestion-empleados">
-      {/* Header con tabs */}
-      <div className="gestion-empleados__header">
+    <div className="gestion-empleados-container">
+      <SidebarNavigation />
+      <div className="gestion-empleados">
+        {/* Header con tabs */}
+        <div className="gestion-empleados__header">
         <div className="gestion-empleados__header-top">
           <h1 className="gestion-empleados__titulo">
             <i className="material-icons">{config.icono}</i>
@@ -555,6 +558,7 @@ const GestionEmpleados: React.FC = () => {
           categoriaSeleccionada={config.categoriaId}
         />
       )}
+    </div>
     </div>
   );
 };

@@ -1,6 +1,194 @@
 # Tareas del Proyecto POS Finanzas
 
-## 🗂️ REORGANIZACIÓN COMPLETA DE ARCHIVOS DEL PROYECTO (29 Nov 2025)
+## 🎨 REWORK COMPLETO: Nueva Interfaz de Usuario (10 Ene 2026)
+
+### Descripción del Proyecto
+
+Implementar un rework completo de todas las pantallas de la interfaz de usuario con un nuevo diseño estandardizado. La funcionalidad permanece igual, pero se mejora la experiencia visual y de usuario.
+
+**PANTALLA OBJETIVO**: Página principal del sistema (post-login) con nueva barra lateral de navegación, dashboard moderno y tabla de actividad reciente.
+
+### Paleta de Colores y Diseño
+
+#### Colores Principales:
+- **Primario**: Naranja Vibrante (#F97316) - Para elementos activos y llamadas a la acción
+- **Secundario**: Amarillo Mostaza (#FACC15) - Para ofertas y destacados  
+- **Fondo**: Blanco (#FFFFFF) o Gris muy claro (#F3F4F6)
+- **Texto**: Gris oscuro (#1F2937) para legibilidad
+
+#### Tipografía:
+- **Principal (Headings)**: Sans-serif moderna ('Poppins' o 'Inter')
+- **Cuerpo**: Sans-serif legible con buena altura de línea
+
+#### Iconografía:
+- Iconos de línea (outline) para navegación inactiva
+- Iconos sólidos (filled) para estados activos
+- Bordes redondeados: 12px - 16px radius
+
+### Componentes de la Nueva Interfaz
+
+#### 1. Barra Lateral de Navegación (Persistente)
+- **Ubicación**: Fija en la izquierda de todas las pantallas
+- **Botones**: Home, Inventario, Personal
+- **Estado Activo**: Iluminación naranja para página actual
+- **Botón Salir**: Ubicado en la parte inferior izquierda
+
+#### 2. Página Principal Renovada
+- **Saludo Personalizado**: "Hola, [Nombre del Usuario]" (obtenido del contexto de autenticación)
+- **Dashboard Modular**: Grid responsivo con botones de acceso rápido
+- **Tabla de Actividad**: Mostrar órdenes de venta más recientes
+
+#### 3. Tabla de Actividad Reciente
+- **Datos**: Extraer de `detalles_ordenes_de_venta` (más recientes)
+- **Columnas**:
+  - Usuario (nombre del empleado que realizó la venta)
+  - Mesa (ubicación de la venta)
+  - Hora (timestamp de la orden)  
+  - Total (monto de la venta)
+
+### Plan de Implementación
+
+#### FASE 1: Preparación y Estructura Base
+
+- [ ] **Paso 1.1: Analizar estructura actual de componentes**
+  - [ ] Revisar `MainMenu.tsx` actual
+  - [ ] Identificar componentes de navegación existentes
+  - [ ] Documentar rutas y contextos actuales
+
+- [ ] **Paso 1.2: Crear componente de Barra Lateral**
+  - [ ] Crear `SidebarNavigation.tsx` como componente reutilizable
+  - [ ] Implementar navegación entre páginas
+  - [ ] Añadir estado activo basado en ruta actual
+  - [ ] Integrar botón de logout con contexto de autenticación
+
+#### FASE 2: Página Principal (Dashboard)
+
+- [ ] **Paso 2.1: Refactorizar MainMenu.tsx**
+  - [ ] Reemplazar interfaz actual con el nuevo diseño HTML proporcionado
+  - [ ] Convertir HTML a JSX/TypeScript
+  - [ ] Implementar grid responsivo para módulos
+
+- [ ] **Paso 2.2: Implementar funcionalidad de botones**
+  - [ ] Conectar "Nueva Venta" con navegación al POS
+  - [ ] Conectar "Inventario" con componente de inventario
+  - [ ] Conectar "Predicciones" con modal de ML
+  - [ ] Conectar "Administración" con gestión de empleados
+
+- [ ] **Paso 2.3: Integrar saludo personalizado**
+  - [ ] Obtener nombre del usuario desde AuthContext
+  - [ ] Reemplazar "Hola, Usuario" con nombre real
+  - [ ] Manejar casos donde no hay usuario logueado
+
+#### FASE 3: Tabla de Actividad Reciente
+
+- [ ] **Paso 3.1: Crear servicio para obtener órdenes recientes**
+  - [ ] Añadir endpoint en backend: `GET /api/ordenes-de-ventas/recientes`
+  - [ ] Implementar consulta JPA para obtener últimas 5-10 órdenes
+  - [ ] Incluir joins con usuarios y información de mesa
+
+- [ ] **Paso 3.2: Crear servicio frontend**
+  - [ ] Añadir `ordenesService.ts` con método `getOrdenesRecientes()`
+  - [ ] Definir interfaces TypeScript para respuesta
+  - [ ] Implementar manejo de errores
+
+- [ ] **Paso 3.3: Integrar tabla en dashboard**
+  - [ ] Reemplazar datos mock con llamada al servicio real
+  - [ ] Implementar loading states y error handling
+  - [ ] Formatear fechas y montos correctamente
+  - [ ] Añadir avatares para nombres de usuarios
+
+#### FASE 4: Responsive Design y Refinamientos
+
+- [ ] **Paso 4.1: Implementar responsividad**
+  - [ ] Verificar comportamiento en móviles (768px breakpoint)
+  - [ ] Ajustar grid y spacing para diferentes pantallas
+  - [ ] Optimizar barra lateral para dispositivos pequeños
+
+- [ ] **Paso 4.2: Pulir estilos y animaciones**
+  - [ ] Implementar hover effects y transiciones
+  - [ ] Añadir sombras y gradientes según guía de diseño
+  - [ ] Verificar contraste y legibilidad de texto
+
+- [ ] **Paso 4.3: Testing y refinamientos finales**
+  - [ ] Probar navegación entre todas las páginas
+  - [ ] Verificar que datos reales se cargan correctamente
+  - [ ] Optimizar rendimiento y tiempo de carga
+
+#### FASE 5: Integración con Sistema Existente
+
+- [ ] **Paso 5.1: Actualizar rutas y navegación**
+  - [ ] Verificar que todas las rutas funcionen con nueva barra lateral
+  - [ ] Actualizar `ProtectedRoute` si es necesario
+  - [ ] Sincronizar estado activo de navegación
+
+- [ ] **Paso 5.2: Migrar otras pantallas gradualmente**
+  - [ ] Planificar rework de `Inventario.tsx`
+  - [ ] Planificar rework de `GestionEmpleados.tsx`
+  - [ ] Crear guía de componentes reutilizables
+
+### Archivos a Crear/Modificar
+
+#### Archivos Nuevos:
+- `frontend/src/components/SidebarNavigation.tsx` - Barra lateral de navegación
+- `frontend/src/components/SidebarNavigation.css` - Estilos para barra lateral
+- `frontend/src/services/ordenesService.ts` - Servicio para órdenes de venta
+- `frontend/src/types/ordenes.ts` - Interfaces TypeScript para órdenes
+
+#### Archivos a Modificar:
+- `frontend/src/components/MainMenu.tsx` - Reemplazar con nuevo diseño
+- `frontend/src/components/MainMenu.css` - Actualizar estilos
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/controller/OrdenesDeVentasController.java` - Añadir endpoint recientes
+- `backend/src/main/java/com/posfin/pos_finanzas_backend/service/OrdenesDeVentasService.java` - Lógica para órdenes recientes
+- `frontend/src/contexts/AuthContext.tsx` - Verificar exposición de datos de usuario
+
+### Consultas SQL Necesarias
+
+```sql
+-- Obtener órdenes más recientes con información de usuario y mesa
+SELECT 
+    odv.id,
+    odv.fecha_venta,
+    odv.total,
+    u.nombre as nombre_usuario,
+    odv.mesa,
+    odv.estado
+FROM ordenes_de_ventas odv
+LEFT JOIN usuarios u ON odv.usuarios_id = u.id
+ORDER BY odv.fecha_venta DESC
+LIMIT 10;
+```
+
+### Criterios de Éxito
+
+#### ✅ **Nueva Interfaz Funcional:**
+- [ ] Barra lateral presente en todas las pantallas
+- [ ] Navegación fluida entre secciones
+- [ ] Estado activo correctamente reflejado
+
+#### ✅ **Dashboard Interactivo:**
+- [ ] Todos los botones llevan a las secciones correctas
+- [ ] Saludo personalizado con nombre del usuario real
+- [ ] Grid responsivo funciona en móvil y desktop
+
+#### ✅ **Datos Reales:**
+- [ ] Tabla muestra órdenes reales de la base de datos
+- [ ] Información de usuario, mesa, hora y total es correcta
+- [ ] Actualizaciones en tiempo real (o refresh manual)
+
+#### ✅ **Experiencia de Usuario:**
+- [ ] Diseño coherente con paleta de colores definida
+- [ ] Transiciones suaves y elementos visuales atractivos
+- [ ] Tiempo de carga optimizado
+
+### Estado: 🔄 EN PROGRESO
+
+### Notas de Implementación
+- **Prioridad**: Alta - Mejora significativa de UX
+- **Complejidad**: Media-Alta - Requiere cambios en frontend y backend
+- **Tiempo Estimado**: 1-2 días de desarrollo
+- **Dependencias**: Sistema de autenticación, base de datos de órdenes
+
+---
 
 ### Descripción del Objetivo
 

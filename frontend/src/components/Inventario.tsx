@@ -6,6 +6,7 @@ import { useToast } from '../hooks/useToast';
 import ModalCrearProducto from './ModalCrearProducto';
 import ModalEditarProducto from './ModalEditarProducto';
 import ModalPredicciones from './ModalPredicciones';
+import SidebarNavigation from './SidebarNavigation';
 import type { ProductoDTO } from '../services/inventarioService';
 import type { ProductoStockBajo, ResultadoVerificacionStock } from '../types/index';
 
@@ -224,13 +225,15 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
   }
 
   return (
-    <div className="inventory-content">
-      {error && (
-        <div className="error-message">
-          <span className="error-icon">⚠️</span>
-          {error}
-        </div>
-      )}
+    <div className="inventory-container">
+      <SidebarNavigation />
+      <div className="inventory-content">
+        {error && (
+          <div className="error-message">
+            <span className="error-icon">⚠️</span>
+            {error}
+          </div>
+        )}
 
       <div className="inventory-controls">
         <button
@@ -460,7 +463,8 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
           onCreatePurchaseOrder={handleCreatePurchaseOrder}
         />
       </div>
-    );
+    </div>
+  );
   };
 
 export default Inventario;

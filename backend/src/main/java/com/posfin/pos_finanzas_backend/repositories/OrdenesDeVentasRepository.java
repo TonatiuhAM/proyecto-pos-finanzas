@@ -19,4 +19,9 @@ public interface OrdenesDeVentasRepository extends JpaRepository<OrdenesDeVentas
      * Obtiene todas las órdenes de ventas ordenadas por fecha descendente
      */
     List<OrdenesDeVentas> findAllByOrderByFechaOrdenDesc();
+    
+    /**
+     * Busca órdenes de ventas entre dos fechas, ordenadas por fecha descendente
+     */
+    List<OrdenesDeVentas> findByFechaOrdenBetween(OffsetDateTime fechaInicio, OffsetDateTime fechaFin);
 }

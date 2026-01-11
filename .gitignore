@@ -2,8 +2,8 @@
 
 # --- Archivos sensibles ---
 .env
+.env.*
 .env.production
-# .env.*
 
 # --- Dependencias ---
 /backend/target/

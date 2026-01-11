@@ -873,11 +873,26 @@ button:focus,
   }
 }
 
-/* ===== INVENTORY CONTENT STYLES ===== */
+/* ===== INVENTORY CONTAINER AND CONTENT STYLES ===== */
+.inventory-container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--md-surface);
+}
+
 .inventory-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  flex: 1;
+  margin-left: 80px; /* Space for sidebar on mobile */
+  max-width: calc(100vw - 80px);
   padding: var(--md-spacing-lg);
+  overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+  .inventory-content {
+    margin-left: 96px; /* Space for sidebar on desktop */
+    max-width: calc(100vw - 96px);
+  }
 }
 
 .inventory-controls {

@@ -3,9 +3,22 @@
 /* Layout Principal */
 .punto-venta {
   display: flex;
-  flex-direction: column;
   height: 100vh;
   background-color: #f5f5f5;
+}
+
+/* Content area that adjusts for sidebar */
+.punto-venta-content {
+  flex: 1;
+  margin-left: 80px; /* Space for sidebar on mobile */
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .punto-venta-content {
+    margin-left: 96px; /* Space for sidebar on desktop */
+  }
 }
 
 /* Header */
