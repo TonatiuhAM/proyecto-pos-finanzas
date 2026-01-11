@@ -1,27 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { workspaceService } from '../services/apiService';
 import TicketVenta from './TicketVenta';
+import SidebarNavigation from './SidebarNavigation';
 import { useToast } from '../hooks/useToast';
+import { useAuth } from '../hooks/useAuth';
+import { 
+  ChevronRight,
+  Receipt,
+  Clock,
+  Users,
+  DollarSign,
+  Plus
+} from 'lucide-react';
 import type { WorkspaceStatus, TicketVenta as TicketVentaData, VentaFinalizada } from '../types';
 import './WorkspaceScreen.css';
 
 interface WorkspaceScreenProps {
   onWorkspaceSelect: (workspaceId: string) => void;
   onBackToMainMenu?: () => void;
+  onNavigate?: (section: string) => void;
 }
 
 const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({ 
-  onWorkspaceSelect, 
-  onBackToMainMenu 
+  onWorkspaceSelect,
+  onNavigate
 }) => {
   const toast = useToast();
+  const { logout } = useAuth();
   const [workspaces, setWorkspaces] = useState<WorkspaceStatus[]>([]);
+  const [filteredWorkspaces, setFilteredWorkspaces] = useState<WorkspaceStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [isPermanent, setIsPermanent] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'available' | 'occupied' | 'payment'>('all');
   
   // Estados para el flujo de ticket de venta
   const [ticketActual, setTicketActual] = useState<TicketVentaData | null>(null);
@@ -32,6 +46,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
       setIsLoading(true);
       const data = await workspaceService.getAllWithStatus();
       setWorkspaces(data);
+      setFilteredWorkspaces(data);
       setError(null);
     } catch (error) {
       setError('Error al cargar los workspaces');
@@ -44,6 +59,21 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   useEffect(() => {
     loadWorkspaces();
   }, []);
+
+  // Efecto para filtrar workspaces cuando cambia el filtro activo
+  useEffect(() => {
+    if (activeFilter === 'all') {
+      setFilteredWorkspaces(workspaces);
+    } else {
+      const statusMap = {
+        'available': 'disponible',
+        'occupied': 'ocupado', 
+        'payment': 'cuenta'
+      };
+      const filtered = workspaces.filter(ws => ws.estado === statusMap[activeFilter]);
+      setFilteredWorkspaces(filtered);
+    }
+  }, [activeFilter, workspaces]);
 
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,90 +105,50 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     }
   };
 
-  const getStatusInfo = (estado: string) => {
+  // Navegación del sidebar
+  const handleSidebarNavigate = (section: string) => {
+    if (onNavigate) {
+      onNavigate(section);
+    } else {
+      console.warn('No hay función de navegación disponible para la sección:', section);
+    }
+  };
+
+  // Obtener información de estado para el sistema de colores moderno
+  const getWorkspaceCardStyle = (estado: string) => {
     switch (estado) {
       case 'disponible':
-        return {
-          color: 'success',
-          text: 'Disponible',
-          icon: (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-          )
-        };
+        return 'workspace-card--available';
       case 'ocupado':
-        return {
-          color: 'error',
-          text: 'Ocupada',
-          icon: (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-          )
-        };
+        return 'workspace-card--occupied';
       case 'cuenta':
-        return {
-          color: 'warning',
-          text: 'Cuenta',
-          icon: (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
-            </svg>
-          )
-        };
+        return 'workspace-card--payment';
       default:
-        return {
-          color: 'success',
-          text: 'Disponible',
-          icon: (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-          )
-        };
+        return 'workspace-card--available';
     }
   };
 
-  const handleBackToMainMenu = () => {
-    if (onBackToMainMenu) {
-      onBackToMainMenu();
-    } else {
-      window.history.back();
-    }
+  // Obtener contadores para filtros
+  const getFilterCounts = () => {
+    const available = workspaces.filter(ws => ws.estado === 'disponible').length;
+    const occupied = workspaces.filter(ws => ws.estado === 'ocupado').length;
+    const payment = workspaces.filter(ws => ws.estado === 'cuenta').length;
+    
+    return {
+      all: workspaces.length,
+      available,
+      occupied,
+      payment
+    };
   };
 
-    const handleClearAccounts = async () => {
-    toast.showConfirm(
-      '¿Estás seguro de que deseas eliminar todos los workspaces temporales? Esta acción no se puede deshacer.',
-      async () => {
-        try {
-          // Filtrar workspaces temporales (no permanentes)
-          const temporaryWorkspaces = workspaces.filter(ws => !ws.permanente);
-          
-          // Eliminar cada workspace temporal
-          for (const workspace of temporaryWorkspaces) {
-            await workspaceService.delete(workspace.id);
-          }
-          
-          // Recargar la lista
-          toast.showSuccess(`Se eliminaron ${temporaryWorkspaces.length} workspaces temporales
+  const filterCounts = getFilterCounts();
 
-👆 HAZ CLIC AQUÍ PARA CERRAR`);
-          
-          // ✅ ESPERAR 3 segundos antes de recargar para que el toast sea visible
-          setTimeout(async () => {
-            await loadWorkspaces();
-          }, 3000);
-        } catch (error) {
-          console.error('Error al eliminar workspaces temporales:', error);
-          toast.showError(`Error al eliminar los workspaces temporales
 
-👆 HAZ CLIC AQUÍ PARA CERRAR`);
-        }
-      }
-    );
-  };
+
+
+
+
 
   // Función para generar ticket de venta
   const handleGenerarTicket = async (workspaceId: string) => {
@@ -203,261 +193,301 @@ La transacción se ha completado correctamente.
 
   if (isLoading) {
     return (
-      <div className="workspace-screen workspace-screen--loading">
-        <div className="workspace-screen__loading">
-          <div className="workspace-screen__loading-spinner">
-            <svg className="workspace-screen__loading-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
-            </svg>
+      <div className="modern-workspaces">
+        <SidebarNavigation 
+          activeSection="workspaces"
+          onNavigate={handleSidebarNavigate}
+          onLogout={logout}
+        />
+        <div className="modern-workspaces__loading">
+          <div className="modern-workspaces__loading-spinner">
+            <div className="modern-workspaces__loading-icon"></div>
           </div>
-          <h2 className="md-title-large">Cargando workspaces...</h2>
+          <h2 className="modern-workspaces__loading-text">Cargando workspaces...</h2>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="workspace-screen">
-      {/* Header */}
-      <header className="workspace-screen__header">
-        <div className="workspace-screen__header-content">
-          <div className="workspace-screen__nav">
-            <button
-              onClick={handleBackToMainMenu}
-              className="md-button md-button--outlined workspace-screen__back-btn"
-              aria-label="Volver al menú principal"
-            >
-              <svg className="workspace-screen__back-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-              </svg>
-              <span>Volver</span>
-            </button>
-            <div className="workspace-screen__title-section">
-              <h1 className="md-headline-medium">Seleccionar Workspace</h1>
-              <p className="md-body-medium">Elige un workspace para comenzar a trabajar</p>
-            </div>
-          </div>
-          
-          <div className="workspace-screen__actions">
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="md-button md-button--filled workspace-screen__create-btn"
-            >
-              <svg className="workspace-screen__create-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-              </svg>
-              <span>Nuevo Workspace</span>
-            </button>
-            <button
-              onClick={handleClearAccounts}
-              className="md-button md-button--text workspace-screen__clear-btn"
-              aria-label="Limpiar cuentas temporales"
-            >
-              <svg className="workspace-screen__clear-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-              </svg>
-              <span className="workspace-screen__clear-text">Limpiar Cuentas</span>
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="modern-workspaces">
+      {/* Sidebar Navigation */}
+      <SidebarNavigation 
+        activeSection="workspaces"
+        onNavigate={handleSidebarNavigate}
+        onLogout={logout}
+      />
 
       {/* Main Content */}
-      <main className="workspace-screen__content">
-        {error && (
-          <div className="workspace-screen__error" role="alert">
-            <svg className="workspace-screen__error-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"/>
-            </svg>
-            <span className="md-body-medium">{error}</span>
-            <button
-              onClick={loadWorkspaces}
-              className="md-button md-button--text workspace-screen__retry-btn"
-            >
-              Reintentar
-            </button>
-          </div>
-        )}
-
-        {workspaces.length === 0 && !error && (
-          <div className="workspace-screen__empty">
-            <div className="workspace-screen__empty-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-              </svg>
+      <main className="modern-workspaces__main">
+        {/* Header */}
+        <header className="modern-workspaces__header">
+          <div className="modern-workspaces__header-content">
+            <div className="modern-workspaces__title-section">
+              <h1 className="modern-workspaces__title">Gestión de Mesas</h1>
             </div>
-            <h2 className="md-headline-small">No hay workspaces disponibles</h2>
-            <p className="md-body-large">Crea tu primer workspace para comenzar</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="md-button md-button--filled"
-            >
-              Crear Workspace
-            </button>
+          </div>
+        </header>
+
+        {/* Error Message */}
+        {error && (
+          <div className="modern-workspaces__error" role="alert">
+            <div className="modern-workspaces__error-content">
+              <span>{error}</span>
+              <button onClick={loadWorkspaces} className="modern-workspaces__retry-btn">
+                Reintentar
+              </button>
+            </div>
           </div>
         )}
 
-        {workspaces.length > 0 && (
-          <div className="workspace-screen__grid">
-            {workspaces.map((workspace) => {
-              const statusInfo = getStatusInfo(workspace.estado);
+        {/* Filters */}
+        <div className="modern-workspaces__filters">
+          {[
+            { key: 'all', label: 'Todas', count: filterCounts.all },
+            { key: 'occupied', label: 'Ocupadas', count: filterCounts.occupied },
+            { key: 'payment', label: 'Pidiendo Cuenta', count: filterCounts.payment },
+            { key: 'available', label: 'Disponibles', count: filterCounts.available }
+          ].map((filter) => (
+            <button
+              key={filter.key}
+              onClick={() => setActiveFilter(filter.key as any)}
+              className={`modern-workspaces__filter ${
+                activeFilter === filter.key ? 'modern-workspaces__filter--active' : ''
+              } modern-workspaces__filter--${filter.key}`}
+            >
+              <span className="modern-workspaces__filter-dot"></span>
+              {filter.label}
+              <span className="modern-workspaces__filter-count">({filter.count})</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredWorkspaces.length === 0 && !error && (
+          <div className="modern-workspaces__empty">
+            <div className="modern-workspaces__empty-icon">
+              <Receipt className="w-16 h-16" />
+            </div>
+            <h2 className="modern-workspaces__empty-title">
+              {activeFilter === 'all' ? 'No hay mesas disponibles' : `No hay mesas ${activeFilter === 'occupied' ? 'ocupadas' : activeFilter === 'payment' ? 'pidiendo cuenta' : 'disponibles'}`}
+            </h2>
+            <p className="modern-workspaces__empty-subtitle">
+              {activeFilter === 'all' ? 'Crea tu primera mesa para comenzar' : 'Cambia el filtro para ver otras mesas'}
+            </p>
+            {activeFilter === 'all' && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="modern-workspaces__empty-btn"
+              >
+                Crear Mesa
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Workspaces Grid */}
+        {filteredWorkspaces.length > 0 && (
+          <div className="modern-workspaces__grid">
+            {filteredWorkspaces.map((workspace) => {
               const esCuenta = workspace.estado === 'cuenta';
+              const cardStyle = getWorkspaceCardStyle(workspace.estado);
               
               if (esCuenta) {
-                // Para workspaces con estado "cuenta", mostrar botón para generar ticket
+                // Tarjeta especial para workspaces que piden cuenta
                 return (
                   <div
                     key={workspace.id}
-                    className={`workspace-screen__card workspace-screen__card--${statusInfo.color} workspace-screen__card--cuenta`}
+                    className={`modern-workspaces__card ${cardStyle}`}
                   >
-                    <div className="workspace-screen__card-header">
-                      <div className={`workspace-screen__card-status workspace-screen__card-status--${statusInfo.color}`}>
-                        {statusInfo.icon}
-                        <span className="md-label-medium">{statusInfo.text}</span>
+                    <div className="modern-workspaces__card-header">
+                      <div className="modern-workspaces__card-status">
+                        <Receipt className="w-4 h-4" />
+                        <span>Cuenta Solicitada</span>
+                      </div>
+                      {workspace.ultimaActividad && (
+                        <div className="modern-workspaces__card-time">
+                          <Clock className="w-4 h-4" />
+                          <span>{new Date(workspace.ultimaActividad).toLocaleTimeString()}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="modern-workspaces__card-content">
+                      <h3 className="modern-workspaces__card-title">{workspace.nombre}</h3>
+                      <div className="modern-workspaces__card-meta">
+                        <div className="modern-workspaces__card-stat">
+                          <Users className="w-4 h-4" />
+                          <span>{workspace.cantidadOrdenes} productos</span>
+                        </div>
+                        <div className="modern-workspaces__card-stat">
+                          <DollarSign className="w-4 h-4" />
+                          <span>${(workspace.cantidadOrdenes * 150).toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="workspace-screen__card-content">
-                      <h3 className="md-title-large workspace-screen__card-title">
-                        {workspace.nombre}
-                      </h3>
-                      <div className="workspace-screen__card-meta">
-                        <span className="md-body-small">
-                          {workspace.permanente ? 'Permanente' : 'Temporal'}
-                        </span>
-                        <span className="md-body-small">
-                          {workspace.cantidadOrdenes} productos en cuenta
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="workspace-screen__card-actions">
+                    <div className="modern-workspaces__card-actions">
                       <button
                         onClick={() => handleGenerarTicket(workspace.id)}
-                        className="md-button md-button--filled workspace-screen__ticket-btn"
+                        className="modern-workspaces__ticket-btn"
                       >
-                        📋 Generar Ticket
+                        <Receipt className="w-4 h-4" />
+                        Generar Ticket
                       </button>
                     </div>
                   </div>
                 );
               }
               
-              // Para workspaces normales, comportamiento original
+              // Tarjetas normales para workspaces disponibles u ocupados
               return (
                 <button
                   key={workspace.id}
                   onClick={() => onWorkspaceSelect(workspace.id)}
-                  className={`workspace-screen__card workspace-screen__card--${statusInfo.color}`}
-                  aria-label={`Workspace ${workspace.nombre} - ${statusInfo.text}`}
+                  className={`modern-workspaces__card ${cardStyle}`}
                 >
-                  <div className="workspace-screen__card-header">
-                    <div className={`workspace-screen__card-status workspace-screen__card-status--${statusInfo.color}`}>
-                      {statusInfo.icon}
-                      <span className="md-label-medium">{statusInfo.text}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="workspace-screen__card-content">
-                    <h3 className="md-title-large workspace-screen__card-title">
-                      {workspace.nombre}
-                    </h3>
-                    <div className="workspace-screen__card-meta">
-                      <span className="md-body-small">
-                        {workspace.permanente ? 'Permanente' : 'Temporal'}
-                      </span>
-                      {workspace.ultimaActividad && (
-                        <span className="md-body-small">
-                          Última actividad: {new Date(workspace.ultimaActividad).toLocaleDateString()}
-                        </span>
+                  <div className="modern-workspaces__card-header">
+                    <div className="modern-workspaces__card-status">
+                      {workspace.estado === 'ocupado' && (
+                        <>
+                          <Users className="w-4 h-4" />
+                          <span>Ocupado</span>
+                        </>
+                      )}
+                      {workspace.estado === 'disponible' && (
+                        <>
+                          <div className="modern-workspaces__available-indicator"></div>
+                          <span>Disponible</span>
+                        </>
                       )}
                     </div>
+                    {workspace.ultimaActividad && workspace.estado === 'ocupado' && (
+                      <div className="modern-workspaces__card-time">
+                        <Clock className="w-4 h-4" />
+                        <span>{new Date(workspace.ultimaActividad).toLocaleTimeString()}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Flecha siempre visible - los usuarios pueden acceder a cualquier workspace */}
-                  <div className="workspace-screen__card-arrow">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                    </svg>
+                  <div className="modern-workspaces__card-content">
+                    <h3 className="modern-workspaces__card-title">{workspace.nombre}</h3>
+                    {workspace.estado === 'disponible' ? (
+                      <div className="modern-workspaces__card-meta">
+                        <div className="modern-workspaces__card-stat">
+                          <span className="modern-workspaces__ready-text">Lista para usar</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="modern-workspaces__card-meta">
+                        <div className="modern-workspaces__card-stat">
+                          <Users className="w-4 h-4" />
+                          <span>{workspace.cantidadOrdenes} productos</span>
+                        </div>
+                        <div className="modern-workspaces__card-stat">
+                          <DollarSign className="w-4 h-4" />
+                          <span>${(workspace.cantidadOrdenes * 150).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="modern-workspaces__card-footer">
+                    <div className="modern-workspaces__card-type">
+                      {workspace.permanente ? 'Permanente' : 'Temporal'}
+                    </div>
+                    <ChevronRight className="modern-workspaces__card-arrow w-5 h-5" />
                   </div>
                 </button>
               );
             })}
           </div>
         )}
+
+        {/* Botón flotante para crear nueva mesa */}
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="modern-workspaces__fab"
+          title="Crear Nueva Mesa"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
       </main>
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="workspace-screen__modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="workspace-screen__modal" onClick={(e) => e.stopPropagation()}>
-            <div className="workspace-screen__modal-header">
-              <h2 className="md-title-large">Crear Nuevo Workspace</h2>
+        <div className="modern-workspaces__modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modern-workspaces__modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modern-workspaces__modal-header">
+              <h2 className="modern-workspaces__modal-title">Crear Nueva Mesa</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="workspace-screen__modal-close"
+                className="modern-workspaces__modal-close"
                 aria-label="Cerrar modal"
               >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                </svg>
+                ×
               </button>
             </div>
             
-            <form onSubmit={handleCreateWorkspace} className="workspace-screen__modal-form">
-              <div className="workspace-screen__modal-field">
-                <label htmlFor="workspaceName" className="md-body-medium">
-                  Nombre del Workspace *
+            <form onSubmit={handleCreateWorkspace} className="modern-workspaces__modal-form">
+              <div className="modern-workspaces__modal-field">
+                <label htmlFor="workspaceName" className="modern-workspaces__modal-label">
+                  Nombre de la Mesa *
                 </label>
                 <input
                   type="text"
                   id="workspaceName"
                   value={newWorkspaceName}
                   onChange={(e) => setNewWorkspaceName(e.target.value)}
-                  className="workspace-screen__modal-input md-body-large"
-                  placeholder="Ej: Mesa 1, Punto de Venta Principal"
+                  className="modern-workspaces__modal-input"
+                  placeholder="Ej: Mesa 1, Terraza A, Barra 2"
                   required
                   disabled={isCreating}
                 />
               </div>
               
-              <div className="workspace-screen__modal-checkbox">
-                <label className="workspace-screen__checkbox-label">
+              <div className="modern-workspaces__modal-checkbox">
+                <label className="modern-workspaces__checkbox-label">
                   <input
                     type="checkbox"
                     checked={isPermanent}
                     onChange={(e) => setIsPermanent(e.target.checked)}
-                    className="workspace-screen__checkbox"
+                    className="modern-workspaces__checkbox"
                     disabled={isCreating}
                   />
-                  <span className="workspace-screen__checkbox-indicator"></span>
-                  <div className="workspace-screen__checkbox-text">
-                    <span className="md-body-medium">Workspace Permanente</span>
-                    <span className="md-body-small">Este workspace no se eliminará automáticamente</span>
+                  <span className="modern-workspaces__checkbox-indicator"></span>
+                  <div className="modern-workspaces__checkbox-text">
+                    <span>Mesa Permanente</span>
+                    <span>Esta mesa no se eliminará automáticamente</span>
                   </div>
                 </label>
               </div>
               
-              <div className="workspace-screen__modal-actions">
+              <div className="modern-workspaces__modal-actions">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="md-button md-button--outlined"
+                  className="modern-workspaces__modal-cancel"
                   disabled={isCreating}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="md-button md-button--filled"
+                  className="modern-workspaces__modal-submit"
                   disabled={isCreating || !newWorkspaceName.trim()}
                 >
-                  {isCreating && (
-                    <svg className="workspace-screen__loading-icon" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
-                    </svg>
+                  {isCreating ? (
+                    <>
+                      <div className="modern-workspaces__loading-icon"></div>
+                      <span>Creando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>Crear Mesa</span>
+                    </>
                   )}
-                  <span>{isCreating ? 'Creando...' : 'Crear Workspace'}</span>
                 </button>
               </div>
             </form>

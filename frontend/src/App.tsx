@@ -96,6 +96,26 @@ function App() {
     setAppState('seleccion-proveedores');
   };
 
+  // Navegación universal para SidebarNavigation
+  const handleSidebarNavigate = (section: string) => {
+    switch (section) {
+      case 'home':
+        setAppState('main-menu');
+        break;
+      case 'workspaces':
+        setAppState('workspaces');
+        break;
+      case 'inventario':
+        setAppState('inventario');
+        break;
+      case 'personal':
+        setAppState('empleados');
+        break;
+      default:
+        console.log('Sección no reconocida:', section);
+    }
+  };
+
   switch (appState) {
     case 'login':
       return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
@@ -108,6 +128,7 @@ function App() {
           onInventarioClick={handleInventarioClick}
           onEmpleadosClick={handleEmpleadosClick}
           onLogout={handleLogout}
+          onNavigate={handleSidebarNavigate}
         />
       );
     
@@ -117,6 +138,7 @@ function App() {
         <WorkspaceScreen 
           onWorkspaceSelect={handleWorkspaceSelect}
           onBackToMainMenu={handleBackToMainMenu}
+          onNavigate={handleSidebarNavigate}
         />
       );
     
@@ -126,40 +148,17 @@ function App() {
         <PuntoDeVenta
           workspaceId={selectedWorkspaceId}
           onBackToWorkspaces={handleBackToWorkspaces}
+          onNavigate={handleSidebarNavigate}
         />
       );
     
     case 'inventario':
       return (
         <ProtectedRoute adminOnly={true}>
-          <div className="inventory-screen">
-            {/* Header */}
-            <header className="inventory-screen__header">
-              <div className="inventory-screen__header-content">
-                <div className="inventory-screen__nav">
-                  <button
-                    onClick={handleBackToMainMenu}
-                    className="md-button md-button--outlined inventory-screen__back-btn"
-                    aria-label="Volver al menú principal"
-                  >
-                    <svg className="inventory-screen__back-icon" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                    </svg>
-                    <span>Volver</span>
-                  </button>
-                  <div className="inventory-screen__title-section">
-                    <h1 className="md-headline-medium">Inventario</h1>
-                    <p className="md-body-medium">Gestión de productos y stock</p>
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="inventory-screen__main">
-              <Inventario onNavigateToCompras={handleNavigateToCompras} />
-            </main>
-          </div>
+          <Inventario 
+            onNavigateToCompras={handleNavigateToCompras} 
+            onNavigate={handleSidebarNavigate}
+          />
         </ProtectedRoute>
       );
     
@@ -167,60 +166,7 @@ function App() {
       if (!isAuthenticated) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
         <ProtectedRoute adminOnly={true}>
-          <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b border-gray-200">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16" style={{ padding: '24px 32px' }}>
-                  <div className="flex items-center">
-                    <button
-                      onClick={handleBackToMainMenu}
-                      style={{
-                        backgroundColor: '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        padding: '12px 24px',
-                        borderRadius: '6px',
-                        fontWeight: '600',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 2px 4px rgba(244, 67, 54, 0.3)',
-                        minHeight: '40px',
-                        minWidth: '140px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = '#d32f2f';
-                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(244, 67, 54, 0.4)';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f44336';
-                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(244, 67, 54, 0.3)';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }}
-                      onMouseDown={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(244, 67, 54, 0.3)';
-                      }}
-                    >
-                      ← Volver al Menú
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-              <div className="px-4 py-6 sm:px-0">
-                <GestionEmpleados />
-              </div>
-            </main>
-          </div>
+          <GestionEmpleados onNavigate={handleSidebarNavigate} />
         </ProtectedRoute>
       );
     

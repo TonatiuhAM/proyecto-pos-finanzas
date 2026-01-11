@@ -12,9 +12,10 @@ import type { ProductoStockBajo, ResultadoVerificacionStock } from '../types/ind
 
 interface InventarioProps {
   onNavigateToCompras?: () => void;
+  onNavigate?: (section: string) => void;
 }
 
-const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
+const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate }) => {
   // Estados principales
   const [productos, setProductos] = useState<ProductoDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,7 +227,10 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras }) => {
 
   return (
     <div className="inventory-container">
-      <SidebarNavigation />
+      <SidebarNavigation 
+        activeSection="inventario"
+        onNavigate={onNavigate}
+      />
       <div className="inventory-content">
         {error && (
           <div className="error-message">

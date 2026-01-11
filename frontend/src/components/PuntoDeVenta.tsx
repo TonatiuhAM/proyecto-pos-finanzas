@@ -11,11 +11,13 @@ import './PuntoDeVenta.css';
 interface PuntoDeVentaProps {
   workspaceId: string;
   onBackToWorkspaces: () => void;
+  onNavigate?: (section: string) => void;
 }
 
 const PuntoDeVenta: React.FC<PuntoDeVentaProps> = ({ 
   workspaceId, 
-  onBackToWorkspaces
+  onBackToWorkspaces,
+  onNavigate
 }) => {
   // Hook para notificaciones toast
   const toast = useToast();
@@ -421,7 +423,10 @@ No se pudo procesar la solicitud. Intente nuevamente.
 
   return (
     <div className="punto-venta">
-      <SidebarNavigation />
+      <SidebarNavigation 
+        activeSection="workspaces"
+        onNavigate={onNavigate}
+      />
       <div className="punto-venta-content">
         {/* Header */}
         <header className="punto-venta__header">

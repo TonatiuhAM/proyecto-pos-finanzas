@@ -5,7 +5,8 @@ import {
   Package, 
   Users, 
   LogOut, 
-  Menu 
+  Menu,
+  Armchair
 } from 'lucide-react';
 import './SidebarNavigation.css';
 
@@ -44,6 +45,11 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       id: 'home',
       label: 'Home',
       icon: <LayoutGrid className="w-5 h-5 md:w-6 md:h-6" />
+    },
+    {
+      id: 'workspaces',
+      label: 'Mesas',
+      icon: <Armchair className="w-5 h-5 md:w-6 md:h-6" />
     },
     {
       id: 'inventario',

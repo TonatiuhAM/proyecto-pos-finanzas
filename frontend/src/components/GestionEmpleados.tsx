@@ -18,7 +18,11 @@ import SidebarNavigation from './SidebarNavigation';
 
 type TabActiva = 'empleados' | 'proveedores' | 'clientes';
 
-const GestionEmpleados: React.FC = () => {
+interface GestionEmpleadosProps {
+  onNavigate?: (section: string) => void;
+}
+
+const GestionEmpleados: React.FC<GestionEmpleadosProps> = ({ onNavigate }) => {
   // Estados principales para empleados (legacy)
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
@@ -336,7 +340,10 @@ const GestionEmpleados: React.FC = () => {
 
   return (
     <div className="gestion-empleados-container">
-      <SidebarNavigation />
+      <SidebarNavigation 
+        activeSection="personal"
+        onNavigate={onNavigate}
+      />
       <div className="gestion-empleados">
         {/* Header con tabs */}
         <div className="gestion-empleados__header">

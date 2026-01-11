@@ -17,13 +17,15 @@ interface MainMenuProps {
   onInventarioClick: () => void;
   onEmpleadosClick: () => void;
   onLogout: () => void;
+  onNavigate?: (section: string) => void;
 }
 
 const MainMenu: React.FC<MainMenuProps> = ({ 
   onPuntoDeVentaClick, 
   onInventarioClick,
   onEmpleadosClick,
-  onLogout 
+  onLogout,
+  onNavigate 
 }) => {
   const { getUserName, isAdmin } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
@@ -51,12 +53,22 @@ const MainMenu: React.FC<MainMenuProps> = ({
   const handleSidebarNavigation = (section: string) => {
     setActiveSection(section);
     
+    // Si hay una función de navegación proporcionada, usarla
+    if (onNavigate) {
+      onNavigate(section);
+      return;
+    }
+    
+    // Fallback a navegación local para compatibilidad
     switch (section) {
       case 'inventario':
         onInventarioClick();
         break;
       case 'personal':
         onEmpleadosClick();
+        break;
+      case 'workspaces':
+        onPuntoDeVentaClick();
         break;
       case 'home':
         // Permanecer en el dashboard principal
