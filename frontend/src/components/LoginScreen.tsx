@@ -147,7 +147,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                     name="nombre"
                     value={credentials.nombre}
                     onChange={handleInputChange}
-                    className="modern-login__input"
+                    className="modern-login__input modern-login__input--with-icon pl-12"
                     placeholder="Ingresa tu usuario"
                     disabled={isLoading}
                     required
@@ -171,7 +171,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                     name="contrasena"
                     value={credentials.contrasena}
                     onChange={handleInputChange}
-                    className="modern-login__input"
+                    className="modern-login__input modern-login__input--with-icon pl-12"
                     placeholder="Ingresa tu contraseña"
                     disabled={isLoading}
                     required

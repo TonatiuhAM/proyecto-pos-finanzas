@@ -11,8 +11,7 @@ import {
   Plus,
   Sparkles,
   Edit3,
-  Trash2,
-  Armchair
+  Trash2
 } from 'lucide-react';
 import './InventarioModernoNew.css';
 import { inventarioService } from '../services/inventarioService';
@@ -24,12 +23,12 @@ import ModalPredicciones from './ModalPredicciones';
 import type { ProductoDTO } from '../services/inventarioService';
 import type { ProductoStockBajo } from '../types/index';
 
-interface InventarioProps {
+interface InventarioModernoNewProps {
   onNavigateToCompras?: () => void;
   onNavigate?: (section: string) => void;
 }
 
-const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate }) => {
+const InventarioModernoNew: React.FC<InventarioModernoNewProps> = ({ onNavigateToCompras, onNavigate }) => {
   // Estados principales
   const [productos, setProductos] = useState<ProductoDTO[]>([]);
   const [filteredProductos, setFilteredProductos] = useState<ProductoDTO[]>([]);
@@ -235,17 +234,17 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
     const cantidad = cantidadInventario || 0;
     
     if (estadosEstado?.toLowerCase() === 'inactivo') {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">Inactivo</span>;
+      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">Inactivo</span>;
     }
     
     if (cantidad === 0) {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-600">Agotado</span>;
+      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-200">Agotado</span>;
     } else if (cantidad <= 10) {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Bajo</span>;
+      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">Bajo</span>;
     } else if (cantidad <= 50) {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600">Medio</span>;
+      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 border border-orange-200">Medio</span>;
     } else {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-600">En Stock</span>;
+      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-600 border border-green-200">En Stock</span>;
     }
   };
 
@@ -271,7 +270,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
     <div className="h-screen bg-gray-50 font-sans text-gray-800 flex flex-row overflow-hidden">
       
       {/* --- SIDEBAR LATERAL (Actualizado: Inventario Activo) --- */}
-      <aside className="flex flex-col w-20 md:w-24 bg-white py-8 items-center justify-between z-20 h-full flex-shrink-0 shadow-sm">
+      <aside className="flex flex-col w-20 md:w-24 bg-white border-r border-gray-200 py-8 items-center justify-between z-20 h-full flex-shrink-0 shadow-sm">
         <div className="flex flex-col gap-10 items-center w-full">
           {/* Logo */}
           <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-200 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
@@ -280,33 +279,24 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
           
           {/* Menú Principal */}
           <nav className="flex flex-col gap-6 w-full px-2 md:px-4 items-center">
-            {/* Home (Inactivo) - Corregido: Ir a dashboard principal */}
+            {/* Home (Inactivo) */}
             <button 
-              onClick={() => handleNavigation('home')}
+              onClick={() => handleNavigation('workspaces')}
               className="flex flex-col items-center gap-1 p-2 md:p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-2xl transition-all w-full md:w-auto"
             >
               <LayoutGrid className="w-5 h-5 md:w-6 md:h-6" />
               <span className="text-[9px] md:text-[10px] font-medium">Home</span>
             </button>
             
-            {/* Mesas (Nuevo botón añadido) */}
-            <button 
-              onClick={() => handleNavigation('workspaces')}
-              className="flex flex-col items-center gap-1 p-2 md:p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-2xl transition-all w-full md:w-auto"
-            >
-              <Armchair className="w-5 h-5 md:w-6 md:h-6" />
-              <span className="text-[9px] md:text-[10px] font-medium">Mesas</span>
-            </button>
-            
             {/* Inventario (ACTIVO - Naranja) */}
-            <button className="flex flex-col items-center gap-1 p-2 md:p-3 bg-orange-50 text-orange-600 rounded-2xl transition-all shadow-sm w-full md:w-auto">
+            <button className="flex flex-col items-center gap-1 p-2 md:p-3 bg-orange-50 text-orange-600 rounded-2xl transition-all shadow-sm w-full md:w-auto ring-1 ring-orange-100">
               <Package className="w-5 h-5 md:w-6 md:h-6" />
               <span className="text-[9px] md:text-[10px] font-bold">Inventario</span>
             </button>
             
             {/* Personal (Inactivo) */}
             <button 
-              onClick={() => handleNavigation('personal')}
+              onClick={() => handleNavigation('empleados')}
               className="flex flex-col items-center gap-1 p-2 md:p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-2xl transition-all w-full md:w-auto"
             >
               <Users className="w-5 h-5 md:w-6 md:h-6" />
@@ -343,7 +333,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:shadow-md transition-all shadow-sm text-sm pl-12"
+              className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm text-sm pl-12"
               placeholder="Buscar producto, categoría o SKU..."
             />
           </div>
@@ -351,7 +341,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 text-red-800 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 shadow-sm">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
             <span className="text-red-500">⚠️</span>
             {error}
           </div>
@@ -363,7 +353,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
           {/* 1. Crear Nuevo Producto */}
           <button 
             onClick={handleCrearNuevo}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-row items-center justify-between group overflow-hidden relative"
+            className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-[1.5rem] shadow-xl shadow-orange-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-row items-center justify-between group overflow-hidden relative"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
             <div className="flex flex-col items-start gap-1 z-10">
@@ -381,7 +371,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
           {/* 2. Comprar Productos (Purchase Order) */}
           <button 
             onClick={handleComprarProducto}
-            className="bg-white text-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-row items-center justify-between group"
+            className="bg-white text-gray-800 p-6 rounded-[1.5rem] border border-gray-200 shadow-sm hover:border-yellow-400 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-row items-center justify-between group"
           >
              <div className="flex flex-col items-start gap-1">
               <span className="bg-yellow-50 text-yellow-600 p-2 rounded-xl mb-1 group-hover:bg-yellow-100 transition-colors">
@@ -398,7 +388,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
           {/* 3. Predicciones ML (Smart Feature) */}
           <button 
             onClick={handleShowPredictions}
-            className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white p-6 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-row items-center justify-between group relative overflow-hidden"
+            className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white p-6 rounded-[1.5rem] shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-row items-center justify-between group relative overflow-hidden"
           >
             <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-pink-500/30 rounded-full blur-xl pointer-events-none"></div>
              <div className="flex flex-col items-start gap-1 z-10">
@@ -415,10 +405,10 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
         </section>
 
         {/* --- TABLA DE INVENTARIO --- */}
-        <section className="bg-white rounded-2xl shadow-sm p-6 overflow-hidden flex flex-col h-[calc(100vh-22rem)]">
+        <section className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-22rem)]">
           
           {/* Toolbar de la tabla */}
-          <div className="pb-6 flex justify-between items-center">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
              <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
                Todos los Productos 
                <span className="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-lg font-bold">
@@ -431,7 +421,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
           <div className="overflow-auto flex-1">
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead className="sticky top-0 bg-white z-10 shadow-sm">
-                <tr className="text-gray-400 text-xs uppercase tracking-wider font-semibold">
+                <tr className="text-gray-400 text-xs uppercase tracking-wider font-semibold border-b border-gray-100">
                   <th className="p-5 pl-8">Producto</th>
                   <th className="p-5">Categoría</th>
                   <th className="p-5">Proveedor</th>
@@ -442,13 +432,13 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
                   <th className="p-5 text-right pr-8">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-transparent">
+              <tbody className="divide-y divide-gray-50">
                 {filteredProductos.map((producto) => (
                   <tr key={producto.id} className="hover:bg-gray-50 transition-colors group">
                     {/* Producto */}
                     <td className="p-5 pl-8">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-xl shadow-sm">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-xl shadow-sm border border-orange-100">
                           📦
                         </div>
                         <div>
@@ -580,4 +570,4 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
   );
 };
 
-export default Inventario;
+export default InventarioModernoNew;

@@ -285,6 +285,11 @@
   outline: none;
 }
 
+/* Clase específica para inputs con iconos - padding izquierdo calculado correctamente */
+.modern-login__input--with-icon {
+  padding-left: 2.75rem; /* 1rem (posición del icono) + 1.25rem (ancho del icono + espacio) = espacio adecuado */
+}
+
 .modern-login__input::placeholder {
   color: var(--color-text-light);
   font-weight: 400;
@@ -407,6 +412,11 @@
     padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 3.5rem;
   }
   
+  /* Padding adicional para inputs con iconos en responsive */
+  .modern-login__input--with-icon {
+    padding-left: 2.75rem; /* Mantener consistencia en responsive */
+  }
+  
   .modern-login__submit-btn {
     padding: var(--spacing-md) var(--spacing-lg);
   }
@@ -481,4 +491,9 @@
   .modern-login__submit-btn {
     border: 2px solid var(--color-primary);
   }
+}
+
+/* Utility class for mobile input padding with icons */
+.pl-12 {
+  padding-left: 3rem !important;
 }

@@ -242,7 +242,7 @@ La transacción se ha completado correctamente.
         )}
 
         {/* Filters */}
-        <div className="modern-workspaces__filters">
+        <div className="workspace-categories-carousel">
           {[
             { key: 'all', label: 'Todas', count: filterCounts.all },
             { key: 'occupied', label: 'Ocupadas', count: filterCounts.occupied },
@@ -252,9 +252,9 @@ La transacción se ha completado correctamente.
             <button
               key={filter.key}
               onClick={() => setActiveFilter(filter.key as any)}
-              className={`modern-workspaces__filter ${
-                activeFilter === filter.key ? 'modern-workspaces__filter--active' : ''
-              } modern-workspaces__filter--${filter.key}`}
+              className={`workspace-category-chip ${
+                activeFilter === filter.key ? 'workspace-category-chip--active' : ''
+              } workspace-category-chip--${filter.key}`}
             >
               <span className="modern-workspaces__filter-dot"></span>
               {filter.label}

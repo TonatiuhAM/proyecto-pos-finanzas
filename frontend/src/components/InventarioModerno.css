@@ -863,12 +863,17 @@ button:focus,
   
   .inventory-table {
     border-collapse: collapse;
-    border: 1px solid black;
+    /* Eliminado border negro - usar shadow para definición */
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
   
   .inventory-table th,
   .inventory-table td {
-    border: 1px solid black;
+    /* Eliminado border negro - usar background subtle para separación */
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
     padding: 8px;
   }
 }
