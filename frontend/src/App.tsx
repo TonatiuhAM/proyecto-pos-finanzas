@@ -21,6 +21,7 @@ function App() {
   const [appState, setAppState] = useState<AppState>('login');
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('');
   const [selectedProveedor, setSelectedProveedor] = useState<Proveedor | null>(null);
+  const [openPredictions, setOpenPredictions] = useState(false);
   
   // Usar el hook de autenticación
   const { logout: authLogout, isAuthenticated } = useAuth();
@@ -98,6 +99,15 @@ function App() {
 
   // Navegación universal para SidebarNavigation
   const handleSidebarNavigate = (section: string) => {
+    // Resetear el flag de predicciones al navegar
+    setOpenPredictions(false);
+    
+    // Verificar si viene con parámetro de predicciones
+    if (section.includes('?openPredictions=true')) {
+      setOpenPredictions(true);
+      section = section.split('?')[0]; // Extraer solo la sección
+    }
+    
     switch (section) {
       case 'home':
         setAppState('main-menu');
@@ -158,6 +168,7 @@ function App() {
           <Inventario 
             onNavigateToCompras={handleNavigateToCompras} 
             onNavigate={handleSidebarNavigate}
+            openPredictions={openPredictions}
           />
         </ProtectedRoute>
       );

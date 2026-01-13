@@ -89,8 +89,13 @@ const MainMenu: React.FC<MainMenuProps> = ({
         onInventarioClick();
         break;
       case 'predicciones':
-        // TODO: Implementar modal de predicciones ML
-        console.log('Abrir predicciones ML');
+        // Navegar a inventario y abrir modal de predicciones
+        setActiveSection('inventario');
+        if (onNavigate) {
+          onNavigate('inventario?openPredictions=true');
+        } else {
+          onInventarioClick();
+        }
         break;
       case 'administracion':
         setActiveSection('personal');

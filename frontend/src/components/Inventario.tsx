@@ -17,9 +17,10 @@ import './Inventario.css';
 interface InventarioProps {
   onNavigateToCompras?: () => void;
   onNavigate?: (section: string) => void;
+  openPredictions?: boolean; // Nuevo prop para abrir el modal automáticamente
 }
 
-const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate }) => {
+const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate, openPredictions = false }) => {
   // Estados principales
   const [productos, setProductos] = useState<ProductoDTO[]>([]);
   const [filteredProductos, setFilteredProductos] = useState<ProductoDTO[]>([]);
@@ -37,6 +38,13 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
 
   // Hook de toasts
   const toast = useToast();
+
+  // Abrir modal de predicciones automáticamente si se recibe el parámetro
+  useEffect(() => {
+    if (openPredictions) {
+      setShowPredictionsModal(true);
+    }
+  }, [openPredictions]);
 
   // Cargar datos iniciales
   useEffect(() => {

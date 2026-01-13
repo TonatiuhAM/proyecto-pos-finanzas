@@ -7,34 +7,11 @@ import {
   Target,
   RefreshCw,
   Brain,
-  Activity
+  Activity,
+  X
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  CircularProgress,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Checkbox,
-  Chip,
-  Box,
-  Typography,
-  type SelectChangeEvent,
-} from '@mui/material';
 import { mlService, useMLPredictions } from '../services/mlService';
+import './ModalPredicciones.css';
 
 interface ModalPrediccionesProps {
   isOpen: boolean;
@@ -124,7 +101,7 @@ const ModalPredicciones: React.FC<ModalPrediccionesProps> = ({
     setSelectedProducts(newSelected);
   };
 
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'filterCategory') {
       setFilterCategory(value);
@@ -166,266 +143,216 @@ const ModalPredicciones: React.FC<ModalPrediccionesProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} maxWidth="lg" fullWidth>
-      <DialogTitle>
-        <Box display="flex" alignItems="center" gap={2}>
-          <Box 
-            sx={{
-              backgroundColor: 'primary.main',
-              color: 'white',
-              borderRadius: 2,
-              p: 1,
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <Brain size={24} />
-          </Box>
-          <Box>
-            <Typography variant="h6" component="div">
-              Predicciones de Compra ML
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Sistema inteligente de recomendaciones de abastecimiento
-            </Typography>
-          </Box>
-        </Box>
-      </DialogTitle>
-      
-      <DialogContent>
-        {/* Estado del servicio ML */}
-        {!isMLAvailable && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Activity size={20} />
-              El servicio de Machine Learning no está disponible. Las predicciones podrían estar limitadas.
-            </Box>
-          </Alert>
-        )}
+    <>
+      {isOpen && (
+        <div className="modal-predicciones-overlay" onClick={handleClose}>
+          <div className="modal-predicciones" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="modal-predicciones__header">
+              <div className="modal-predicciones__header-content">
+                <div className="modal-predicciones__icon">
+                  <Brain size={24} />
+                </div>
+                <div className="modal-predicciones__title-group">
+                  <h2 className="modal-predicciones__title">Predicciones de Compra ML</h2>
+                  <p className="modal-predicciones__subtitle">Sistema inteligente de recomendaciones de abastecimiento</p>
+                </div>
+              </div>
+              <button className="modal-predicciones__close-btn" onClick={handleClose}>
+                <X size={20} />
+              </button>
+            </div>
 
-        {/* Controles */}
-        <Box sx={{ mb: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
-          <Box display="flex" flexWrap="wrap" alignItems="center" justifyContent="space-between" gap={2}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <FormControl size="small" sx={{ minWidth: 200 }}>
-                <InputLabel>Filtrar por categoría</InputLabel>
-                <Select
-                  name="filterCategory"
-                  value={filterCategory}
-                  label="Filtrar por categoría"
-                  onChange={handleSelectChange}
-                >
-                  <MenuItem value="">Todas las categorías</MenuItem>
-                  {Array.from(new Set(formattedPredictions.map(p => p.categoria))).map(cat => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            {/* Alert - ML Service Status */}
+            {!isMLAvailable && (
+              <div className="modal-predicciones__alert">
+                <Activity size={20} className="modal-predicciones__alert-icon" />
+                El servicio de Machine Learning no está disponible. Las predicciones podrían estar limitadas.
+              </div>
+            )}
 
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Ordenar por</InputLabel>
-                <Select
-                  name="sortBy"
-                  value={sortBy}
-                  label="Ordenar por"
-                  onChange={handleSelectChange}
-                >
-                  <MenuItem value="prioridad">Prioridad</MenuItem>
-                  <MenuItem value="cantidad">Cantidad sugerida</MenuItem>
-                  <MenuItem value="confianza">Confianza</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
+            {/* Controls */}
+            <div className="modal-predicciones__controls">
+              <div className="modal-predicciones__filters">
+                <div className="modal-predicciones__filter">
+                  <label className="modal-predicciones__filter-label">Filtrar por categoría</label>
+                  <select
+                    className="modal-predicciones__select"
+                    name="filterCategory"
+                    value={filterCategory}
+                    onChange={handleSelectChange}
+                  >
+                    <option value="">Todas las categorías</option>
+                    {Array.from(new Set(formattedPredictions.map(p => p.categoria))).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <Box display="flex" alignItems="center" gap={1}>
-              <Button
-                onClick={() => loadPredictions()}
-                disabled={loading}
-                variant="contained"
-                size="small"
-                startIcon={loading ? <CircularProgress size={16} /> : <RefreshCw size={16} />}
-              >
-                Actualizar
-              </Button>
+                <div className="modal-predicciones__filter">
+                  <label className="modal-predicciones__filter-label">Ordenar por</label>
+                  <select
+                    className="modal-predicciones__select"
+                    name="sortBy"
+                    value={sortBy}
+                    onChange={handleSelectChange}
+                    style={{ minWidth: '150px' }}
+                  >
+                    <option value="prioridad">Prioridad</option>
+                    <option value="cantidad">Cantidad sugerida</option>
+                    <option value="confianza">Confianza</option>
+                  </select>
+                </div>
+              </div>
 
-              <Button
-                onClick={handleSelectAll}
-                variant="outlined"
-                size="small"
-              >
-                {selectedProducts.size === filteredAndSorted.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Contenido principal */}
-        <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
-          {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" py={6}>
-              <Box display="flex" alignItems="center" gap={2}>
-                <CircularProgress />
-                <Typography>Generando predicciones...</Typography>
-              </Box>
-            </Box>
-          ) : error ? (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              <Box>
-                <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AlertTriangle size={20} />
-                  Error al obtener predicciones
-                </Typography>
-                <Typography variant="body2">{error}</Typography>
-                <Button
+              <div className="modal-predicciones__actions">
+                <button
+                  className="modal-predicciones__btn modal-predicciones__btn--refresh"
                   onClick={() => loadPredictions()}
-                  variant="contained"
-                  color="error"
-                  size="small"
-                  sx={{ mt: 1 }}
+                  disabled={loading}
                 >
-                  Reintentar
-                </Button>
-              </Box>
-            </Alert>
-          ) : filteredAndSorted.length === 0 ? (
-            <Box display="flex" flexDirection="column" alignItems="center" py={6}>
-              <Package size={48} style={{ opacity: 0.5, marginBottom: 16 }} />
-              <Typography color="text.secondary">No se encontraron predicciones para mostrar</Typography>
-            </Box>
-          ) : (
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedProducts.size === filteredAndSorted.length && filteredAndSorted.length > 0}
-                        onChange={handleSelectAll}
-                      />
-                    </TableCell>
-                    <TableCell>Producto</TableCell>
-                    <TableCell align="center">Cantidad Sugerida</TableCell>
-                    <TableCell align="center">Prioridad</TableCell>
-                    <TableCell align="center">Stock Actual</TableCell>
-                    <TableCell align="center">Días Stock</TableCell>
-                    <TableCell align="center">Confianza</TableCell>
-                    <TableCell>Recomendación</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredAndSorted.map((prediccion) => (
-                    <TableRow key={prediccion.id} hover>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={selectedProducts.has(prediccion.id)}
-                          onChange={() => handleSelectProduct(prediccion.id)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {prediccion.nombre}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {prediccion.categoria}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
-                          <TrendingUp size={16} color="#1976d2" />
-                          <Typography variant="body2" fontWeight="medium">
-                            {prediccion.cantidadSugerida}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          size="small"
-                          icon={getPriorityIcon(prediccion.prioridad)}
-                          label={prediccion.prioridad}
-                          color={
-                            prediccion.prioridad === 'Alta' ? 'error' :
-                            prediccion.prioridad === 'Media' ? 'warning' : 'success'
-                          }
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography 
-                          variant="body2"
-                          color={prediccion.stockActual === 0 ? 'error.main' : 'text.primary'}
-                          fontWeight={prediccion.stockActual === 0 ? 'medium' : 'normal'}
-                        >
-                          {prediccion.stockActual} pz
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography 
-                          variant="body2"
-                          color={
-                            prediccion.diasStock === null ? 'text.secondary' :
-                            prediccion.diasStock < 7 ? 'error.main' :
-                            prediccion.diasStock < 14 ? 'warning.main' : 'text.primary'
-                          }
-                          fontWeight={prediccion.diasStock !== null && prediccion.diasStock < 7 ? 'medium' : 'normal'}
-                        >
-                          {prediccion.diasStock !== null ? `${prediccion.diasStock} días` : 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body2" fontWeight="medium">
-                          {prediccion.confianza}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {prediccion.recomendacion}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Box>
-      </DialogContent>
+                  {loading ? (
+                    <>
+                      <div className="modal-predicciones__loading-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
+                      Actualizando...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={16} />
+                      Actualizar
+                    </>
+                  )}
+                </button>
 
-      <DialogActions sx={{ p: 2, backgroundColor: 'grey.50' }}>
-        <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
-          <Box>
-            {selectedProducts.size > 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box 
-                  sx={{ 
-                    width: 12, 
-                    height: 12, 
-                    backgroundColor: 'primary.main', 
-                    borderRadius: '50%' 
-                  }} 
-                />
-                {selectedProducts.size} productos seleccionados
-              </Typography>
-            )}
-          </Box>
-          <Box display="flex" gap={1}>
-            <Button onClick={handleClose} variant="outlined">
-              Cerrar
-            </Button>
-            {selectedProducts.size > 0 && onCreatePurchaseOrder && (
-              <Button
-                onClick={handleCreatePurchaseOrder}
-                variant="contained"
-                color="success"
-              >
-                Crear Orden de Compra ({selectedProducts.size})
-              </Button>
-            )}
-          </Box>
-        </Box>
-      </DialogActions>
-    </Dialog>
+                <button
+                  className="modal-predicciones__btn modal-predicciones__btn--select"
+                  onClick={handleSelectAll}
+                >
+                  {selectedProducts.size === filteredAndSorted.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="modal-predicciones__content">
+              {loading ? (
+                <div className="modal-predicciones__loading">
+                  <div className="modal-predicciones__loading-spinner" />
+                  <p className="modal-predicciones__loading-text">Generando predicciones...</p>
+                </div>
+              ) : error ? (
+                <div className="modal-predicciones__error">
+                  <div className="modal-predicciones__error-title">
+                    <AlertTriangle size={20} />
+                    Error al obtener predicciones
+                  </div>
+                  <p className="modal-predicciones__error-message">{error}</p>
+                  <button className="modal-predicciones__error-btn" onClick={() => loadPredictions()}>
+                    Reintentar
+                  </button>
+                </div>
+              ) : filteredAndSorted.length === 0 ? (
+                <div className="modal-predicciones__empty">
+                  <Package size={48} className="modal-predicciones__empty-icon" />
+                  <p className="modal-predicciones__empty-text">No se encontraron predicciones para mostrar</p>
+                </div>
+              ) : (
+                <div className="modal-predicciones__table-wrapper">
+                  <table className="modal-predicciones__table">
+                    <thead className="modal-predicciones__table-head">
+                      <tr>
+                        <th className="modal-predicciones__table-th modal-predicciones__table-th--checkbox">
+                          <input
+                            type="checkbox"
+                            className="modal-predicciones__checkbox"
+                            checked={selectedProducts.size === filteredAndSorted.length && filteredAndSorted.length > 0}
+                            onChange={handleSelectAll}
+                          />
+                        </th>
+                        <th className="modal-predicciones__table-th">Producto</th>
+                        <th className="modal-predicciones__table-th modal-predicciones__table-th--center">Cantidad Sugerida</th>
+                        <th className="modal-predicciones__table-th modal-predicciones__table-th--center">Prioridad</th>
+                        <th className="modal-predicciones__table-th modal-predicciones__table-th--center">Stock Actual</th>
+                        <th className="modal-predicciones__table-th modal-predicciones__table-th--center">Confianza</th>
+                        <th className="modal-predicciones__table-th">Recomendación</th>
+                      </tr>
+                    </thead>
+                    <tbody className="modal-predicciones__table-body">
+                      {filteredAndSorted.map((prediccion) => (
+                        <tr key={prediccion.id} className="modal-predicciones__table-row">
+                          <td className="modal-predicciones__table-td">
+                            <input
+                              type="checkbox"
+                              className="modal-predicciones__checkbox"
+                              checked={selectedProducts.has(prediccion.id)}
+                              onChange={() => handleSelectProduct(prediccion.id)}
+                            />
+                          </td>
+                          <td className="modal-predicciones__table-td">
+                            <div className="modal-predicciones__product">
+                              <span className="modal-predicciones__product-name">{prediccion.nombre}</span>
+                              <span className="modal-predicciones__product-category">{prediccion.categoria}</span>
+                            </div>
+                          </td>
+                          <td className="modal-predicciones__table-td modal-predicciones__table-td--center">
+                            <div className="modal-predicciones__quantity">
+                              <TrendingUp size={16} color="#3B82F6" />
+                              <span className="modal-predicciones__quantity-value">{prediccion.cantidadSugerida}</span>
+                            </div>
+                          </td>
+                          <td className="modal-predicciones__table-td modal-predicciones__table-td--center">
+                            <span className={`modal-predicciones__priority-badge modal-predicciones__priority-badge--${prediccion.prioridad.toLowerCase()}`}>
+                              {getPriorityIcon(prediccion.prioridad)}
+                              {prediccion.prioridad}
+                            </span>
+                          </td>
+                          <td className="modal-predicciones__table-td modal-predicciones__table-td--center">
+                            <span className={prediccion.stockActual === 0 ? 'modal-predicciones__stock modal-predicciones__stock--zero' : 'modal-predicciones__stock'}>
+                              {prediccion.stockActual} pz
+                            </span>
+                          </td>
+                          <td className="modal-predicciones__table-td modal-predicciones__table-td--center">
+                            <span className="modal-predicciones__confidence">{prediccion.confianza}</span>
+                          </td>
+                          <td className="modal-predicciones__table-td">
+                            <span className="modal-predicciones__recommendation">{prediccion.recomendacion}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="modal-predicciones__footer">
+              <div className="modal-predicciones__selection-info">
+                {selectedProducts.size > 0 && (
+                  <>
+                    <span className="modal-predicciones__selection-badge"></span>
+                    {selectedProducts.size} productos seleccionados
+                  </>
+                )}
+              </div>
+              <div className="modal-predicciones__footer-actions">
+                <button className="modal-predicciones__btn modal-predicciones__btn--close" onClick={handleClose}>
+                  Cerrar
+                </button>
+                {selectedProducts.size > 0 && onCreatePurchaseOrder && (
+                  <button
+                    className="modal-predicciones__btn modal-predicciones__btn--create"
+                    onClick={handleCreatePurchaseOrder}
+                  >
+                    Crear Orden de Compra ({selectedProducts.size})
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
