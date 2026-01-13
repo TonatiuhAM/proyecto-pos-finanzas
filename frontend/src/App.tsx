@@ -7,7 +7,7 @@ import MainMenu from './components/MainMenu';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import Inventario from './components/Inventario';
 import PuntoDeVenta from './components/PuntoDeVenta';
-import GestionEmpleados from './components/GestionEmpleados';
+import GestionPersonas from './components/GestionPersonas';
 import SeleccionProveedores from './components/SeleccionProveedores';
 import PuntoDeCompras from './components/PuntoDeCompras';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -166,7 +166,7 @@ function App() {
       if (!isAuthenticated) return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
       return (
         <ProtectedRoute adminOnly={true}>
-          <GestionEmpleados onNavigate={handleSidebarNavigate} />
+          <GestionPersonas onNavigate={handleSidebarNavigate} />
         </ProtectedRoute>
       );
     

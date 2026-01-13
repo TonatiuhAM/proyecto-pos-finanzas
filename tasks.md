@@ -1,5 +1,327 @@
 # Tareas del Proyecto POS Finanzas
 
+## 🎨 REWORK: Interfaz de Gestión de Inventario con Nuevo Diseño (12 Ene 2026)
+
+### Descripción del Objetivo
+
+Implementar un rediseño completo de la pantalla de **Gestión de Inventario** utilizando el nuevo código TSX proporcionado por el usuario, manteniendo toda la funcionalidad existente pero con una interfaz visual mejorada que sigue las guías de diseño establecidas.
+
+**IMPORTANTE:** La barra lateral de navegación (`SidebarNavigation`) debe permanecer intacta y la nueva interfaz debe adaptarse para no superponerse con ella.
+
+### Paleta de Colores y Diseño (Guías a Seguir)
+
+#### Colores Principales:
+- **Primario**: Naranja Vibrante (#F97316) - Para elementos activos y CTAs
+- **Secundario**: Amarillo Mostaza (#FACC15) - Para ofertas y destacados
+- **Fondo**: Blanco (#FFFFFF) o Gris muy claro (#F3F4F6)
+- **Texto**: Gris oscuro (#1F2937) para legibilidad
+
+#### Tipografía:
+- **Principal (Headings)**: Sans-serif moderna (Poppins o Inter)
+- **Cuerpo**: Sans-serif legible con buena altura de línea
+
+#### Iconografía:
+- Iconos de línea (outline) para navegación inactiva
+- Iconos sólidos (filled) para estados activos
+- Bordes redondeados: 12px - 16px radius
+
+### Análisis de Situación Actual
+
+#### Archivo Actual: `Inventario.tsx`
+- ✅ Ya usa `SidebarNavigation` como componente de navegación lateral
+- ✅ Tiene toda la funcionalidad conectada al backend (CRUD de productos)
+- ✅ Maneja modales para crear, editar y predicciones ML
+- ✅ Tiene sistema de búsqueda y filtrado de productos
+- ✅ Alertas de stock bajo implementadas
+
+#### Código Nuevo Proporcionado
+- Tiene sidebar integrado en el mismo componente (debe ser removido)
+- Usa datos simulados (debe conectarse a datos reales)
+- Tiene 3 botones principales: Nuevo Producto, Realizar Compra, Predicciones IA
+- Tabla con acciones: Editar, Ajustar Stock (RefreshCw), Eliminar
+- Diseño visual mejorado con gradientes y sombras
+
+### Plan de Implementación
+
+#### FASE 1: Preparación y Análisis
+
+- [ ] **Paso 1.1: Backup del archivo actual**
+  - [ ] Crear copia de seguridad de `Inventario.tsx` como `Inventario.tsx.backup`
+  - [ ] Crear copia de seguridad de `InventarioModernoNew.tsx` como referencia
+
+- [ ] **Paso 1.2: Identificar diferencias clave**
+  - [ ] Listar todos los handlers de funciones en el archivo actual
+  - [ ] Listar todos los estados (useState) en el archivo actual
+  - [ ] Identificar props que recibe el componente actual
+  - [ ] Documentar integraciones con servicios (inventarioService, stockService)
+
+#### FASE 2: Integración del Nuevo Diseño
+
+- [ ] **Paso 2.1: Reemplazar estructura HTML/JSX**
+  - [ ] Remover el sidebar del código nuevo (ya existe como `SidebarNavigation`)
+  - [ ] Copiar la estructura del `<main>` del código nuevo
+  - [ ] Mantener el wrapper `<div className="h-screen bg-gray-50...">` para consistencia
+  - [ ] Integrar `SidebarNavigation` como componente separado (ya existe)
+
+- [ ] **Paso 2.2: Adaptar layout para convivir con SidebarNavigation**
+  - [ ] Verificar que el `<main>` no use `flex-1` que cause superposición
+  - [ ] Asegurar que el contenido principal tenga el margen correcto (`ml-20 md:ml-24`)
+  - [ ] Verificar responsive design en diferentes tamaños de pantalla
+
+- [ ] **Paso 2.3: Conectar datos reales a la tabla**
+  - [ ] Reemplazar array `products` simulado con `filteredProductos` del estado actual
+  - [ ] Mapear campos de `ProductoDTO` a la estructura de la tabla:
+    - `producto.nombre` → nombre del producto
+    - `producto.categoriasProductosCategoria` → categoría
+    - `producto.proveedorNombre + proveedorApellidoPaterno` → proveedor
+    - `producto.precioCompraActual` → P. Compra (formatear con `formatPrice`)
+    - `producto.precioVentaActual` → P. Venta (formatear con `formatPrice`)
+    - `producto.cantidadInventario` → Stock
+  - [ ] Mantener la función `getStatusBadge` existente para estados
+  - [ ] Actualizar contador de productos en el toolbar
+
+#### FASE 3: Conectar Funcionalidad de Botones
+
+- [ ] **Paso 3.1: Botón "Nuevo Producto"**
+  - [ ] Conectar `onClick={handleCrearNuevo}` (ya existe)
+  - [ ] Verificar que el modal `ModalCrearProducto` se abra correctamente
+
+- [ ] **Paso 3.2: Botón "Realizar Compra"**
+  - [ ] Conectar `onClick={handleComprarProducto}` (ya existe)
+  - [ ] Verificar navegación a la pantalla de compras mediante `onNavigateToCompras()`
+
+- [ ] **Paso 3.3: Botón "Predicciones IA"**
+  - [ ] Conectar `onClick={handleShowPredictions}` (ya existe)
+  - [ ] Verificar que el modal `ModalPredicciones` se abra correctamente
+
+#### FASE 4: Conectar Acciones de Tabla
+
+- [ ] **Paso 4.1: Botón Editar (Edit3)**
+  - [ ] Conectar `onClick={() => handleEditarProducto(producto)}`
+  - [ ] Verificar que el modal `ModalEditarProducto` se abra con los datos correctos
+
+- [ ] **Paso 4.2: Botón Eliminar (Trash2)**
+  - [ ] Conectar `onClick={() => handleEliminarProducto(producto.id, producto.nombre)}`
+  - [ ] Verificar que la confirmación y eliminación funcionen correctamente
+
+- [ ] **Paso 4.3: Remover botón "Ajustar Stock" (RefreshCw)**
+  - [ ] Eliminar el botón de RefreshCw de las acciones
+  - [ ] Nota: El sistema actual no tiene funcionalidad de ajuste manual de stock desde inventario
+  - [ ] El stock se ajusta mediante compras y ventas automáticamente
+
+#### FASE 5: Integrar Búsqueda y Filtros
+
+- [ ] **Paso 5.1: Conectar barra de búsqueda**
+  - [ ] Conectar input con `value={searchQuery}`
+  - [ ] Conectar `onChange={(e) => setSearchQuery(e.target.value)}`
+  - [ ] Verificar que el filtrado funcione en tiempo real
+
+- [ ] **Paso 5.2: Mantener lógica de filtrado**
+  - [ ] Asegurar que el `useEffect` de filtrado siga funcionando
+  - [ ] Verificar filtrado por nombre, categoría y proveedor
+
+#### FASE 6: Estados de Carga y Errores
+
+- [ ] **Paso 6.1: Implementar estado de carga**
+  - [ ] Mantener el componente de loading existente
+  - [ ] Verificar que se muestre durante `loadProductos()`
+
+- [ ] **Paso 6.2: Implementar mensajes de error**
+  - [ ] Mantener el banner de error existente
+  - [ ] Verificar que se muestre cuando `error !== null`
+
+- [ ] **Paso 6.3: Estado vacío de tabla**
+  - [ ] Implementar el diseño del estado vacío del nuevo código
+  - [ ] Mostrar cuando `filteredProductos.length === 0`
+  - [ ] Diferenciar entre "sin productos" y "sin resultados de búsqueda"
+
+#### FASE 7: Mantener Modales y Funcionalidad Existente
+
+- [ ] **Paso 7.1: Verificar modales**
+  - [ ] `ModalCrearProducto` sigue renderizándose correctamente
+  - [ ] `ModalEditarProducto` sigue renderizándose correctamente
+  - [ ] `ModalPredicciones` sigue renderizándose correctamente
+
+- [ ] **Paso 7.2: Verificar callbacks**
+  - [ ] `handleModalSuccess` recarga productos correctamente
+  - [ ] `handleCreatePurchaseOrder` navega correctamente
+
+#### FASE 8: Estilos y Refinamientos Visuales
+
+- [ ] **Paso 8.1: Aplicar paleta de colores**
+  - [ ] Verificar uso de naranja (#F97316) para elementos activos
+  - [ ] Verificar uso de amarillo (#FACC15) para alertas/destacados
+  - [ ] Verificar fondos grises (#F3F4F6)
+
+- [ ] **Paso 8.2: Verificar responsive design**
+  - [ ] Probar en móvil (< 768px)
+  - [ ] Probar en tablet (768px - 1024px)
+  - [ ] Probar en desktop (> 1024px)
+
+- [ ] **Paso 8.3: Transiciones y animaciones**
+  - [ ] Verificar hover effects en botones
+  - [ ] Verificar transiciones en tabla
+  - [ ] Verificar animación de carga
+
+#### FASE 9: Pruebas Funcionales
+
+- [ ] **Paso 9.1: Pruebas CRUD**
+  - [ ] Crear un producto nuevo desde el modal
+  - [ ] Editar un producto existente
+  - [ ] Eliminar un producto (desactivar)
+  - [ ] Verificar que la tabla se actualice correctamente
+
+- [ ] **Paso 9.2: Pruebas de navegación**
+  - [ ] Botón "Realizar Compra" navega a compras
+  - [ ] Sidebar permite navegar a otras secciones
+  - [ ] Estado activo de "Inventario" se mantiene
+
+- [ ] **Paso 9.3: Pruebas de predicciones ML**
+  - [ ] Abrir modal de predicciones
+  - [ ] Verificar carga de datos
+  - [ ] Verificar creación de orden de compra desde predicciones
+
+#### FASE 10: Limpieza y Documentación
+
+- [ ] **Paso 10.1: Remover código innecesario**
+  - [ ] Eliminar imports no utilizados
+  - [ ] Eliminar funciones comentadas
+  - [ ] Limpiar console.logs de debugging
+
+- [ ] **Paso 10.2: Actualizar comentarios**
+  - [ ] Documentar secciones principales del componente
+  - [ ] Añadir comentarios para funciones complejas
+
+- [ ] **Paso 10.3: Verificar CSS**
+  - [ ] Verificar si es necesario actualizar `InventarioModernoNew.css`
+  - [ ] Considerar si se pueden usar Tailwind classes directamente
+
+### Archivos Involucrados
+
+#### Archivos a Modificar:
+- `frontend/src/components/Inventario.tsx` - **PRINCIPAL**: Reemplazar con nuevo diseño
+- `frontend/src/components/InventarioModernoNew.css` - Potencialmente actualizar estilos
+
+#### Archivos que NO se tocan (permanecen igual):
+- `frontend/src/components/SidebarNavigation.tsx` - Navegación lateral
+- `frontend/src/components/SidebarNavigation.css` - Estilos de navegación
+- `frontend/src/services/inventarioService.ts` - Servicio de API
+- `frontend/src/services/stockService.ts` - Servicio de stock
+- `frontend/src/components/ModalCrearProducto.tsx` - Modal de creación
+- `frontend/src/components/ModalEditarProducto.tsx` - Modal de edición
+- `frontend/src/components/ModalPredicciones.tsx` - Modal de ML
+
+### Mapeo de Datos: Código Nuevo → Backend Real
+
+#### Datos Simulados (Código Nuevo):
+```javascript
+{
+  id: "1",
+  name: "Taco de Bistec",
+  image: "🌮",
+  category: "Clásicos",
+  supplier: "Carnes del Norte",
+  purchasePrice: "$12.00",
+  salePrice: "$25.00",
+  stock: 200,
+  status: "Optimal"
+}
+```
+
+#### Datos Reales (ProductoDTO):
+```typescript
+{
+  id: string,
+  nombre: string,
+  categoriasProductosCategoria?: string,
+  proveedorNombre?: string,
+  proveedorApellidoPaterno?: string,
+  precioCompraActual?: number,
+  precioVentaActual?: number,
+  cantidadInventario?: number,
+  estadosEstado?: string
+}
+```
+
+#### Transformación:
+- `name` → `nombre`
+- `image` → Usar emoji genérico `📦` o icono basado en categoría
+- `category` → `categoriasProductosCategoria`
+- `supplier` → `proveedorNombre + " " + proveedorApellidoPaterno`
+- `purchasePrice` → `formatPrice(precioCompraActual)`
+- `salePrice` → `formatPrice(precioVentaActual)`
+- `stock` → `cantidadInventario`
+- `status` → Calcular basado en `cantidadInventario` usando `getStatusBadge()`
+
+### Consideraciones Especiales
+
+#### 1. Barra Lateral (Sidebar)
+- **NO reemplazar** el componente `SidebarNavigation` existente
+- El código proporcionado tiene sidebar integrado, pero debemos usar el componente separado
+- Mantener la prop `activeSection="inventario"` en `SidebarNavigation`
+
+#### 2. Botón "RefreshCw" (Ajustar Stock)
+- El sistema actual **NO tiene funcionalidad de ajuste manual de stock**
+- El stock se maneja automáticamente mediante:
+  - **Compras**: Incrementan stock
+  - **Ventas**: Decrementan stock
+- **Acción**: Remover este botón del diseño final
+
+#### 3. Formato de Precios
+- Usar la función existente `formatPrice` que formatea a MXN
+- Ejemplo: `formatPrice(12.50)` → "$12.50"
+
+#### 4. Estados de Stock
+- Usar la función existente `getStatusBadge(cantidadInventario, estadosEstado)`
+- Lógica:
+  - `cantidad === 0` → "Agotado" (rojo)
+  - `cantidad <= 10` → "Bajo" (amarillo)
+  - `cantidad <= 50` → "Medio" (naranja)
+  - `cantidad > 50` → "En Stock" (verde)
+
+### Criterios de Éxito
+
+#### ✅ **Interfaz Visual Renovada:**
+- [ ] Diseño coincide con el código proporcionado
+- [ ] Colores siguen la paleta definida (#F97316, #FACC15, #F3F4F6)
+- [ ] Bordes redondeados y sombras aplicados correctamente
+- [ ] Responsive en móvil, tablet y desktop
+
+#### ✅ **Funcionalidad Completa:**
+- [ ] Todos los botones principales funcionan (Crear, Comprar, Predicciones)
+- [ ] Acciones de tabla funcionan (Editar, Eliminar)
+- [ ] Búsqueda filtra productos en tiempo real
+- [ ] Modales se abren y cierran correctamente
+
+#### ✅ **Datos Reales:**
+- [ ] Tabla muestra productos reales de la base de datos
+- [ ] Contador de productos es dinámico
+- [ ] Precios formateados correctamente en MXN
+- [ ] Estados de stock calculados correctamente
+
+#### ✅ **Navegación Intacta:**
+- [ ] SidebarNavigation funciona correctamente
+- [ ] Estado activo de "Inventario" se muestra
+- [ ] Navegación a otras secciones funciona
+- [ ] No hay superposición con el sidebar
+
+#### ✅ **Sin Regresiones:**
+- [ ] Alertas de stock bajo siguen funcionando
+- [ ] Verificación de stock sigue funcionando
+- [ ] Toasts y notificaciones funcionan
+- [ ] Reload de productos después de CRUD funciona
+
+### Estado: 🔄 ESPERANDO APROBACIÓN
+
+### Notas de Implementación
+- **Prioridad**: Alta - Mejora significativa de UX
+- **Complejidad**: Media - Principalmente cambios visuales, funcionalidad ya existe
+- **Tiempo Estimado**: 2-3 horas de implementación cuidadosa
+- **Riesgo**: Bajo - Toda la funcionalidad ya está probada y funcionando
+- **Dependencias**: Ninguna - Todo el código necesario ya existe
+
+---
+
 ## 🎨 REWORK COMPLETO: Nueva Interfaz de Usuario (10 Ene 2026)
 
 ### Descripción del Proyecto
