@@ -49,11 +49,12 @@ type TableItem = Empleado | PersonaResponse;
 const StatusBadge = ({ status }: { status: string }) => {
   const isActive = status?.toLowerCase() === 'activo';
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold capitalize shadow-sm ${isActive
-      ? 'bg-green-100 text-green-700 border border-green-200'
-      : 'bg-red-50 text-red-600 border border-red-100'
-      }`}>
-      {isActive ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+    <span className={`gp-status-badge ${isActive ? 'gp-status-badge--active' : 'gp-status-badge--inactive'}`}>
+      {isActive ? (
+        <CheckCircle2 className="gp-status-badge__icon" />
+      ) : (
+        <XCircle className="gp-status-badge__icon" />
+      )}
       {isActive ? 'Activo' : 'Inactivo'}
     </span>
   );
@@ -70,20 +71,26 @@ const ActionToggle = ({
 }) => {
   const isActive = status?.toLowerCase() === 'activo';
   return (
-    <div className="flex items-center justify-center gap-2 group cursor-pointer" onClick={loading ? undefined : onToggle}>
-      <span className={`text-xs font-medium transition-colors ${isActive ? 'text-gray-400' : 'text-gray-500 font-bold'}`}>Off</span>
+    <div 
+      className={`gp-toggle ${loading ? 'gp-toggle--loading' : ''}`} 
+      onClick={loading ? undefined : onToggle}
+    >
+      <span className={`gp-toggle__label ${isActive ? 'gp-toggle__label--off' : 'gp-toggle__label--off-active'}`}>
+        Off
+      </span>
       <button
         disabled={loading}
-        className={`relative transition-all duration-300 ease-in-out focus:outline-none transform active:scale-95 ${isActive ? 'text-orange-500 drop-shadow-md' : 'text-gray-300'
-          } ${loading ? 'opacity-50 cursor-wait' : ''}`}
+        className="gp-toggle__button"
       >
         {isActive ? (
-          <ToggleRight className="w-9 h-9 fill-current" />
+          <ToggleRight className="gp-toggle__icon gp-toggle__icon--active" />
         ) : (
-          <ToggleLeft className="w-9 h-9 fill-current hover:text-gray-400" />
+          <ToggleLeft className="gp-toggle__icon gp-toggle__icon--inactive" />
         )}
       </button>
-      <span className={`text-xs font-medium transition-colors ${isActive ? 'text-orange-600 font-bold' : 'text-gray-400'}`}>On</span>
+      <span className={`gp-toggle__label ${isActive ? 'gp-toggle__label--on-active' : 'gp-toggle__label--on'}`}>
+        On
+      </span>
     </div>
   );
 };
@@ -128,21 +135,21 @@ const ManagementTable = ({
   ];
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="gp-table-container">
 
       {/* 1. Encabezado */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="p-2 bg-orange-100 rounded-xl text-orange-600">
-              <Icon className="w-6 h-6" />
+      <div className="gp-header">
+        <div className="gp-header__title-section">
+          <div className="gp-header__title-wrapper">
+            <div className="gp-header__icon">
+              <Icon className="gp-btn__icon" />
             </div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">{title}</h2>
+            <h2 className="gp-header__title">{title}</h2>
           </div>
-          <p className="text-gray-500 font-medium ml-1 mb-4">{subtitle}</p>
+          <p className="gp-header__subtitle">{subtitle}</p>
 
           {/* TABS */}
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="gp-tabs">
             {tabs.map((tab) => {
               const isActive = currentTab === tab.id;
               const TabIcon = tab.icon;
@@ -150,12 +157,9 @@ const ManagementTable = ({
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 border ${isActive
-                    ? 'bg-gray-800 text-white border-gray-800 shadow-md transform scale-105'
-                    : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                    }`}
+                  className={`gp-tab ${isActive ? 'gp-tab--active' : ''}`}
                 >
-                  <TabIcon className={`w-4 h-4 ${isActive ? 'text-orange-400' : 'text-gray-400'}`} />
+                  <TabIcon className="gp-tab__icon" />
                   {tab.label}
                 </button>
               );
@@ -163,22 +167,22 @@ const ManagementTable = ({
           </div>
         </div>
 
-        <div className="flex gap-3 w-full md:w-auto">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95 font-bold h-fit">
-            <Plus className="w-5 h-5" />
+        <div className="gp-actions">
+          <button className="gp-btn gp-btn--primary">
+            <Plus className="gp-btn__icon" />
             <span>Nuevo {type}</span>
           </button>
         </div>
       </div>
 
       {/* 2. Barra de Búsqueda */}
-      <div className="bg-white p-4 rounded-[1.5rem] shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <div className="gp-search">
+        <div className="gp-search__wrapper">
+          <Search className="gp-search__icon" />
           <input
             type="text"
             placeholder={`Buscar ${title.toLowerCase()}...`}
-            className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-orange-200 focus:bg-white transition-all text-sm font-medium text-gray-700 placeholder-gray-400 outline-none"
+            className="gp-search__input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -186,35 +190,40 @@ const ManagementTable = ({
       </div>
 
       {/* 3. La Tabla */}
-      <div className="bg-white rounded-[2rem] shadow-md border border-gray-100 overflow-hidden flex-1 flex flex-col mb-6">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/80 text-gray-400 text-xs uppercase tracking-wider">
+      <div className="gp-table-card">
+        <div className="gp-table-wrapper">
+          <table className="gp-table">
+            <thead className="gp-table__head">
+              <tr className="gp-table__head-row">
                 {columns.map((col: any, idx: number) => (
-                  <th key={idx} className={`p-6 font-bold ${col.align || 'text-left'}`}>
+                  <th 
+                    key={idx} 
+                    className={`gp-table__th ${col.align === 'text-center' ? 'gp-table__th--center' : ''}`}
+                  >
                     {col.header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="gp-table__body gp-table__body-divider">
               {loading ? (
                 <tr>
-                  <td colSpan={columns.length} className="p-10 text-center">
-                    <div className="flex flex-col justify-center items-center gap-2 text-gray-400">
-                      <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-                      <span className="text-sm font-medium">Cargando datos...</span>
+                  <td colSpan={columns.length} className="gp-table__td">
+                    <div className="gp-loading">
+                      <div className="gp-loading__content">
+                        <div className="gp-loading__spinner"></div>
+                        <span className="gp-loading__text">Cargando datos...</span>
+                      </div>
                     </div>
                   </td>
                 </tr>
               ) : filteredData.length > 0 ? (
                 filteredData.map((item: any, index: number) => (
-                  <tr key={item.id || index} className="hover:bg-orange-50/40 transition-colors group">
+                  <tr key={item.id || index} className="gp-table__row">
                     {columns.map((col: any, colIdx: number) => (
-                      <td key={colIdx} className={`p-5 ${col.className || ''}`}>
+                      <td key={colIdx} className={`gp-table__td ${col.className || ''}`}>
                         {col.render ? col.render(item) : (
-                          <span className="font-medium text-gray-700">{item[col.key]}</span>
+                          <span className="gp-role__name">{item[col.key]}</span>
                         )}
                       </td>
                     ))}
@@ -222,12 +231,14 @@ const ManagementTable = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={columns.length} className="p-10 text-center">
-                    <div className="flex flex-col items-center justify-center text-gray-400">
-                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                        <Search className="w-8 h-8 text-gray-300" />
+                  <td colSpan={columns.length} className="gp-table__td">
+                    <div className="gp-empty">
+                      <div className="gp-empty__content">
+                        <div className="gp-empty__icon-wrapper">
+                          <Search className="gp-empty__icon" />
+                        </div>
+                        <p className="gp-empty__text">No se encontraron resultados para "{searchTerm}"</p>
                       </div>
-                      <p>No se encontraron resultados para "{searchTerm}"</p>
                     </div>
                   </td>
                 </tr>
@@ -313,13 +324,13 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Nombre del Empleado',
       key: 'nombre',
       render: (item: Empleado) => (
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-white shadow-sm flex items-center justify-center text-gray-600 font-bold text-sm">
+        <div className="gp-employee">
+          <div className="gp-employee__avatar">
             {(item.nombre || '?').charAt(0)}
           </div>
-          <div>
-            <span className="block font-bold text-gray-800 text-base">{item.nombre}</span>
-            <span className="text-xs text-orange-500 font-medium">ID: ...{(item.id || '').slice(-4)}</span>
+          <div className="gp-employee__info">
+            <span className="gp-employee__name">{item.nombre}</span>
+            <span className="gp-employee__id">ID: ...{(item.id || '').slice(-4)}</span>
           </div>
         </div>
       )
@@ -328,8 +339,8 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Teléfono',
       key: 'telefono',
       render: (item: Empleado) => (
-        <div className="flex items-center gap-2 text-gray-600 font-medium">
-          <Phone className="w-4 h-4 text-gray-400" />
+        <div className="gp-contact">
+          <Phone className="gp-contact__icon" />
           {item.telefono || 'Sin teléfono'}
         </div>
       )
@@ -338,9 +349,9 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Rol / Puesto',
       key: 'rolNombre',
       render: (item: Empleado) => (
-        <div className="flex items-center gap-2">
-          <BadgeCheck className="w-4 h-4 text-blue-500" />
-          <span className="font-semibold text-gray-700">{item.rolNombre}</span>
+        <div className="gp-role">
+          <BadgeCheck className="gp-role__icon" />
+          <span className="gp-role__name">{item.rolNombre}</span>
         </div>
       )
     },
@@ -368,13 +379,13 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Nombre / Empresa',
       key: 'nombreCompleto',
       render: (item: PersonaResponse) => (
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 border border-purple-100 shadow-sm">
-            <Truck className="w-6 h-6" />
+        <div className="gp-supplier">
+          <div className="gp-supplier__icon">
+            <Truck className="gp-btn__icon" />
           </div>
-          <div>
-            <span className="block font-bold text-gray-800">{item.nombreCompleto}</span>
-            <span className="text-xs text-gray-400">Proveedor</span>
+          <div className="gp-supplier__info">
+            <span className="gp-supplier__name">{item.nombreCompleto}</span>
+            <span className="gp-supplier__type">Proveedor</span>
           </div>
         </div>
       )
@@ -383,7 +394,7 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'RFC',
       key: 'rfc',
       render: (item: PersonaResponse) => (
-        <span className="font-mono text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">
+        <span className="gp-rfc">
           {item.rfc || 'N/A'}
         </span>
       )
@@ -392,8 +403,8 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Email',
       key: 'email',
       render: (item: PersonaResponse) => (
-        <div className="flex items-center gap-2 text-gray-600 text-sm">
-          <Mail className="w-4 h-4 text-gray-400" />
+        <div className="gp-contact gp-contact--email">
+          <Mail className="gp-contact__icon" />
           {item.email || 'Sin email'}
         </div>
       )
@@ -421,13 +432,13 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Cliente',
       key: 'nombreCompleto',
       render: (item: PersonaResponse) => (
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600 border border-yellow-100 shadow-sm">
-            <UserCircle className="w-6 h-6" />
+        <div className="gp-customer">
+          <div className="gp-customer__icon">
+            <UserCircle className="gp-btn__icon" />
           </div>
-          <div>
-            <span className="block font-bold text-gray-800">{item.nombreCompleto}</span>
-            <span className="text-xs text-gray-400">Cliente</span>
+          <div className="gp-customer__info">
+            <span className="gp-customer__name">{item.nombreCompleto}</span>
+            <span className="gp-customer__type">Cliente</span>
           </div>
         </div>
       )
@@ -436,7 +447,7 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'RFC',
       key: 'rfc',
       render: (item: PersonaResponse) => (
-        <span className="font-mono text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">
+        <span className="gp-rfc">
           {item.rfc || 'N/A'}
         </span>
       )
@@ -445,8 +456,8 @@ const GestionPersonas = ({ onNavigate }: { onNavigate: (section: string) => void
       header: 'Email',
       key: 'email',
       render: (item: PersonaResponse) => (
-        <div className="flex items-center gap-2 text-gray-600 text-sm">
-          <Mail className="w-4 h-4 text-gray-400" />
+        <div className="gp-contact gp-contact--email">
+          <Mail className="gp-contact__icon" />
           {item.email || 'Sin email'}
         </div>
       )
