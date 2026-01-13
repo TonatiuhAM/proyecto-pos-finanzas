@@ -12,6 +12,7 @@ import ModalEditarProducto from './ModalEditarProducto';
 import ModalPredicciones from './ModalPredicciones';
 import type { ProductoDTO } from '../services/inventarioService';
 import type { ProductoStockBajo } from '../types/index';
+import './Inventario.css';
 
 interface InventarioProps {
   onNavigateToCompras?: () => void;
@@ -167,17 +168,17 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
     const cantidad = cantidadInventario || 0;
     
     if (estadosEstado?.toLowerCase() === 'inactivo') {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">Inactivo</span>;
+      return <span className="inventario-status-badge inventario-status-badge--inactive">Inactivo</span>;
     }
     
     if (cantidad === 0) {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-200">Agotado</span>;
+      return <span className="inventario-status-badge inventario-status-badge--out">Agotado</span>;
     } else if (cantidad <= 10) {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">Bajo</span>;
+      return <span className="inventario-status-badge inventario-status-badge--low">Bajo</span>;
     } else if (cantidad <= 50) {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 border border-orange-200">Medio</span>;
+      return <span className="inventario-status-badge inventario-status-badge--warning">Medio</span>;
     } else {
-      return <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-600 border border-green-200">En Stock</span>;
+      return <span className="inventario-status-badge inventario-status-badge--optimal">En Stock</span>;
     }
   };
 
@@ -189,12 +190,12 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50 font-sans">
+      <div className="inventario-container">
         <SidebarNavigation activeSection="inventario" onNavigate={handleNavigation} />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-            <p className="text-gray-600 font-medium">Cargando productos...</p>
+        <main className="inventario-main">
+          <div className="inventario-loading">
+            <div className="inventario-loading__spinner"></div>
+            <p className="inventario-loading__text">Cargando productos...</p>
           </div>
         </main>
       </div>
@@ -202,52 +203,52 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans">
+    <div className="inventario-container">
       {/* Sidebar Navigation */}
       <SidebarNavigation activeSection="inventario" onNavigate={handleNavigation} />
 
       {/* Main Content Area - Ocupa el resto del espacio */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+      <main className="inventario-main">
         
         {/* Header Superior */}
-        <header className="px-8 py-6 bg-white shadow-sm border-b border-gray-100 z-10 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Inventario</h1>
-            <p className="text-sm text-gray-500 mt-1">Administra tus productos, precios y stock en tiempo real.</p>
+        <header className="inventario-header">
+          <div className="inventario-header__title-section">
+            <h1 className="inventario-header__title">Gestión de Inventario</h1>
+            <p className="inventario-header__subtitle">Administra tus productos, precios y stock en tiempo real.</p>
           </div>
           {/* Barra de búsqueda (Compacta y redonda) */}
-          <div className="relative w-96">
+          <div className="inventario-search">
             <input 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar producto, categoría o SKU..." 
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-full text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+              className="inventario-search__input"
             />
-            <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <span className="inventario-search__icon">🔍</span>
           </div>
         </header>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="inventario-content">
           
           {/* GRID DE TARJETAS SUPERIORES (KPIs) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="inventario-actions-grid">
             
             {/* Card 1: Nuevo Producto (Naranja) */}
             <div 
               onClick={handleCrearNuevo}
-              className="bg-orange-500 rounded-2xl p-6 text-white shadow-lg shadow-orange-500/20 relative overflow-hidden group cursor-pointer hover:shadow-orange-500/40 transition-all"
+              className="inventario-action-card inventario-action-card--primary"
             >
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="p-2 bg-white/20 w-fit rounded-lg mb-4">➕</div>
-                <div>
-                  <h3 className="text-xl font-bold">Nuevo Producto</h3>
-                  <p className="text-orange-100 text-sm mt-1">Agregar al catálogo</p>
+              <div className="inventario-action-card__content">
+                <div className="inventario-action-card__icon">➕</div>
+                <div className="inventario-action-card__text">
+                  <h3 className="inventario-action-card__title">Nuevo Producto</h3>
+                  <p className="inventario-action-card__subtitle">Agregar al catálogo</p>
                 </div>
               </div>
               {/* Decoración de fondo */}
-              <div className="absolute -bottom-6 -right-6 text-orange-400 opacity-30 transform rotate-12 group-hover:scale-110 transition-transform text-6xl">
+              <div className="inventario-action-card__decoration">
                 📦
               </div>
             </div>
@@ -255,13 +256,13 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
             {/* Card 2: Realizar Compra (Blanco) */}
             <div 
               onClick={handleComprarProducto}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all relative overflow-hidden group cursor-pointer"
+              className="inventario-action-card inventario-action-card--secondary"
             >
-              <div className="flex flex-col h-full justify-between">
-                <div className="p-2 bg-orange-50 w-fit rounded-lg text-orange-500 mb-4 text-2xl">🛒</div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">Realizar Compra</h3>
-                  <p className="text-gray-400 text-sm mt-1">Reabastecer stock</p>
+              <div className="inventario-action-card__content">
+                <div className="inventario-action-card__icon">🛒</div>
+                <div className="inventario-action-card__text">
+                  <h3 className="inventario-action-card__title">Realizar Compra</h3>
+                  <p className="inventario-action-card__subtitle">Reabastecer stock</p>
                 </div>
               </div>
             </div>
@@ -269,67 +270,67 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
             {/* Card 3: Predicciones IA (Gradiente Morado) */}
             <div 
               onClick={handleShowPredictions}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/20 relative overflow-hidden cursor-pointer hover:shadow-indigo-500/40 transition-all"
+              className="inventario-action-card inventario-action-card--ai"
             >
-              <div className="flex flex-col h-full justify-between relative z-10">
-                <div className="p-2 bg-white/20 w-fit rounded-lg mb-4">✨</div>
-                <div>
-                  <h3 className="text-xl font-bold">Predicciones IA</h3>
-                  <p className="text-indigo-100 text-sm mt-1">Análisis de compra</p>
+              <div className="inventario-action-card__content">
+                <div className="inventario-action-card__icon">✨</div>
+                <div className="inventario-action-card__text">
+                  <h3 className="inventario-action-card__title">Predicciones IA</h3>
+                  <p className="inventario-action-card__subtitle">Análisis de compra</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* SECCIÓN DE LA TABLA (CARD BLANCA FLOTANTE) */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-800">Todos los Productos</h2>
-              <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold">
+          <div className="inventario-table-card">
+            <div className="inventario-table-card__header">
+              <h2 className="inventario-table-card__title">Todos los Productos</h2>
+              <span className="inventario-table-card__count">
                 {filteredProductos.length}
               </span>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Producto</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Categoría</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Proveedor</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">P. Venta</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Stock</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Acciones</th>
+            <div className="inventario-table-wrapper">
+              <table className="inventario-table">
+                <thead className="inventario-table__head">
+                  <tr className="inventario-table__head-row">
+                    <th className="inventario-table__th">Producto</th>
+                    <th className="inventario-table__th">Categoría</th>
+                    <th className="inventario-table__th">Proveedor</th>
+                    <th className="inventario-table__th">P. Venta</th>
+                    <th className="inventario-table__th">Stock</th>
+                    <th className="inventario-table__th">Estado</th>
+                    <th className="inventario-table__th inventario-table__th--right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="inventario-table__body">
                   {filteredProductos.map((producto) => (
-                    <tr key={producto.id} className="hover:bg-gray-50 transition-colors group">
+                    <tr key={producto.id} className="inventario-table__row">
                       {/* Producto */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-xl border border-orange-100">
+                      <td className="inventario-table__td">
+                        <div className="inventario-product">
+                          <div className="inventario-product__image">
                             📦
                           </div>
-                          <div>
-                            <p className="font-semibold text-gray-900 text-sm">{producto.nombre}</p>
-                            <p className="text-xs text-gray-400">ID: #{producto.id.substring(0, 8)}</p>
+                          <div className="inventario-product__info">
+                            <p className="inventario-product__name">{producto.nombre}</p>
+                            <p className="inventario-product__id">ID: #{producto.id.substring(0, 8)}</p>
                           </div>
                         </div>
                       </td>
 
                       {/* Categoría */}
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
+                      <td className="inventario-table__td">
+                        <span className="inventario-category">
                           {producto.categoriasProductosCategoria || 'Sin categoría'}
                         </span>
                       </td>
 
                       {/* Proveedor */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">
+                      <td className="inventario-table__td">
+                        <div className="inventario-supplier">
+                          <span className="inventario-supplier__name">
                             {producto.proveedorNombre || 'Sin proveedor'}
                             {producto.proveedorApellidoPaterno && ` ${producto.proveedorApellidoPaterno}`}
                           </span>
@@ -337,46 +338,46 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
                       </td>
 
                       {/* Precio Venta */}
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-bold text-gray-900">
+                      <td className="inventario-table__td">
+                        <span className="inventario-price">
                           {formatPrice(producto.precioVentaActual)}
                         </span>
                       </td>
 
                       {/* Stock */}
-                      <td className="px-6 py-4">
-                        <div className="text-center">
-                          <span className="text-sm font-bold text-gray-700">
+                      <td className="inventario-table__td">
+                        <div className="inventario-stock">
+                          <span className="inventario-stock__value">
                             {producto.cantidadInventario || 0}
                           </span>
-                          <span className="text-xs text-gray-400 block">unidades</span>
+                          <span className="inventario-stock__label">unidades</span>
                         </div>
                       </td>
 
                       {/* Estado */}
-                      <td className="px-6 py-4">
+                      <td className="inventario-table__td">
                         {getStatusBadge(producto.cantidadInventario, producto.estadosEstado)}
                       </td>
 
                       {/* Acciones */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <td className="inventario-table__td">
+                        <div className="inventario-actions">
                           {/* Editar */}
                           <button 
                             onClick={() => handleEditarProducto(producto)}
-                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="inventario-action-btn inventario-action-btn--edit"
                             title="Editar Producto"
                           >
-                            <Edit3 className="w-4 h-4" />
+                            <Edit3 className="inventario-action-btn__icon" />
                           </button>
 
                           {/* Eliminar */}
                           <button 
                             onClick={() => handleEliminarProducto(producto.id, producto.nombre)}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="inventario-action-btn inventario-action-btn--delete"
                             title="Eliminar"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="inventario-action-btn__icon" />
                           </button>
                         </div>
                       </td>
@@ -386,14 +387,14 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
               </table>
 
               {filteredProductos.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-4xl">
+                <div className="inventario-empty">
+                  <div className="inventario-empty__icon">
                     📦
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                  <h3 className="inventario-empty__title">
                     {searchQuery ? 'No se encontraron productos' : 'No hay productos registrados'}
                   </h3>
-                  <p className="text-gray-400 text-sm mb-4">
+                  <p className="inventario-empty__description">
                     {searchQuery 
                       ? `No encontramos productos que coincidan con "${searchQuery}"`
                       : 'Comienza creando tu primer producto con el botón "Nuevo Producto"'
@@ -402,7 +403,7 @@ const Inventario: React.FC<InventarioProps> = ({ onNavigateToCompras, onNavigate
                   {!searchQuery && (
                     <button 
                       onClick={handleCrearNuevo}
-                      className="bg-orange-500 text-white px-6 py-2 rounded-xl font-medium hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200"
+                      className="inventario-empty__btn"
                     >
                       Crear Primer Producto
                     </button>
