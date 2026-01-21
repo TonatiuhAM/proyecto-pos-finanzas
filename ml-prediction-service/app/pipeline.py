@@ -200,12 +200,17 @@ def process_data(df: pd.DataFrame) -> pd.DataFrame:
         DataFrame procesado listo para modelos ML
     """
     logger.info("🚀 Iniciando pipeline de procesamiento de datos...")
+    logger.info(f"📊 DataFrame recibido - Forma: {df.shape}, Columnas: {list(df.columns)}")
+    
+    # Validación de DataFrame vacío
+    if df.empty:
+        raise ValueError("DataFrame vacío - no hay datos para procesar. Verifica que el backend esté enviando datos históricos.")
     
     # 1. Validación inicial
     columnas_requeridas = ['fecha_orden', 'productos_id']
     for col in columnas_requeridas:
         if col not in df.columns:
-            raise ValueError(f"Columna requerida '{col}' no encontrada en el DataFrame")
+            raise ValueError(f"Columna requerida '{col}' no encontrada en el DataFrame. Columnas disponibles: {list(df.columns)}")
     
     # 2. Limpieza básica
     df = df.copy()
@@ -249,7 +254,8 @@ def process_data(df: pd.DataFrame) -> pd.DataFrame:
     # One-hot encoding para estación del año
     df_procesado = pd.get_dummies(df_procesado, columns=['estacion_del_año'], prefix='estacion')
     
-    # Preservar la columna productos_id original antes de encoding
+    # Preservar columnas importantes antes de encoding
+    fecha_orden_original = df_procesado['fecha_orden'].copy()
     productos_id_original = df_procesado['productos_id'].copy()
     
     # Label encoding para productos (si hay muchos productos)
@@ -262,7 +268,8 @@ def process_data(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df_procesado = pd.get_dummies(df_procesado, columns=['productos_id'], prefix='producto')
     
-    # Restaurar la columna original para preservar la información
+    # Restaurar columnas originales para preservar la información
+    df_procesado['fecha_orden'] = fecha_orden_original
     df_procesado['productos_id'] = productos_id_original
     
     # 6. Manejo de valores faltantes
@@ -272,8 +279,8 @@ def process_data(df: pd.DataFrame) -> pd.DataFrame:
     lag_cols = [col for col in df_procesado.columns if 'lag_' in col or 'media_movil_' in col or 'std_movil_' in col]
     df_procesado[lag_cols] = df_procesado[lag_cols].fillna(0)
     
-    # Rellenar otros NaN
-    df_procesado = df_procesado.fillna(method='ffill').fillna(0)
+    # Rellenar otros NaN usando el método actualizado
+    df_procesado = df_procesado.ffill().fillna(0)
     
     # 7. Features adicionales de ingeniería
     logger.info("🎯 Creando features adicionales...")

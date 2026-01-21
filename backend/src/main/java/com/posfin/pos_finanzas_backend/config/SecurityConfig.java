@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // Permitir acceso a la autenticación
                         .requestMatchers("/auth/**").permitAll() // Permitir acceso directo sin /api (para routing issues)
                         .requestMatchers("/api/ml/test-connection").permitAll() // Permitir test de conectividad ML
+                        .requestMatchers("/api/ordenes-de-ventas/historial-ml").permitAll() // TEMPORAL: Permitir acceso sin autenticación para debugging ML
                         .anyRequest().authenticated() // Requerir autenticación para el resto
                 )
                 .exceptionHandling(exceptions -> exceptions

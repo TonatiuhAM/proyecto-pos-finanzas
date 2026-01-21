@@ -229,6 +229,13 @@ async def predict(request: PredictionRequest):
     try:
         logger.info(f"📥 Recibida solicitud de predicción con {len(request.ventas_historicas)} registros")
         
+        # Validar que tenemos datos
+        if len(request.ventas_historicas) == 0:
+            raise HTTPException(
+                status_code=400, 
+                detail="No se recibieron datos de ventas históricas. Verifica que el backend esté enviando datos o que el usuario esté autenticado."
+            )
+        
         # Validar que tenemos modelos
         if regressor_model is None or ranker_model is None:
             raise HTTPException(status_code=503, detail="Modelos no disponibles")
@@ -245,6 +252,7 @@ async def predict(request: PredictionRequest):
             })
         
         df_ventas = pd.DataFrame(ventas_data)
+        logger.info(f"📊 DataFrame creado - Forma: {df_ventas.shape}, Columnas: {list(df_ventas.columns)}")
         
         # Procesar datos con el pipeline
         logger.info("🔄 Procesando datos con pipeline...")

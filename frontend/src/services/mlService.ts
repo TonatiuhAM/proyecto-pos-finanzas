@@ -101,6 +101,8 @@ class MLService {
       const fechaLimite = new Date();
       fechaLimite.setDate(fechaLimite.getDate() - diasAtras);
       
+      console.log('📡 Obteniendo ventas históricas desde:', fechaLimite.toISOString().split('T')[0]);
+      
       // Obtener ventas desde el nuevo endpoint ML del backend
       const ventasResponse = await api.default.get('/ordenes-de-ventas/historial-ml', {
         params: {
@@ -109,13 +111,30 @@ class MLService {
         }
       });
       
-      console.log('📊 Datos históricos obtenidos del backend:', ventasResponse.data);
+      console.log('📊 Respuesta del backend - Status:', ventasResponse.status);
+      console.log('📊 Cantidad de registros recibidos:', Array.isArray(ventasResponse.data) ? ventasResponse.data.length : 'No es array');
+      console.log('📊 Primeros registros:', ventasResponse.data?.slice(0, 3));
+      
+      // Validar que la respuesta sea un array
+      if (!Array.isArray(ventasResponse.data)) {
+        console.warn('⚠️ La respuesta no es un array, usando datos dummy');
+        return this.generateDummyVentasHistoricas();
+      }
+      
+      // Validar que el array no esté vacío
+      if (ventasResponse.data.length === 0) {
+        console.warn('⚠️ El backend devolvió un array vacío, usando datos dummy');
+        return this.generateDummyVentasHistoricas();
+      }
       
       // Los datos ya vienen en el formato correcto para ML API
       return ventasResponse.data as VentaHistorica[];
       
     } catch (error) {
-      console.error('Error obteniendo ventas históricas del backend:', error);
+      console.error('❌ Error obteniendo ventas históricas del backend:', error);
+      if (error instanceof Error) {
+        console.error('❌ Mensaje de error:', error.message);
+      }
       console.log('⚠️ Usando datos dummy para testing...');
       // Retornar datos dummy para testing
       return this.generateDummyVentasHistoricas();
