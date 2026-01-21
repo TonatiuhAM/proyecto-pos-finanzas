@@ -317,52 +317,89 @@ El objetivo de Fase 2 era alcanzar 40% de cobertura total del backend. Aunque lo
 
 ---
 
-## 📊 RESULTADOS FASE 3 (21 Enero 2026) - INICIO
+## 📊 RESULTADOS FASE 3 (21 Enero 2026) - CONTINUACIÓN
 
 ### Backend - Tests de Integración de Controllers
 
 **Estado**: 🟡 **EN PROGRESO**  
-**Tiempo empleado**: ~1.5 horas  
-**Tests ejecutados**: 108 tests - 0 fallas - 0 errores
+**Tiempo empleado**: ~4 horas total  
+**Tests ejecutados**: 148 tests - 0 fallas - 0 errores
 
-#### Cobertura Actualizada
+#### Cobertura Actualizada (Sesión 3)
 
 | Capa | Cobertura Instrucciones | Cobertura Branches | Estado |
 |------|------------------------|-------------------|---------|
-| **Total Backend** | **29%** ⬆️ | **20%** ⬆️ | 🟢 Avanzando |
-| **Servicios** | **89%** ⬆️ | **66%** | ✅ Excelente |
-| **Models** | **68%** | **6%** | 🟡 Aceptable |
-| **DTOs** | **37%** | **17%** | 🟡 Parcial |
-| **Controllers** | **3%** ⬆️ | **2%** ⬆️ | 🟠 Inicio |
-| **Config** | **53%** | **20%** | 🟢 Aceptable |
+| **Total Backend** | **35%** ⬆️ | **25%** ⬆️ | 🟢 Avanzando |
+| **Servicios** | **89%** | **66%** | ✅ Excelente |
+| **Models** | **71%** | **20%** | 🟢 Aceptable |
+| **DTOs** | **48%** | **36%** | 🟡 Mejorando |
+| **Controllers** | **8%** ⬆️ | **7%** ⬆️ | 🟠 Avanzando |
+| **Config** | **91%** | **70%** | ✅ Excelente |
 
 #### Tests Implementados en Fase 3
 
 | Controller | Tests | Estado |
 |------------|-------|---------|
 | **AuthController** | 12 tests | ✅ Completado |
+| **PersonaController** | 14 tests | ✅ Completado |
+| **EmpleadoController** | 14 tests | ✅ Completado |
+| **WorkspacesController** | 12 tests | ✅ Completado |
 | ProductosController | 0 tests | 🔴 Pendiente refactorización |
 | OrdenesDeVentasController | 0 tests | ⏳ Pendiente |
-| PersonasController | 0 tests | ⏳ Pendiente |
 | ComprasController | 0 tests | ⏳ Pendiente |
 
 #### Archivos Creados en Fase 3
 
 **Tests de Integración Implementados**:
-- ✅ `AuthControllerTest.java` - 12 tests (377 líneas)
-  - Login exitoso con JWT
-  - Validación de credenciales incorrectas
-  - Usuario inexistente
-  - Usuario inactivo
-  - Validación de campos requeridos
-  - Body vacío
-  - Compatibilidad con contraseñas legacy (texto plano)
-  - Creación de usuario admin
-  - Admin ya existente
-  - Información del rol en respuesta
-  - Claims del token (userId)
 
-**Total Fase 3**: 1 archivo, 12 tests de integración
+1. ✅ **`AuthControllerTest.java`** - 12 tests (374 líneas)
+   - Login exitoso con JWT
+   - Validación de credenciales incorrectas
+   - Usuario inexistente
+   - Usuario inactivo
+   - Validación de campos requeridos
+   - Body vacío
+   - Compatibilidad con contraseñas legacy (texto plano)
+   - Creación de usuario admin
+   - Admin ya existente
+   - Información del rol en respuesta
+   - Claims del token (userId)
+
+2. ✅ **`PersonaControllerTest.java`** - 14 tests (458 líneas)
+   - POST /api/personas - Crear persona con todos los campos
+   - Crear persona con campos opcionales vacíos
+   - GET /api/personas - Obtener todas las personas
+   - GET /api/personas/{id} - Obtener persona por ID
+   - GET /api/personas/categoria/{idCategoria} - Obtener por categoría
+   - GET /api/personas/categoria/{idCategoria}/activos - Activos por categoría
+   - PATCH /api/personas/{id}/estado - Actualizar estado a Inactivo/Activo
+   - DELETE /api/personas/{id} - Soft delete
+   - Validaciones de autenticación JWT (401 sin token)
+
+3. ✅ **`EmpleadoControllerTest.java`** - 14 tests (422 líneas)
+   - GET /api/empleados - Obtener todos los empleados
+   - POST /api/empleados - Crear empleado con contraseña hasheada
+   - Validación de campos requeridos (nombre, contraseña, rol)
+   - Validación de rol existente
+   - GET /api/empleados/{id} - Obtener empleado por ID
+   - PUT /api/empleados/{id}/estado - Cambiar estado (Activo/Inactivo)
+   - Validación de estados válidos
+   - Verificación de hashing BCrypt de contraseñas
+   - Validaciones de autenticación JWT
+
+4. ✅ **`WorkspacesControllerTest.java`** - 12 tests (355 líneas)
+   - GET /api/workspaces/test - Test endpoint
+   - GET /api/workspaces - Obtener todos los workspaces
+   - GET /api/workspaces/{id} - Obtener workspace por ID
+   - POST /api/workspaces - Crear workspace permanente
+   - Crear workspace temporal (permanente=false por defecto)
+   - PUT /api/workspaces/{id} - Actualizar workspace
+   - DELETE /api/workspaces/{id} - Eliminar workspace
+   - GET /api/workspaces/status - Workspaces con estado
+   - Validaciones de campos requeridos
+   - Validaciones de autenticación JWT
+
+**Total Fase 3**: 4 archivos, 52 tests de integración, ~1,609 líneas de código
 
 #### Metodología de Testing de Controllers
 
@@ -379,11 +416,17 @@ El objetivo de Fase 2 era alcanzar 40% de cobertura total del backend. Aunque lo
 - Limpieza selectiva solo de usuarios de test
 - Evita violaciones de foreign keys
 
-**Lecciones aprendidas**:
-1. No usar `@Transactional` en tests de integración (causa problemas con FK)
-2. Limpiar datos en orden child → parent
-3. Reutilizar datos de catálogo (estados, roles) entre tests
-4. Usar `findByNombre().ifPresent()` para limpieza selectiva
+**Lecciones aprendidas (Sesiones 2 y 3)**:
+1. **No usar `@Transactional`** en tests de integración (causa problemas con FK)
+2. **Limpieza selectiva**: Usar `findById().ifPresent(delete)` en lugar de `deleteAll()`
+3. **Reutilizar datos de catálogo**: Estados y roles con `orElseGet()` 
+4. **Usernames únicos por test class**: "persona-test-admin", "empleado-test-admin", etc.
+5. **Lazy loading issue**: Después de HTTP requests, recargar entidades con relaciones
+6. **Token regeneration pattern**: Para evitar 403 en tests de GET /all, regenerar token
+7. **Error codes**: Algunos servicios lanzan excepciones genéricas (500 en vez de 400)
+8. **Tests independientes**: Cada test debe poder ejecutarse solo o con otros
+9. **Cleanup en orden**: Child entities antes que parent (FK constraints)
+10. **Patrón establecido**: Setup estándar con usuarios únicos + selective cleanup
 
 #### Comandos Utilizados
 
@@ -398,46 +441,55 @@ docker exec pos_backend ./mvnw clean test jacoco:report
 # Abrir: backend/target/site/jacoco/index.html
 ```
 
-#### Análisis de Progreso
+#### Análisis de Progreso (Sesión 3)
 
 **✅ Logros**:
-- AuthController completamente testeado (12 tests)
-- Patrón de testing de integración establecido
-- Generación y validación de JWT verificada
-- Todos los 108 tests pasan sin errores
-- Cobertura de Services mejoró de 86% a 89%
-- Cobertura total subió de 27% a 29%
+- 4 Controllers completamente testeados (52 tests de integración)
+- Cobertura total subió de 27% a **35%** (⬆️8%)
+- Cobertura de Controllers subió de 1% a **8%** (⬆️7%)
+- Patrón de testing de integración consolidado
+- Todos los 148 tests pasan sin errores (96 Services + 52 Controllers)
+- Config mejoró de 53% a **91%** (por uso de JWT/Security en tests)
+- DTOs mejoró de 37% a **48%** (por uso en peticiones HTTP)
 
-**⚠️ Desafíos**:
-- ProductosController requiere setup complejo (múltiples relaciones)
-- Foreign keys en H2 requieren cuidado en limpieza
-- Tests de integración son más lentos (~9s para AuthController)
+**🎯 Progreso respecto a metas**:
+- **Meta Fase 3**: 45-50% cobertura total
+- **Actual**: 35% cobertura total
+- **Progreso**: 70% de la meta alcanzada
+- **Pendiente**: ~10-15% adicional (necesita ~3-4 controllers más)
 
-**📊 Análisis**:
-El avance de 27% a 29% en cobertura total es menor de lo esperado porque:
-- Solo se completó 1 de 5 controllers planificados
-- Controllers tienen 2,500 líneas de código total
-- Cada controller adicional agregará ~3-5% de cobertura
+**⚠️ Análisis**:
+Aunque aún no alcanzamos el 45-50% objetivo, el progreso es sólido:
+- La capa de servicios (crítica) mantiene 89% ✅
+- 4 de 29 controllers están cubiertos (~14% de controllers)
+- Cada controller adicional aporta ~2-3% de cobertura total
+- Se necesitan aproximadamente 3-4 controllers más para alcanzar 45%
 
-**✅ Estado**: Fase 3 **INICIADA EXITOSAMENTE** - Patrón establecido, AuthController completo
+**📊 Proyección**:
+- Con 7-8 controllers testeados → 45-50% cobertura total ✅ Meta Fase 3
+- Quedarían ~21 controllers para Fases posteriores
+- Controllers simples (CRUD) se pueden completar más rápido
+
+**✅ Estado**: Fase 3 **AVANZANDO EXITOSAMENTE** - 70% del objetivo alcanzado
 
 ---
 
 ## 📊 Resumen General de Progreso
 
-### Tests Totales Implementados: **108 tests** (100% pasando)
+### Tests Totales Implementados: **148 tests** (100% pasando)
 
 | Categoría | Tests | Estado |
 |-----------|-------|---------|
 | **Services** | 96 tests | ✅ Completado |
-| **Controllers** | 12 tests | 🟡 En progreso |
+| **Controllers** | 52 tests | 🟡 En progreso (4 de 29) |
 | **Context/Setup** | 1 test | ✅ Completado |
-| **TOTAL BACKEND** | **108 tests** | ✅ **BUILD SUCCESS** |
+| **TOTAL BACKEND** | **148 tests** | ✅ **BUILD SUCCESS** |
 
 ### Progreso hacia 70% de cobertura
-- **Meta Fase 3**: 45-50% → **Actual**: 29%
+- **Meta Fase 3**: 45-50% → **Actual**: 35% → **Progreso**: 70% de meta
 - **Servicios (crítico)**: 89% ✅ EXCELENTE
-- **Controllers (próximo objetivo)**: 3% → Meta: 40-50%
+- **Controllers**: 8% (4 de 29 testeados) → Meta próxima: 20-25%
+- **Config**: 91% ✅ EXCELENTE
 
 ### Estado del Sistema
 - ✅ Backend funcionando correctamente (login operativo)
@@ -449,8 +501,18 @@ El avance de 27% a 29% en cobertura total es menor de lo esperado porque:
 ---
 
 **Estado de Fase 3**: 🟡 **EN PROGRESO** (21 Enero 2026)  
-**Tiempo empleado**: ~1.5 horas  
-**Tests implementados**: 12 tests de integración (AuthController)  
-**Cobertura alcanzada**: 29% total (⬆️2%), 89% services (⬆️3%), 3% controllers (⬆️2%)  
+**Tiempo empleado**: ~4 horas total (2 sesiones)  
+**Tests implementados**: 52 tests de integración (4 Controllers)  
+**Cobertura alcanzada**: 35% total (⬆️8%), 89% services, 8% controllers (⬆️7%), 91% config (⬆️38%)  
+**Progreso**: 70% de la meta de Fase 3 (35% de 45-50%)
 
-**Próximos pasos Fase 3**: Completar tests de 4 controllers restantes para alcanzar 45-50%
+**Próximos pasos Fase 3**: 
+- Implementar 3-4 controllers más para alcanzar 45-50% total
+- Priorizar controllers simples (CRUD): MetodosPagoController, CategoriasController
+- Considerar OrdenesWorkspaceController, InventarioController
+- Dejar controllers complejos para después: OrdenesDeVentasController, ComprasController
+
+**Commits realizados**:
+- `1617a03` - PersonaController (14 tests)
+- `e3f6884` - EmpleadoController (14 tests)  
+- `dfada12` - WorkspacesController (12 tests)
