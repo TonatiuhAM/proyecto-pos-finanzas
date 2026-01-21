@@ -159,3 +159,59 @@
 - [x] **Verificado**: Stock se actualiza en tiempo real y previene sobreventa
 
 **Estado General**: ✅ **TODAS LAS TAREAS ANTERIORES COMPLETADAS** - Sistema funciona correctamente para tomar órdenes y manejar inventario.
+
+---
+
+## 🎨 REWORK: Reorganización de Estructura de Proyecto - COMPLETADA ✅
+
+**Fecha**: 29 Nov 2025  
+**Estado**: ✅ COMPLETADO
+
+### Resultados:
+- ✅ 35+ archivos movidos a ubicaciones lógicas
+- ✅ ~20 carpetas creadas con estructura jerárquica
+- ✅ Scripts actualizados con nuevas rutas
+- ✅ Dockerfile actualizado
+- ✅ Documentación completa generada
+
+---
+
+## 🔧 CORRECCIÓN: Conexión Frontend con Servicio ML - COMPLETADA ✅
+
+**Fecha**: 29 Nov 2025  
+**Estado**: ✅ COMPLETADO
+
+### Problema Resuelto:
+Frontend no podía conectarse al servicio ML en puerto 8004
+
+### Solución:
+- ✅ Creado archivo `.env.production` con URLs correctas
+- ✅ Actualizado Dockerfile para copiar variables de entorno
+- ✅ Verificada conexión exitosa al servicio ML
+
+---
+
+## 🎨 REWORK: Nueva Interfaz Principal con Dashboard - COMPLETADA ✅
+
+**Fecha**: 10 Ene 2026  
+**Estado**: ✅ COMPLETADO
+
+### Implementaciones:
+- ✅ Creado componente `SidebarNavigation` persistente
+- ✅ Renovado `MainMenu` con nuevo diseño
+- ✅ Implementado saludo personalizado
+- ✅ Dashboard modular con botones de acceso rápido
+
+---
+
+## 🎨 REWORK: Interfaz de Gestión de Inventario - COMPLETADA ✅
+
+**Fecha**: 12 Ene 2026  
+**Estado**: ✅ COMPLETADO
+
+### Implementaciones:
+- ✅ Nueva interfaz visual con diseño moderno
+- ✅ Paleta de colores naranja vibrante aplicada
+- ✅ Funcionalidad completa de CRUD mantenida
+- ✅ Integración con SidebarNavigation
+- ✅ Búsqueda y filtrado funcionando

@@ -79,3 +79,18 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# --- Testing y Cobertura ---
+# Frontend coverage
+/frontend/coverage/
+
+# Backend coverage (JaCoCo)
+/backend/target/site/jacoco/
+
+# ML Service
+/ml-prediction-service/venv/
+/ml-prediction-service/htmlcov/
+/ml-prediction-service/coverage.xml
+/ml-prediction-service/.coverage
+/ml-prediction-service/.pytest_cache/
+/ml-prediction-service/__pycache__/
