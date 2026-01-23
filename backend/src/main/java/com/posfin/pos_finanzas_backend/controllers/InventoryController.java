@@ -50,8 +50,9 @@ public class InventoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Inventarios> getInventarioById(@PathVariable String id) {
+    public ResponseEntity<InventarioDTO> getInventarioById(@PathVariable String id) {
         return inventarioRepository.findById(id)
+                .map(this::convertToDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -81,7 +82,7 @@ public class InventoryController {
         nuevoInventario.setCantidadMaxima(request.getCantidadMaxima());
 
         Inventarios inventarioGuardado = inventarioRepository.save(nuevoInventario);
-        return ResponseEntity.ok(inventarioGuardado);
+        return ResponseEntity.ok(convertToDTO(inventarioGuardado));
     }
 
     // --- MÉTODO PUT CORREGIDO ---
@@ -108,7 +109,7 @@ public class InventoryController {
                     inventarioExistente.setCantidadMaxima(inventarioDetails.getCantidadMaxima());
 
                     Inventarios updatedInventario = inventarioRepository.save(inventarioExistente);
-                    return ResponseEntity.ok(updatedInventario);
+                    return ResponseEntity.ok((Object) convertToDTO(updatedInventario));
                 }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -170,6 +171,21 @@ public class InventoryController {
 
         // 5. Guardar y devolver
         Inventarios inventarioActualizado = inventarioRepository.save(inventarioExistente);
-        return ResponseEntity.ok(inventarioActualizado);
+        return ResponseEntity.ok(convertToDTO(inventarioActualizado));
+    }
+
+    // Helper method to convert entity to DTO
+    private InventarioDTO convertToDTO(Inventarios inventario) {
+        InventarioDTO dto = new InventarioDTO();
+        dto.setId(inventario.getId());
+        dto.setCantidadPz(inventario.getCantidadPz());
+        dto.setCantidadKg(inventario.getCantidadKg());
+        dto.setCantidadMinima(inventario.getCantidadMinima());
+        dto.setCantidadMaxima(inventario.getCantidadMaxima());
+        dto.setProductoId(inventario.getProducto().getId());
+        dto.setProductoNombre(inventario.getProducto().getNombre());
+        dto.setUbicacionId(inventario.getUbicacion().getId());
+        dto.setUbicacionNombre(inventario.getUbicacion().getNombre());
+        return dto;
     }
 }
