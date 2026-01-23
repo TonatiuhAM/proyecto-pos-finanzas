@@ -2,7 +2,7 @@
 
 ### Guia rápida de comandos para flujo de trabajo
 
-| NECESIDAD                                       | COMANDO A EJECUTAR                 |
+| NECESIDAD  de                                     | COMANDO A EJECUTAR                 |
 | ----------------------------------------------- | ---------------------------------- |
 | Quiero empezar a trabajar                       | `docker-compose up -d`             |
 | Quiero ver que pasa en el container             | `docker-compose logs -f`           |
