@@ -1,0 +1,81 @@
+{
+  "database": {
+    "host": "database",
+    "port": 5432,
+    "dbname": "pos_finanzas",
+    "user": "postgres",
+    "password": "postgres"
+  },
+  "training_period": {
+    "fecha_inicio": "2025-09-29",
+    "fecha_fin": "2025-10-03",
+    "descripcion": "Período de alta actividad: 29 sep - 3 oct 2025 (Lun-Vie)"
+  },
+  "mapeo_productos": {
+    "Pollo (tacos)": {
+      "id": "98391e5f-abd1-4f87-893f-34447c3bf605",
+      "nombre_bd": "Pollo"
+    },
+    "Bistec (tacos)": {
+      "id": "b00caec9-91b3-4b80-827c-735f070170a4",
+      "nombre_bd": "Bistec"
+    },
+    "Longaniza (tacos)": {
+      "id": "73d986b3-10cb-452e-8998-c02c05620b15",
+      "nombre_bd": "Longaniza"
+    },
+    "Chuleta (tacos)": {
+      "id": "9a06aec3-cb18-40db-8154-754f0ceb1ec6",
+      "nombre_bd": "Chuleta"
+    },
+    "Arrachera (tacos)": {
+      "id": "5eb07121-279f-465f-833a-051def2e128f",
+      "nombre_bd": "Arrachera"
+    },
+    "Costilla (tacos)": {
+      "id": "6720ff05-7181-4e35-9395-5eafb490676f",
+      "nombre_bd": "Costilla"
+    },
+    "Coca (piezas)": {
+      "id": "021bb59f-fe89-4580-879a-60779c7e7d6a",
+      "nombre_bd": "Coca-Cola"
+    },
+    "Mundet (piezas)": {
+      "id": "c042e752-406c-466f-b081-5e12f2e18456",
+      "nombre_bd": "Sidral"
+    }
+  },
+  "model_params": {
+    "n_estimators": 100,
+    "max_depth": 6,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "random_state": 42
+  },
+  "prediction_params": {
+    "margen_seguridad": 1.15,
+    "descripcion": "Margen de seguridad: 1.15 = +15% sobre la predicción base para cubrir variabilidad",
+    "redondear_a_multiplo": 10,
+    "descripcion_redondeo": "Redondear compras al múltiplo más cercano (ej: 10, 20, 50)"
+  },
+  "escala_params": {
+    "aplicar_escala": true,
+    "metodo_granularidad": "hibrido",
+    "descripcion_metodos": "hibrido: usa factor por producto+día si hay datos suficientes, si no, usa promedio del producto",
+    "umbral_datos_minimos": 3,
+    "descripcion_umbral": "Número mínimo de observaciones para usar factor específico por día",
+    "factor_minimo": 0.5,
+    "factor_maximo": 50.0,
+    "descripcion_limites": "Factores fuera de este rango generan alertas en el reporte",
+    "guardar_factores_calculados": true,
+    "archivo_factores": "factores_escala_calculados.json"
+  },
+  "output": {
+    "generar_html": true,
+    "generar_json": true,
+    "generar_graficos": true,
+    "copiar_a_host": true,
+    "directorio_host": "/home/app/reportes-predicciones"
+  }
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "Producto": "Pollo (tacos)",
+    "Lunes": 200,
+    "Martes": 160,
+    "Miércoles": 160,
+    "Jueves": 200,
+    "Viernes": 200,
+    "Sábado": 160
+  },
+  {
+    "Producto": "Bistec (tacos)",
+    "Lunes": 300,
+    "Martes": 240,
+    "Miércoles": 240,
+    "Jueves": 300,
+    "Viernes": 300,
+    "Sábado": 200
+  },
+  {
+    "Producto": "Longaniza (tacos)",
+    "Lunes": 200,
+    "Martes": 200,
+    "Miércoles": 200,
+    "Jueves": 200,
+    "Viernes": 300,
+    "Sábado": 200
+  },
+  {
+    "Producto": "Chuleta (tacos)",
+    "Lunes": 60,
+    "Martes": 60,
+    "Miércoles": 60,
+    "Jueves": 60,
+    "Viernes": 60,
+    "Sábado": 60
+  },
+  {
+    "Producto": "Arrachera (tacos)",
+    "Lunes": 200,
+    "Martes": 140,
+    "Miércoles": 160,
+    "Jueves": 200,
+    "Viernes": 240,
+    "Sábado": 160
+  },
+  {
+    "Producto": "Costilla (tacos)",
+    "Lunes": 120,
+    "Martes": 100,
+    "Miércoles": 100,
+    "Jueves": 120,
+    "Viernes": 160,
+    "Sábado": 100
+  },
+  {
+    "Producto": "Coca (piezas)",
+    "Lunes": 92,
+    "Martes": 66,
+    "Miércoles": 66,
+    "Jueves": 92,
+    "Viernes": 100,
+    "Sábado": 66
+  },
+  {
+    "Producto": "Mundet (piezas)",
+    "Lunes": 66,
+    "Martes": 48,
+    "Miércoles": 48,
+    "Jueves": 66,
+    "Viernes": 70,
+    "Sábado": 48
+  }
+]

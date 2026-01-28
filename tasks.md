@@ -962,3 +962,574 @@ Implementar una estrategia integral de testing para alcanzar el objetivo de **70
 **Fecha de creación del plan**: 21 Enero 2026  
 **Responsable**: Equipo de Desarrollo POS Finanzas  
 **Objetivo**: Alcanzar 70% de cobertura de pruebas según RNF007
+
+---
+
+## 📊 ANÁLISIS DE ABASTECIMIENTO CON XGBOOST (Tesis) - 28 Enero 2026
+
+### Descripción del Proyecto
+
+Crear un script completo de análisis de datos para la tesis de un sistema de abastecimiento para restaurante que utiliza XGBoost para predecir volúmenes de compra. El script debe demostrar el valor de los datos sintéticos mediante curvas de aprendizaje.
+
+**OBJETIVO PRINCIPAL:**
+Demostrar visualmente cómo el aumento del volumen de datos mejora la precisión del modelo XGBoost, comparando:
+- Modelo entrenado con **5 días reales** de ventas
+- Modelo entrenado con **6 meses de datos sintéticos** (generados con estacionalidad, ruido y tendencia)
+
+### Componentes del Sistema
+
+1. **Conexión a Base de Datos**: Acceder a PostgreSQL y extraer datos reales de ventas
+2. **Análisis Descriptivo**: Calcular tendencias y promedios de ventas de los 5 días
+3. **Generación de Datos Sintéticos**: Simular 6 meses de ventas con:
+   - Estacionalidad semanal (domingos sin ventas)
+   - Ruido aleatorio para variabilidad natural
+   - Tendencia de crecimiento del 2% mensual
+4. **Entrenamiento de Modelos XGBoost**: Entrenar dos modelos independientes
+5. **Comparación de Métricas**: Calcular MAE y RMSE para ambos modelos
+6. **Visualización**: Crear curvas de aprendizaje (Learning Curves) con Matplotlib
+
+---
+
+## 📋 PLAN DE IMPLEMENTACIÓN
+
+### FASE 1: Configuración y Extracción de Datos Reales
+
+- [x] **Paso 1.1: Crear directorio y estructura del proyecto**
+  - [x] Crear carpeta `analisis-tesis-xgboost/` en la raíz del proyecto
+  - [x] Crear subcarpetas:
+    - `scripts/` - Para el script principal
+    - `data/` - Para almacenar datasets generados
+    - `results/` - Para gráficas y reportes
+    - `models/` - Para guardar modelos entrenados
+
+- [x] **Paso 1.2: Crear script de conexión a base de datos**
+  - [x] Crear archivo `analisis-tesis-xgboost/scripts/analisis_abastecimiento_xgboost.py`
+  - [x] Implementar función `conectar_base_datos()`:
+    - Leer credenciales desde variables de entorno (DB_URL, DB_USER, DB_PASS)
+    - Usar `psycopg2` o `sqlalchemy` para conexión a PostgreSQL
+    - Implementar manejo de errores de conexión
+  - [x] Añadir logging para debug
+
+- [x] **Paso 1.3: Explorar base de datos para encontrar fechas con muchos registros**
+  - [x] Implementar función `explorar_fechas_con_datos(conn)`:
+    - Consultar tabla `ordenes_de_ventas`
+    - Agrupar por fecha (usando `fecha_orden`)
+    - Ordenar por cantidad de registros descendente
+    - Retornar top 10 fechas con más ventas
+  - [x] Mostrar resultado al usuario para selección
+
+- [x] **Paso 1.4: Extraer datos de ventas de 5 días consecutivos**
+  - [x] Implementar función `extraer_ventas_5_dias(conn, fecha_inicio)`:
+    - Calcular `fecha_fin = fecha_inicio + 5 días`
+    - Query SQL:
+      ```sql
+      SELECT 
+          DATE(fecha_orden) as fecha,
+          COUNT(*) as num_transacciones,
+          SUM(total_venta) as total_ventas,
+          AVG(total_venta) as promedio_venta
+      FROM ordenes_de_ventas
+      WHERE fecha_orden BETWEEN fecha_inicio AND fecha_fin
+      GROUP BY DATE(fecha_orden)
+      ORDER BY fecha
+      ```
+    - Retornar DataFrame de pandas con los datos
+  - [x] Guardar dataset en `data/ventas_5_dias_reales.csv`
+
+- [x] **Paso 1.5: Análisis descriptivo de los 5 días**
+  - [x] Implementar función `analizar_tendencia_5_dias(df)`:
+    - Calcular promedio de ventas diarias
+    - Calcular desviación estándar
+    - Calcular tasa de crecimiento diario
+    - Identificar día con mayor/menor ventas
+    - Detectar tendencia (creciente/decreciente/estable) usando regresión lineal
+  - [ ] Imprimir reporte de análisis en consola
+  - [ ] Guardar reporte en `results/analisis_descriptivo_5_dias.txt`
+
+---
+
+### FASE 2: Generación de Datos Sintéticos (6 meses) ✅
+
+- [x] **Paso 2.1: Implementar función de generación de datos sintéticos**
+  - [x] Crear función `generar_datos_sinteticos_6_meses(df_base, fecha_inicio)`:
+    - **Parámetros de entrada:**
+      - `df_base`: DataFrame con estadísticas de los 5 días reales
+      - `fecha_inicio`: Fecha donde comienza la simulación
+    - **Calcular estadísticas base:**
+      - `venta_promedio_diaria = df_base['total_ventas'].mean()`
+      - `num_transacciones_promedio = df_base['num_transacciones'].mean()`
+      - `std_ventas = df_base['total_ventas'].std()`
+
+- [x] **Paso 2.2: Generar secuencia de fechas (6 meses = 180 días)**
+  - [x] Crear rango de fechas desde `fecha_inicio` hasta `fecha_inicio + 180 días`
+  - [x] Usar `pd.date_range()` para generar todas las fechas
+
+- [x] **Paso 2.3: Implementar estacionalidad semanal**
+  - [x] Para cada fecha en el rango:
+    - Si `fecha.weekday() == 6` (domingo): `ventas = 0` y `num_transacciones = 0`
+    - Para otros días: aplicar factores de estacionalidad semanal
+      - Lunes: 0.85x (inicio de semana, ventas menores)
+      - Martes-Jueves: 1.0x (ventas normales)
+      - Viernes: 1.15x (ventas mayores)
+      - Sábado: 1.20x (ventas más altas de la semana)
+
+- [x] **Paso 2.4: Implementar tendencia de crecimiento del 2% mensual**
+  - [x] Calcular factor de crecimiento compuesto:
+    - `mes_actual = (fecha - fecha_inicio).days // 30`
+    - `factor_tendencia = (1.02) ** mes_actual`
+  - [x] Aplicar factor a las ventas base
+
+- [x] **Paso 2.5: Añadir ruido aleatorio**
+  - [x] Para cada día (excepto domingos):
+    - Generar ruido gaussiano: `np.random.normal(0, std_ventas * 0.15)`
+    - Aplicar ruido a ventas: `ventas_dia = ventas_base * factor_tendencia * factor_estacionalidad + ruido`
+    - Asegurar que ventas no sean negativas: `ventas_dia = max(0, ventas_dia)`
+  - [x] Generar también ruido para `num_transacciones` de forma similar
+
+- [x] **Paso 2.6: Añadir características adicionales para XGBoost**
+  - [x] Para cada registro, calcular features:
+    - `dia_semana` (0-6)
+    - `dia_mes` (1-31)
+    - `semana_año` (1-52)
+    - `mes` (1-12)
+    - `es_fin_de_semana` (0 o 1)
+    - `es_domingo` (0 o 1)
+    - `dias_desde_inicio` (contador incremental)
+  - [x] Guardar DataFrame en `data/ventas_6_meses_sinteticas.csv`
+  
+- [x] **Paso 2.7: Implementar función de validación de datos sintéticos**
+  - [x] Crear función `validar_datos_sinteticos(df_sintetico)`:
+    - Validar que domingos tienen ventas = 0
+    - Validar tendencia de crecimiento presente
+    - Validar variabilidad (ruido) en los datos
+    - Validar que todas las features están presentes
+  - [x] Generar reporte de validación en consola
+
+---
+
+### FASE 3: Preparación de Datasets para Entrenamiento ✅
+
+- [x] **Paso 3.1: Preparar dataset de 5 días reales**
+  - [x] Implementar función `preparar_dataset_para_modelo(df)`:
+    - Cargar `data/ventas_5_dias_reales.csv`
+    - Añadir features temporales (día_semana, día_mes, etc.)
+    - Separar features (X) y target (y):
+      - X: `['dia_semana', 'dia_mes', 'mes', 'es_fin_de_semana', 'num_transacciones']`
+      - y: `['total_ventas']`
+  - [x] Guardar X_5dias e y_5dias
+
+- [x] **Paso 3.2: Preparar dataset de 6 meses sintéticos**
+  - [x] Cargar `data/ventas_6_meses_sinteticas.csv`
+  - [x] Aplicar misma preparación que Paso 3.1
+  - [x] Separar en train/test (80%-20%):
+    - Usar `train_test_split` con `random_state=42`
+    - `X_train_6m, X_test_6m, y_train_6m, y_test_6m`
+
+- [x] **Paso 3.3: Normalización de features**
+  - [x] Implementar `StandardScaler` de sklearn:
+    - Ajustar en X_train_6m
+    - Transformar X_train_6m, X_test_6m, y X_5dias
+  - [x] Guardar scaler en `models/scaler.pkl`
+
+---
+
+### FASE 4: Entrenamiento de Modelos XGBoost ✅
+
+- [x] **Paso 4.1: Configurar hiperparámetros de XGBoost**
+  - [x] Definir diccionario de parámetros:
+    ```python
+    params = {
+        'objective': 'reg:squarederror',
+        'max_depth': 6,
+        'learning_rate': 0.1,
+        'n_estimators': 100,
+        'subsample': 0.8,
+        'colsample_bytree': 0.8,
+        'random_state': 42
+    }
+    ```
+
+- [x] **Paso 4.2: Entrenar Modelo 1 - Con 5 días reales**
+  - [x] Implementar función `entrenar_modelo_5_dias(X_5dias, y_5dias, params)`:
+    - Crear modelo: `xgb.XGBRegressor(**params)`
+    - Entrenar: `modelo.fit(X_5dias, y_5dias)`
+    - Guardar modelo en `models/modelo_xgboost_5dias.pkl`
+  - [x] Implementar validación cruzada con `cross_val_score` (cv=3)
+  - [x] Calcular métricas en los propios datos de entrenamiento (sin test set por datos limitados):
+    - MAE (Mean Absolute Error)
+    - RMSE (Root Mean Squared Error)
+  - [x] Imprimir y guardar métricas
+
+- [x] **Paso 4.3: Entrenar Modelo 2 - Con 6 meses sintéticos**
+  - [x] Implementar función `entrenar_modelo_6_meses(X_train_6m, y_train_6m, X_test_6m, y_test_6m, params)`:
+    - Crear modelo: `xgb.XGBRegressor(**params)`
+    - Entrenar: `modelo.fit(X_train_6m, y_train_6m)`
+    - Predecir en test: `y_pred = modelo.predict(X_test_6m)`
+    - Calcular métricas:
+      - MAE entre `y_test_6m` y `y_pred`
+      - RMSE entre `y_test_6m` y `y_pred`
+    - Guardar modelo en `models/modelo_xgboost_6meses.pkl`
+  - [x] Imprimir y guardar métricas
+
+---
+
+### FASE 5: Comparación de Métricas ✅
+
+- [x] **Paso 5.1: Crear tabla comparativa de métricas**
+  - [x] Implementar función `comparar_metricas(metricas_5dias, metricas_6meses)`:
+    - Crear DataFrame con columnas: `['Modelo', 'MAE', 'RMSE', 'Num_Datos']`
+    - Fila 1: Modelo 5 días
+    - Fila 2: Modelo 6 meses
+    - Calcular mejora porcentual:
+      - `mejora_mae = ((mae_5dias - mae_6meses) / mae_5dias) * 100`
+      - `mejora_rmse = ((rmse_5dias - rmse_6meses) / rmse_5dias) * 100`
+  - [x] Imprimir tabla en consola con formato bonito (usando `tabulate`)
+  - [x] Guardar tabla en `results/comparacion_metricas.txt`
+
+- [x] **Paso 5.2: Análisis de resultados**
+  - [x] Implementar función `analizar_resultados(metricas_5dias, metricas_6meses)`:
+    - Determinar cuál modelo tiene mejor performance
+    - Calcular factor de mejora
+    - Generar texto de interpretación:
+      - "El modelo entrenado con 6 meses de datos sintéticos mejora el MAE en X%"
+      - "Esto demuestra que aumentar el volumen de datos mejora la capacidad predictiva"
+  - [x] Guardar análisis en `results/interpretacion_resultados.txt`
+
+---
+
+### FASE 6: Curvas de Aprendizaje (Learning Curves) ✅
+
+- [x] **Paso 6.1: Implementar función de curva de aprendizaje**
+  - [x] Crear función `generar_learning_curve(X, y, params, nombre_modelo)`:
+    - Definir tamaños de entrenamiento: `train_sizes = np.linspace(0.1, 1.0, 10)`
+    - Usar `learning_curve` de sklearn:
+      ```python
+      from sklearn.model_selection import learning_curve
+      train_sizes, train_scores, val_scores = learning_curve(
+          estimator=xgb.XGBRegressor(**params),
+          X=X,
+          y=y,
+          train_sizes=train_sizes,
+          cv=5,
+          scoring='neg_mean_absolute_error',
+          n_jobs=-1
+      )
+      ```
+    - Calcular media y desviación estándar de scores
+    - Retornar datos para graficación
+
+- [x] **Paso 6.2: Generar curva para modelo de 5 días**
+  - [x] Llamar `generar_learning_curve(X_5dias, y_5dias, params, "5 días")`
+  - [x] Guardar resultados en variables
+
+- [x] **Paso 6.3: Generar curva para modelo de 6 meses**
+  - [x] Llamar `generar_learning_curve(X_6m_completo, y_6m_completo, params, "6 meses")`
+  - [x] Guardar resultados en variables
+
+---
+
+### FASE 7: Visualización con Matplotlib ✅
+
+- [x] **Paso 7.1: Crear gráfica de curvas de aprendizaje**
+  - [x] Implementar función `crear_grafica_learning_curves(datos_5dias, datos_6meses)`:
+    - Crear figura con subplots: `fig, axes = plt.subplots(1, 2, figsize=(16, 6))`
+    - **Subplot 1: Modelo 5 días**
+      - Graficar train score vs tamaño de datos
+      - Graficar validation score vs tamaño de datos
+      - Añadir área sombreada para desviación estándar
+      - Labels: "Número de muestras de entrenamiento" (x), "MAE" (y)
+      - Título: "Curva de Aprendizaje - Modelo con 5 Días Reales"
+      - Leyenda
+    - **Subplot 2: Modelo 6 meses**
+      - Igual que Subplot 1, con datos de 6 meses
+      - Título: "Curva de Aprendizaje - Modelo con 6 Meses Sintéticos"
+
+- [x] **Paso 7.2: Añadir anotaciones y estilo**
+  - [x] Configurar estilo: `plt.style.use('seaborn-v0_8-darkgrid')`
+  - [x] Añadir grid para facilitar lectura
+  - [x] Añadir anotación de texto con mejora porcentual
+  - [x] Usar colores distintivos:
+    - Train score: azul
+    - Validation score: rojo
+
+- [x] **Paso 7.3: Crear gráfica comparativa de errores**
+  - [x] Implementar función `crear_grafica_comparacion_errores(metricas_5dias, metricas_6meses)`:
+    - Crear gráfico de barras con MAE y RMSE lado a lado
+    - Dos grupos de barras: uno para 5 días, otro para 6 meses
+    - Labels y título descriptivos
+    - Añadir valores encima de cada barra
+
+- [x] **Paso 7.4: Guardar todas las gráficas**
+  - [x] Guardar learning curves en `results/learning_curves_comparacion.png` (alta resolución, dpi=300)
+  - [x] Guardar gráfica de errores en `results/comparacion_errores.png`
+  - [x] Guardar también versiones en PDF para documentos profesionales
+
+---
+
+### FASE 8: Documentación y Reportes Finales
+
+- [ ] **Paso 8.1: Crear reporte ejecutivo en Markdown**
+  - [ ] Crear archivo `results/REPORTE_ANALISIS_XGBOOST.md`
+  - [ ] Estructura del reporte:
+    - **1. Resumen Ejecutivo**
+      - Objetivo del análisis
+      - Metodología aplicada
+      - Resultados principales
+    - **2. Datos Utilizados**
+      - Descripción de datos reales (5 días)
+      - Estadísticas descriptivas
+      - Descripción de datos sintéticos (6 meses)
+      - Justificación de parámetros de generación
+    - **3. Metodología**
+      - Preprocesamiento de datos
+      - Features engineering
+      - Configuración de XGBoost
+      - Validación cruzada
+    - **4. Resultados**
+      - Tabla de métricas comparativas
+      - Interpretación de curvas de aprendizaje
+      - Análisis de mejora del modelo
+    - **5. Conclusiones**
+      - Importancia del volumen de datos
+      - Validez de datos sintéticos
+      - Recomendaciones para el sistema de abastecimiento
+    - **6. Referencias**
+      - Papers de XGBoost
+      - Técnicas de generación de datos sintéticos
+
+- [ ] **Paso 8.2: Crear notebook Jupyter interactivo**
+  - [ ] Crear `analisis-tesis-xgboost/notebooks/Analisis_Interactivo_XGBoost.ipynb`
+  - [ ] Convertir script principal a celdas de notebook
+  - [ ] Añadir celdas de markdown con explicaciones detalladas
+  - [ ] Incluir visualizaciones inline
+
+- [ ] **Paso 8.3: Crear presentación de resultados**
+  - [ ] Crear archivo `results/PRESENTACION_RESULTADOS.md` con slides en Markdown
+  - [ ] Incluir:
+    - Slide 1: Título y objetivo
+    - Slide 2: Problema y solución
+    - Slide 3: Datos reales vs sintéticos
+    - Slide 4: Arquitectura del modelo
+    - Slide 5: Curvas de aprendizaje
+    - Slide 6: Comparación de métricas
+    - Slide 7: Conclusiones
+    - Slide 8: Trabajo futuro
+
+---
+
+### FASE 9: Empaquetado y Requisitos
+
+- [ ] **Paso 9.1: Crear archivo requirements.txt**
+  - [ ] Crear `analisis-tesis-xgboost/requirements.txt` con dependencias:
+    ```
+    numpy==1.24.3
+    pandas==2.0.3
+    scikit-learn==1.3.0
+    xgboost==2.0.0
+    matplotlib==3.7.2
+    seaborn==0.12.2
+    psycopg2-binary==2.9.7
+    sqlalchemy==2.0.20
+    python-dotenv==1.0.0
+    tabulate==0.9.0
+    jupyter==1.0.0
+    ```
+
+- [ ] **Paso 9.2: Crear README del proyecto**
+  - [ ] Crear `analisis-tesis-xgboost/README.md`
+  - [ ] Incluir:
+    - Descripción del proyecto
+    - Requisitos previos
+    - Instrucciones de instalación
+    - Cómo ejecutar el script
+    - Estructura de carpetas
+    - Explicación de resultados generados
+    - Troubleshooting
+
+- [ ] **Paso 9.3: Crear script de instalación**
+  - [ ] Crear `analisis-tesis-xgboost/setup.sh`:
+    ```bash
+    #!/bin/bash
+    # Crear entorno virtual
+    python3 -m venv venv
+    source venv/bin/activate
+    # Instalar dependencias
+    pip install -r requirements.txt
+    # Crear directorios necesarios
+    mkdir -p data results models
+    ```
+
+- [ ] **Paso 9.4: Crear archivo .env.example**
+  - [ ] Crear `analisis-tesis-xgboost/.env.example`:
+    ```
+    DB_URL=jdbc:postgresql://localhost:5432/pos_fin
+    DB_USER=tu_usuario
+    DB_PASS=tu_contraseña
+    ```
+  - [ ] Añadir instrucciones en README para configurar .env
+
+---
+
+### FASE 10: Testing y Validación
+
+- [ ] **Paso 10.1: Ejecutar script completo con datos reales**
+  - [ ] Ejecutar `python scripts/analisis_abastecimiento_xgboost.py`
+  - [ ] Verificar que se conecta correctamente a la base de datos
+  - [ ] Verificar que extrae datos de 5 días
+  - [ ] Verificar que genera datos sintéticos correctamente
+
+- [ ] **Paso 10.2: Validar generación de datos sintéticos**
+  - [ ] Verificar visualmente el CSV generado:
+    - Domingos deben tener ventas = 0
+    - Debe haber tendencia creciente del 2% mensual
+    - Debe haber variabilidad (ruido) en los datos
+  - [ ] Calcular estadísticas del dataset sintético:
+    - Verificar que la tasa de crecimiento promedio sea ~2% mensual
+    - Verificar que la distribución sea realista
+
+- [ ] **Paso 10.3: Validar entrenamiento de modelos**
+  - [ ] Verificar que los modelos se guardan en `models/`
+  - [ ] Cargar modelos y verificar que pueden hacer predicciones
+  - [ ] Verificar que las métricas tienen valores razonables
+
+- [ ] **Paso 10.4: Validar gráficas generadas**
+  - [ ] Abrir `results/learning_curves_comparacion.png`
+  - [ ] Verificar que las curvas muestran convergencia
+  - [ ] Verificar que el modelo de 6 meses tiene menor error
+  - [ ] Verificar calidad visual de las gráficas (legibilidad, colores, etiquetas)
+
+- [ ] **Paso 10.5: Validar reporte final**
+  - [ ] Leer `results/REPORTE_ANALISIS_XGBOOST.md`
+  - [ ] Verificar que todas las secciones estén completas
+  - [ ] Verificar que los números y métricas sean consistentes
+  - [ ] Verificar gramática y ortografía
+
+---
+
+## 📊 MÉTRICAS DE ÉXITO
+
+### ✅ Criterios de Aceptación:
+
+1. **Extracción de Datos Reales:**
+   - [ ] Se conecta exitosamente a la base de datos PostgreSQL
+   - [ ] Se extraen datos de 5 días consecutivos con muchos registros
+   - [ ] Se calculan correctamente tendencias y promedios
+
+2. **Generación de Datos Sintéticos:**
+   - [ ] Dataset de 6 meses (180 días) generado correctamente
+   - [ ] Domingos tienen ventas = 0 (estacionalidad)
+   - [ ] Crecimiento del 2% mensual observable
+   - [ ] Ruido aleatorio añadido de forma realista
+
+3. **Entrenamiento de Modelos:**
+   - [ ] Modelo con 5 días entrena sin errores
+   - [ ] Modelo con 6 meses entrena sin errores
+   - [ ] Ambos modelos se guardan correctamente
+
+4. **Comparación de Métricas:**
+   - [ ] MAE y RMSE calculados para ambos modelos
+   - [ ] Modelo de 6 meses muestra **menor error** que modelo de 5 días
+   - [ ] Mejora porcentual documentada claramente
+
+5. **Curvas de Aprendizaje:**
+   - [ ] Gráficas muestran que error disminuye al aumentar datos
+   - [ ] Modelo de 6 meses muestra mejor convergencia
+   - [ ] Visualización clara y profesional
+
+6. **Documentación:**
+   - [ ] Reporte ejecutivo completo y legible
+   - [ ] README con instrucciones claras
+   - [ ] Código bien comentado en español
+
+---
+
+## 🎯 VALOR PARA LA TESIS
+
+Este análisis demuestra empíricamente que:
+
+1. **Más datos = Mejores predicciones**: La curva de aprendizaje muestra reducción de error al aumentar el volumen de datos
+2. **Datos sintéticos son útiles**: Cuando hay escasez de datos reales, la generación sintética con parámetros realistas mejora el modelo
+3. **XGBoost es efectivo**: El modelo aprende patrones complejos (estacionalidad, tendencia) de los datos
+4. **Aplicación práctica**: El sistema de abastecimiento puede usar estas predicciones para optimizar compras
+
+---
+
+## 📁 ESTRUCTURA DE ARCHIVOS ESPERADA
+
+```
+analisis-tesis-xgboost/
+├── README.md
+├── requirements.txt
+├── setup.sh
+├── .env.example
+├── scripts/
+│   └── analisis_abastecimiento_xgboost.py
+├── notebooks/
+│   └── Analisis_Interactivo_XGBoost.ipynb
+├── data/
+│   ├── ventas_5_dias_reales.csv
+│   └── ventas_6_meses_sinteticas.csv
+├── models/
+│   ├── modelo_xgboost_5dias.pkl
+│   ├── modelo_xgboost_6meses.pkl
+│   └── scaler.pkl
+└── results/
+    ├── analisis_descriptivo_5_dias.txt
+    ├── comparacion_metricas.txt
+    ├── interpretacion_resultados.txt
+    ├── learning_curves_comparacion.png
+    ├── learning_curves_comparacion.pdf
+    ├── comparacion_errores.png
+    ├── REPORTE_ANALISIS_XGBOOST.md
+    └── PRESENTACION_RESULTADOS.md
+```
+
+---
+
+## 🚀 COMANDOS PARA EJECUTAR
+
+### Instalación:
+```bash
+cd analisis-tesis-xgboost
+bash setup.sh
+```
+
+### Configuración:
+```bash
+cp .env.example .env
+# Editar .env con credenciales reales
+```
+
+### Ejecución:
+```bash
+source venv/bin/activate
+python scripts/analisis_abastecimiento_xgboost.py
+```
+
+### Ver resultados:
+```bash
+cat results/REPORTE_ANALISIS_XGBOOST.md
+open results/learning_curves_comparacion.png
+```
+
+---
+
+## 📌 ESTADO: 🔄 ESPERANDO APROBACIÓN
+
+### Notas de Implementación
+- **Prioridad**: ALTA - Proyecto de tesis
+- **Complejidad**: MEDIA - Requiere conocimientos de ML y generación de datos sintéticos
+- **Tiempo Estimado**: 2-3 días de implementación
+- **Riesgo**: BAJO - Metodología bien definida
+- **Impacto**: ALTO - Componente clave para demostrar valor del sistema en la tesis
+
+### Dependencias:
+- Base de datos PostgreSQL con datos de ventas reales
+- Python 3.8+
+- Librerías: XGBoost, pandas, numpy, scikit-learn, matplotlib
+
+---
+
+**Fecha de creación del plan**: 28 Enero 2026  
+**Responsable**: Tesista - Sistema de Abastecimiento  
+**Objetivo**: Demostrar mejora de XGBoost con aumento de volumen de datos mediante curvas de aprendizaje

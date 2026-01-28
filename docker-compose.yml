@@ -67,6 +67,10 @@ services:
     volumes:
       # Persistir modelos entrenados
       - ./ml-prediction-service/models:/home/app/models
+      # Carpeta para reportes de evaluación
+      - ./reportes-predicciones:/home/app/reportes-predicciones
+      # Scripts de evaluación
+      - ./ml-prediction-service/scripts:/home/app/scripts
     depends_on:
       - backend
     networks:
