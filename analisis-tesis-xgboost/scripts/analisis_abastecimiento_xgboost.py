@@ -905,7 +905,7 @@ def guardar_modelo(modelo, nombre_archivo):
         nombre_archivo: Nombre del archivo (sin ruta)
     """
     try:
-        ruta_completa = fMODELS_DIR / '{nombre_archivo}'
+        ruta_completa = MODELS_DIR / nombre_archivo
         with open(ruta_completa, 'wb') as f:
             pickle.dump(modelo, f)
         logger.info(f"   ✓ Modelo guardado en: {ruta_completa}")
