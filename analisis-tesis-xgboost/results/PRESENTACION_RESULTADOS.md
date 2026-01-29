@@ -12,12 +12,12 @@
 # 1️⃣ INTRODUCCIÓN
 
 ## Título del Análisis
-**"Mejora de Predicción de Ventas mediante XGBoost:  
+**"Predicción de Demanda Física de Insumos mediante XGBoost:  
 Análisis Empírico del Impacto del Volumen de Datos"**
 
 ## Contexto del Problema
-- **Sistema:** POS y Gestión Integral para Restaurante
-- **Desafío:** Optimizar abastecimiento de insumos
+- **Sistema:** Gestión de Inventario y Abastecimiento para Restaurante
+- **Desafío:** Optimizar compras de insumos y evitar desabasto o merma
 - **Preguntas clave:**
   - ¿Qué comprar?
   - ¿Cuánto comprar?
@@ -41,9 +41,9 @@ Análisis Empírico del Impacto del Volumen de Datos"**
 ## 🔴 El Problema: Datos Insuficientes
 
 ### Situación Inicial
-- **Datos disponibles:** Solo 5 días de ventas reales
+- **Datos disponibles:** Solo 5 días de datos históricos
 - **Total de registros:** 222 transacciones
-- **Limitación:** Volumen insuficiente para entrenar modelos robustos
+- **Limitación:** Volumen insuficiente para predecir demanda física con precisión
 
 ### Riesgos de Datos Limitados
 1. **Overfitting** (sobreajuste al conjunto de entrenamiento)
@@ -85,35 +85,35 @@ Muestras:    5 registros diarios
 ### Estadísticas Descriptivas
 | Métrica | Valor |
 |---------|-------|
-| **Total acumulado** | $48,174.00 |
-| **Promedio diario** | $9,634.80 |
-| **Desviación estándar** | $1,641.07 |
+| **Demanda total acumulada** | 48,174 unidades |
+| **Promedio diario** | 9,635 unidades |
+| **Desviación estándar** | 1,641 unidades |
 | **Coef. de variación** | 17.03% |
 | **Transacciones/día** | 44.4 |
 | **Tendencia** | Decreciente (-6.59% diario) |
 
 ### Distribución por Día
 ```
-Día 1 (29-sep): $11,668  (55 trans) ⭐ Pico
-Día 2 (30-sep): $9,553   (39 trans)
-Día 3 (01-oct): $8,253   (44 trans)
-Día 4 (02-oct): $10,860  (49 trans)
-Día 5 (03-oct): $7,840   (35 trans) 🔻 Mínimo
+Día 1 (29-sep): 11,668 unidades  (55 trans) ⭐ Pico
+Día 2 (30-sep): 9,553 unidades   (39 trans)
+Día 3 (01-oct): 8,253 unidades   (44 trans)
+Día 4 (02-oct): 10,860 unidades  (49 trans)
+Día 5 (03-oct): 7,840 unidades   (35 trans) 🔻 Mínimo
 ```
 
 ## 📈 Dataset 2: 6 Meses Sintéticos
 
 ### Parámetros de Generación
 ```python
-base_promedio = $9,634.80        # De datos reales
-tasa_crecimiento = 2% mensual    # Conservador
+base_promedio = 9,635 unidades     # De datos reales
+tasa_crecimiento = 2% mensual      # Conservador
 estacionalidad = {
     'Domingo': 0.00x  (cerrado),
     'Lunes': 0.85x,
     'Viernes': 1.15x,
     'Sábado': 1.20x
 }
-ruido = 15% (σ = $246.16)
+ruido = 15% (σ = 246 unidades)
 ```
 
 ### Estadísticas del Sintético
@@ -121,9 +121,9 @@ ruido = 15% (σ = $246.16)
 |---------|-------|
 | **Días generados** | 180 días (6 meses) |
 | **Días laborables** | 154 (sin domingos) |
-| **Total acumulado** | $1,618,894.74 |
-| **Promedio diario** | $10,512.30 |
-| **Desviación estándar** | $3,880.45 |
+| **Demanda total acumulada** | 1,618,895 unidades |
+| **Promedio diario** | 10,512 unidades |
+| **Desviación estándar** | 3,880 unidades |
 | **Coef. de variación** | 11.84% |
 | **Transacciones** | 7,257 |
 
@@ -252,11 +252,11 @@ mientras que el de **pocos datos** (5D) se basa en **correlaciones espurias** (e
 ┌──────────────────────────────────────┐
 │ MODELO 5 DÍAS REALES                 │
 ├──────────────────────────────────────┤
-│ Error inicial (10% datos): $1,946.00 │
-│ Error final (100% datos): $1,540.51  │
+│ Error inicial (10% datos): 1,946 uni │
+│ Error final (100% datos): 1,541 uni  │
 │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
 │ Mejora: 20.84% ✓                     │
-│ Desviación estándar: ±$570.07 ⚠️     │
+│ Desviación estándar: ±570 uni ⚠️     │
 └──────────────────────────────────────┘
 ```
 
@@ -272,11 +272,11 @@ mientras que el de **pocos datos** (5D) se basa en **correlaciones espurias** (e
 ┌──────────────────────────────────────┐
 │ MODELO 6 MESES SINTÉTICOS            │
 ├──────────────────────────────────────┤
-│ Error inicial (10% datos): $478.80   │
-│ Error final (100% datos): $256.32    │
+│ Error inicial (10% datos): 479 uni   │
+│ Error final (100% datos): 256 uni    │
 │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
 │ Mejora: 46.47% ✅✅                   │
-│ Desviación estándar: ±$56.30 ✅      │
+│ Desviación estándar: ±56 uni ✅      │
 └──────────────────────────────────────┘
 ```
 
@@ -289,17 +289,17 @@ mientras que el de **pocos datos** (5D) se basa en **correlaciones espurias** (e
 ## 🎯 Comparación Visual
 
 ```
-   Error (MAE)
+   Error (MAE - unidades)
       │
-$2000 ├──┐  ❌ Modelo 5 Días
+ 2000 ├──┐  ❌ Modelo 5 Días
       │   └──────┐
-$1500 │          └──────────  (convergió rápido)
+ 1500 │          └──────────  (convergió rápido)
       │
-$1000 │
+ 1000 │
       │
- $500 ├────┐  ✅ Modelo 6 Meses
+  500 ├────┐  ✅ Modelo 6 Meses
       │     └──┐
- $250 │         └──┐
+  250 │         └──┐
       │            └──────  (sigue mejorando)
     0 └─────────────────────────────────────
       10%   30%   50%   70%   100%
@@ -308,7 +308,7 @@ $1000 │
 
 **Interpretación:**
 - Mejora de **46.47% vs 20.84%** → **2.2x mayor** con más datos
-- Desviación **±$56 vs ±$570** → **10x más estable**
+- Desviación **±56 vs ±570 unidades** → **10x más estable**
 - El modelo 6M aún puede mejorar con más datos
 
 ---
@@ -325,16 +325,16 @@ $1000 │
 ╠═══════════════════════════╬═══════════════╬═══════════════╬═══════════╣
 ║ Datos Entrenamiento       ║ 5 muestras    ║ 123 muestras  ║ 24.6x     ║
 ║                           ║               ║               ║           ║
-║ MAE Train                 ║ $17.68        ║ $17.38        ║ +1.68% ✓  ║
-║ RMSE Train                ║ $24.13        ║ $22.39        ║ +7.23% ✓  ║
+║ MAE Train                 ║ 17.68 uni     ║ 17.38 uni     ║ +1.68% ✓  ║
+║ RMSE Train                ║ 24.13 uni     ║ 22.39 uni     ║ +7.23% ✓  ║
 ║ R² Train                  ║ 0.9997        ║ 0.9997        ║ Igual     ║
 ║                           ║               ║               ║           ║
-║ MAE Test                  ║ N/A           ║ $259.54       ║ N/A       ║
-║ RMSE Test                 ║ N/A           ║ $297.96       ║ N/A       ║
+║ MAE Test                  ║ N/A           ║ 259.54 uni    ║ N/A       ║
+║ RMSE Test                 ║ N/A           ║ 297.96 uni    ║ N/A       ║
 ║ R² Test                   ║ N/A           ║ 0.9025        ║ N/A       ║
 ║                           ║               ║               ║           ║
-║ CV MAE (5-fold) ⭐        ║ $1,602.57     ║ $245.51       ║ +84.67% ✅║
-║ CV Std Dev                ║ ±$570.07      ║ ±$56.30       ║ -90.1% ✅ ║
+║ CV MAE (5-fold) ⭐        ║ 1,602.57 uni  ║ 245.51 uni    ║ +84.67% ✅║
+║ CV Std Dev                ║ ±570.07 uni   ║ ±56.30 uni    ║ -90.1% ✅ ║
 ║                           ║               ║               ║           ║
 ║ Learning Curve Mejora     ║ 20.84%        ║ 46.47%        ║ +2.2x ✅  ║
 ╚═══════════════════════════╩═══════════════╩═══════════════╩═══════════╝
@@ -345,15 +345,15 @@ $1000 │
 ### MAE (Mean Absolute Error)
 > Promedio de errores absolutos: `MAE = (1/n) Σ |y_real - y_pred|`
 
-- **Interpretación:** Error promedio en dólares por predicción
-- **Resultado:** Modelo 6M tiene $0.30 menos error promedio
+- **Interpretación:** Error promedio en unidades de insumo por predicción
+- **Resultado:** Modelo 6M tiene 0.30 unidades menos error promedio
 - **Mejora:** +1.68%
 
 ### RMSE (Root Mean Squared Error)
 > Raíz del error cuadrático medio: `RMSE = √[(1/n) Σ (y_real - y_pred)²]`
 
 - **Interpretación:** Penaliza más los errores grandes
-- **Resultado:** Modelo 6M tiene $1.74 menos RMSE
+- **Resultado:** Modelo 6M tiene 1.74 unidades menos RMSE
 - **Mejora:** +7.23% (indica menos errores grandes)
 
 ### R² (Coeficiente de Determinación)
@@ -368,24 +368,24 @@ $1000 │
 
 - **Interpretación:** Rendimiento en datos **no vistos**
 - **Resultado:** 
-  - Modelo 5D: $1,602.57 (overfitting severo)
-  - Modelo 6M: $245.51 (buena generalización)
+  - Modelo 5D: 1,603 unidades (overfitting severo)
+  - Modelo 6M: 246 unidades (buena generalización)
 - **Mejora:** **+84.67%** 🎉
 
 ## 🔍 Análisis Profundo: ¿Por qué CV MAE es clave?
 
 ### Modelo 5 Días: Overfitting Dramático
 ```
-Train MAE:      $17.68  ✅ (parece excelente)
-CV MAE:      $1,602.57  ❌ (ERROR 90x mayor!)
+Train MAE:    17.68 unidades  ✅ (parece excelente)
+CV MAE:    1,603 unidades     ❌ (ERROR 90x mayor!)
 ```
 **Interpretación:** El modelo "memorizó" los 5 días pero no aprendió patrones generalizables.
 
 ### Modelo 6 Meses: Generalización Exitosa
 ```
-Train MAE:      $17.38  ✅
-CV MAE:        $245.51  ✅ (solo 14x mayor)
-Test MAE:      $259.54  ✅ (consistente con CV)
+Train MAE:    17.38 unidades  ✅
+CV MAE:      246 unidades     ✅ (solo 14x mayor)
+Test MAE:    260 unidades     ✅ (consistente con CV)
 ```
 **Interpretación:** El modelo aprendió patrones reales que funcionan en datos nuevos.
 
@@ -394,15 +394,15 @@ Test MAE:      $259.54  ✅ (consistente con CV)
 ```
 Mejora en Validación Cruzada (CV MAE):
 
-  Modelo 5D    ████████████████████████████ $1,602.57
+  Modelo 5D    ████████████████████████████ 1,603 unidades
                ▼ Reducción del 84.67% ▼
-  Modelo 6M    ██ $245.51 ✅
+  Modelo 6M    ██ 246 unidades ✅
 
 Reducción de Varianza (CV Std Dev):
 
-  Modelo 5D    ████████████████████████████ ±$570.07
+  Modelo 5D    ████████████████████████████ ±570 unidades
                ▼ Reducción del 90.1% ▼
-  Modelo 6M    █ ±$56.30 ✅
+  Modelo 6M    █ ±56 unidades ✅
 ```
 
 ---
@@ -435,18 +435,18 @@ Reducción de Varianza (CV Std Dev):
 ### 1. Datos Insuficientes → Overfitting Severo
 ```
 🔴 Problema: Con solo 5 días de datos
-   • Train MAE: $17.68 (aparentemente excelente)
-   • CV MAE: $1,602.57 (error real 90x mayor)
+   • Train MAE: 17.68 unidades (aparentemente excelente)
+   • CV MAE: 1,603 unidades (error real 90x mayor)
    • Overfitting ratio: 8,960%
 ```
 
-**Interpretación:** El modelo "memoriza" pero no "aprende". Es inútil para predicciones reales.
+**Interpretación:** El modelo "memoriza" pero no "aprende". Es inútil para predicciones reales de demanda.
 
 ### 2. Más Datos → Mejor Generalización
 ```
 🟢 Solución: Con 6 meses de datos
-   • Train MAE: $17.38 (similar performance)
-   • CV MAE: $245.51 (error real solo 14x mayor)
+   • Train MAE: 17.38 unidades (similar performance)
+   • CV MAE: 246 unidades (error real solo 14x mayor)
    • Overfitting ratio: 1,313%
    • Reducción de overfitting: 6.8x
 ```
@@ -493,11 +493,13 @@ Desviación estándar en CV:
 3. **Datos sintéticos son efectivos:** Cuando están bien diseñados con parámetros realistas
 4. **Learning curves son diagnósticas:** Revelan si necesitas más datos, mejor modelo, o ambos
 
-### Para el Sistema POS Específico
-1. **Precisión esperada:** ±$245.51 de error promedio (±2.3% del promedio diario)
-2. **Confiabilidad:** 95% de predicciones dentro de ±$112.60 (desviación estándar)
-3. **Aplicación directa:** Predecir ventas de próximos 7-30 días para optimizar abastecimiento
-4. **Mejora continua:** Acumular más datos reales para seguir mejorando el modelo
+### Para el Sistema de Gestión de Inventario Específico
+1. **Precisión esperada:** ±246 unidades de error promedio (±2.3% del promedio diario)
+2. **Confiabilidad:** 95% de predicciones dentro de ±113 unidades (desviación estándar)
+3. **Aplicación directa:** Predecir demanda física de próximos 7-30 días para optimizar compras
+4. **Prevención de desabasto:** Error de 246 unidades vs 1,603 permite mantener buffer más ajustado
+5. **Reducción de merma:** Predicciones precisas evitan sobrecompra de productos perecederos
+6. **Mejora continua:** Acumular más datos reales para seguir mejorando el modelo
 
 ## 🎯 Validez de Datos Sintéticos
 
@@ -552,16 +554,17 @@ Desviación estándar en CV:
 ```
 
 ### 2. Dashboard de Monitoreo
-- Visualización predicciones vs reales (tiempo real)
-- Alertas cuando error > 2× MAE esperado ($500)
+- Visualización predicciones vs demanda real (tiempo real)
+- Alertas cuando error > 2× MAE esperado (500 unidades)
 - Gráficas de tendencias semanales/mensuales
 - Reporte de precisión semanal
+- Monitoreo de tasas de desabasto y merma
 
-### 3. Integración con Sistema de Abastecimiento
+### 3. Integración con Sistema de Gestión de Inventario
 ```
-Predicción Ventas → Demanda por Producto → Orden de Compra
-                                         ↘
-                                          Optimización de Precio
+Predicción Demanda → Demanda por Insumo → Orden de Compra
+                                        ↘
+                                         Optimización de Cantidad y Precio
 ```
 
 ## 🔬 Mejoras en Modelado

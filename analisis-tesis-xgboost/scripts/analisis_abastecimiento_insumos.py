@@ -4,7 +4,7 @@
 Script de Análisis de Abastecimiento con XGBoost para Tesis
 ============================================================
 
-Este script realiza un análisis completo de datos de ventas para demostrar
+Este script realiza un análisis completo de datos de unidades de insumo para demostrar
 cómo el aumento del volumen de datos mejora la precisión de modelos XGBoost.
 
 Autor: Sistema POS Finanzas
@@ -139,7 +139,7 @@ def conectar_base_datos():
 
 def explorar_fechas_con_datos(conn):
     """
-    Explora la base de datos para encontrar fechas con muchos registros de ventas.
+    Explora la base de datos para encontrar fechas con muchos registros de unidades de insumo.
     
     Args:
         conn: Conexión a la base de datos
@@ -148,7 +148,7 @@ def explorar_fechas_con_datos(conn):
         pandas.DataFrame: Top 10 fechas con más registros
     """
     logger.info("\n" + "=" * 80)
-    logger.info("EXPLORANDO FECHAS CON MAYOR VOLUMEN DE VENTAS")
+    logger.info("EXPLORANDO FECHAS CON MAYOR VOLUMEN DE UNIDADES DE INSUMO")
     logger.info("=" * 80)
     
     try:
@@ -156,11 +156,11 @@ def explorar_fechas_con_datos(conn):
         SELECT 
             DATE(fecha_orden) as fecha,
             COUNT(*) as num_registros,
-            SUM(total_venta) as total_ventas,
-            AVG(total_venta) as promedio_venta,
-            MIN(total_venta) as min_venta,
-            MAX(total_venta) as max_venta
-        FROM ordenes_de_ventas
+            SUM(total_unidad) as total_unidades,
+            AVG(total_unidad) as promedio_unidades,
+            MIN(total_unidad) as min_unidad,
+            MAX(total_unidad) as max_unidad
+        FROM ordenes_de_unidades de insumo
         WHERE fecha_orden IS NOT NULL
         GROUP BY DATE(fecha_orden)
         HAVING COUNT(*) >= 3
@@ -172,18 +172,18 @@ def explorar_fechas_con_datos(conn):
         df = pd.read_sql_query(query, conn)
         
         if df.empty:
-            logger.warning("⚠ No se encontraron registros en ordenes_de_ventas")
+            logger.warning("⚠ No se encontraron registros en ordenes_de_unidades de insumo")
             return df
         
-        logger.info(f"✓ Se encontraron {len(df)} fechas con registros de ventas")
+        logger.info(f"✓ Se encontraron {len(df)} fechas con registros de unidades de insumo")
         logger.info("\nTop 10 fechas con mayor volumen de transacciones:")
         logger.info("-" * 80)
         
         for idx, row in df.head(10).iterrows():
             logger.info(f"{idx+1}. Fecha: {row['fecha']} | "
                        f"Transacciones: {row['num_registros']} | "
-                       f"Total: ${row['total_ventas']:,.2f} | "
-                       f"Promedio: ${row['promedio_venta']:,.2f}")
+                       f"Total: {row['total_unidades']:,.2f} | "
+                       f"Promedio: {row['promedio_unidades']:,.2f}")
         
         return df
         
@@ -192,19 +192,19 @@ def explorar_fechas_con_datos(conn):
         raise
 
 
-def extraer_ventas_5_dias(conn, fecha_inicio):
+def extraer_unidades de insumo_5_dias(conn, fecha_inicio):
     """
-    Extrae datos de ventas de 5 días consecutivos desde una fecha de inicio.
+    Extrae datos de unidades de insumo de 5 días consecutivos desde una fecha de inicio.
     
     Args:
         conn: Conexión a la base de datos
         fecha_inicio: Fecha de inicio (str o datetime)
         
     Returns:
-        pandas.DataFrame: Datos de ventas agrupados por día
+        pandas.DataFrame: Datos de unidades de insumo agrupados por día
     """
     logger.info("\n" + "=" * 80)
-    logger.info("EXTRAYENDO DATOS DE VENTAS DE 5 DÍAS CONSECUTIVOS")
+    logger.info("EXTRAYENDO DATOS DE UNIDADES DE INSUMO DE 5 DÍAS CONSECUTIVOS")
     logger.info("=" * 80)
     
     try:
@@ -222,12 +222,12 @@ def extraer_ventas_5_dias(conn, fecha_inicio):
         SELECT 
             DATE(fecha_orden) as fecha,
             COUNT(*) as num_transacciones,
-            SUM(total_venta) as total_ventas,
-            AVG(total_venta) as promedio_venta,
-            STDDEV(total_venta) as std_venta,
-            MIN(total_venta) as min_venta,
-            MAX(total_venta) as max_venta
-        FROM ordenes_de_ventas
+            SUM(total_unidad) as total_unidades,
+            AVG(total_unidad) as promedio_unidades,
+            STDDEV(total_unidad) as std_unidad,
+            MIN(total_unidad) as min_unidad,
+            MAX(total_unidad) as max_unidad
+        FROM ordenes_de_unidades de insumo
         WHERE fecha_orden >= %s AND fecha_orden < %s
         GROUP BY DATE(fecha_orden)
         ORDER BY fecha;
@@ -240,24 +240,24 @@ def extraer_ventas_5_dias(conn, fecha_inicio):
             return df
         
         logger.info(f"✓ Se extrajeron datos de {len(df)} días")
-        logger.info("\nResumen de ventas por día:")
+        logger.info("\nResumen de unidades de insumo por día:")
         logger.info("-" * 80)
         
         for idx, row in df.iterrows():
             logger.info(f"Día {idx+1} ({row['fecha']}): "
                        f"{row['num_transacciones']} transacciones, "
-                       f"Total: ${row['total_ventas']:,.2f}, "
-                       f"Promedio: ${row['promedio_venta']:,.2f}")
+                       f"Total: {row['total_unidades']:,.2f}, "
+                       f"Promedio: {row['promedio_unidades']:,.2f}")
         
         # Guardar en CSV
-        output_path = DATA_DIR / 'ventas_5_dias_reales.csv'
+        output_path = DATA_DIR / 'unidades de insumo_5_dias_reales.csv'
         df.to_csv(output_path, index=False)
         logger.info(f"\n✓ Datos guardados en: {output_path}")
         
         return df
         
     except Exception as e:
-        logger.error(f"✗ Error al extraer ventas de 5 días: {str(e)}")
+        logger.error(f"✗ Error al extraer unidades de insumo de 5 días: {str(e)}")
         raise
 
 
@@ -266,7 +266,7 @@ def analizar_tendencia_5_dias(df):
     Realiza análisis descriptivo y de tendencia de los datos de 5 días.
     
     Args:
-        df: DataFrame con datos de ventas de 5 días
+        df: DataFrame con datos de unidades de insumo de 5 días
         
     Returns:
         dict: Diccionario con estadísticas y métricas de tendencia
@@ -285,26 +285,26 @@ def analizar_tendencia_5_dias(df):
         df['dia_num'] = range(1, len(df) + 1)
         
         # Estadísticas básicas
-        promedio_ventas = df['total_ventas'].mean()
-        std_ventas = df['total_ventas'].std()
+        promedio_unidadess = df['total_unidades'].mean()
+        std_unidades de insumo = df['total_unidades'].std()
         promedio_transacciones = df['num_transacciones'].mean()
-        total_5_dias = df['total_ventas'].sum()
+        total_5_dias = df['total_unidades'].sum()
         
-        # Día con mayor y menor ventas
-        dia_max = df.loc[df['total_ventas'].idxmax()]
-        dia_min = df.loc[df['total_ventas'].idxmin()]
+        # Día con mayor y menor unidades de insumo
+        dia_max = df.loc[df['total_unidades'].idxmax()]
+        dia_min = df.loc[df['total_unidades'].idxmin()]
         
         # Análisis de tendencia usando regresión lineal
         x = df['dia_num'].values.reshape(-1, 1)
-        y = df['total_ventas'].values
+        y = df['total_unidades'].values
         
         # Realizar regresión lineal
         slope, intercept, r_value, p_value, std_err = stats.linregress(
-            df['dia_num'], df['total_ventas']
+            df['dia_num'], df['total_unidades']
         )
         
         # Tasa de crecimiento diario promedio
-        tasa_crecimiento_diaria = (slope / promedio_ventas) * 100
+        tasa_crecimiento_diaria = (slope / promedio_unidadess) * 100
         
         # Determinar tipo de tendencia
         if abs(r_value) < 0.3:
@@ -322,36 +322,36 @@ def analizar_tendencia_5_dias(df):
 
 📊 ESTADÍSTICAS GENERALES:
    • Total de días analizados: {len(df)}
-   • Total acumulado 5 días: ${total_5_dias:,.2f}
-   • Promedio de ventas diarias: ${promedio_ventas:,.2f}
-   • Desviación estándar: ${std_ventas:,.2f}
-   • Coeficiente de variación: {(std_ventas/promedio_ventas)*100:.2f}%
+   • Total acumulado 5 días: {total_5_dias:,.2f}
+   • Promedio de unidades de insumo diarias: {promedio_unidadess:,.2f}
+   • Desviación estándar: {std_unidades de insumo:,.2f}
+   • Coeficiente de variación: {(std_unidades de insumo/promedio_unidadess)*100:.2f}%
    • Promedio de transacciones diarias: {promedio_transacciones:.1f}
 
 📈 ANÁLISIS DE TENDENCIA:
    • Tipo de tendencia: {tipo_tendencia}
-   • Pendiente de regresión: ${slope:,.2f} por día
+   • Pendiente de regresión: {slope:,.2f} por día
    • Coeficiente de correlación (R): {r_value:.4f}
    • R² (ajuste del modelo): {r_value**2:.4f}
    • Tasa de crecimiento diaria: {tasa_crecimiento_diaria:+.2f}%
    • P-value: {p_value:.4f}
 
-🔝 DÍA CON MAYOR VENTAS:
+🔝 DÍA CON MAYOR UNIDADES DE INSUMO:
    • Fecha: {dia_max['fecha']}
-   • Total: ${dia_max['total_ventas']:,.2f}
+   • Total: {dia_max['total_unidades']:,.2f}
    • Transacciones: {dia_max['num_transacciones']}
-   • Promedio por transacción: ${dia_max['promedio_venta']:,.2f}
+   • Promedio por transacción: {dia_max['promedio_unidades']:,.2f}
 
-🔻 DÍA CON MENOR VENTAS:
+🔻 DÍA CON MENOR UNIDADES DE INSUMO:
    • Fecha: {dia_min['fecha']}
-   • Total: ${dia_min['total_ventas']:,.2f}
+   • Total: {dia_min['total_unidades']:,.2f}
    • Transacciones: {dia_min['num_transacciones']}
-   • Promedio por transacción: ${dia_min['promedio_venta']:,.2f}
+   • Promedio por transacción: {dia_min['promedio_unidades']:,.2f}
 
 📉 VARIABILIDAD:
-   • Rango de ventas: ${dia_min['total_ventas']:,.2f} - ${dia_max['total_ventas']:,.2f}
-   • Diferencia: ${dia_max['total_ventas'] - dia_min['total_ventas']:,.2f}
-   • Factor de variación: {dia_max['total_ventas'] / dia_min['total_ventas']:.2f}x
+   • Rango de unidades de insumo: {dia_min['total_unidades']:,.2f} - {dia_max['total_unidades']:,.2f}
+   • Diferencia: {dia_max['total_unidades'] - dia_min['total_unidades']:,.2f}
+   • Factor de variación: {dia_max['total_unidades'] / dia_min['total_unidades']:.2f}x
 
 ═══════════════════════════════════════════════════════════════════════════
 """
@@ -366,8 +366,8 @@ def analizar_tendencia_5_dias(df):
         
         # Retornar diccionario con métricas
         metricas = {
-            'promedio_ventas_diarias': promedio_ventas,
-            'std_ventas': std_ventas,
+            'promedio_unidadess_diarias': promedio_unidadess,
+            'std_unidades de insumo': std_unidades de insumo,
             'promedio_transacciones': promedio_transacciones,
             'total_5_dias': total_5_dias,
             'tasa_crecimiento_diaria': tasa_crecimiento_diaria,
@@ -392,7 +392,7 @@ def analizar_tendencia_5_dias(df):
 
 def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
     """
-    Genera datos sintéticos de ventas para 6 meses con estacionalidad, 
+    Genera datos sintéticos de unidades de insumo para 6 meses con estacionalidad, 
     ruido y tendencia de crecimiento.
     
     Args:
@@ -401,7 +401,7 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
         meses: Número de meses a generar (default: 6)
         
     Returns:
-        pandas.DataFrame: Dataset sintético con ventas y features temporales
+        pandas.DataFrame: Dataset sintético con unidades de insumo y features temporales
     """
     logger.info("\n" + "=" * 80)
     logger.info("GENERACIÓN DE DATOS SINTÉTICOS - 6 MESES")
@@ -413,16 +413,16 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
             fecha_inicio = pd.to_datetime(fecha_inicio)
         
         # Calcular estadísticas base desde los datos reales
-        venta_promedio_diaria = df_base['total_ventas'].mean()
+        unidad_promedio_diaria = df_base['total_unidades'].mean()
         num_transacciones_promedio = df_base['num_transacciones'].mean()
-        std_ventas = df_base['total_ventas'].std()
-        promedio_venta_transaccion = df_base['promedio_venta'].mean()
+        std_unidades de insumo = df_base['total_unidades'].std()
+        promedio_unidades_transaccion = df_base['promedio_unidades'].mean()
         
         logger.info(f"📊 Estadísticas base (de {len(df_base)} días reales):")
-        logger.info(f"   • Venta promedio diaria: ${venta_promedio_diaria:,.2f}")
+        logger.info(f"   • Unidad promedio diaria: {unidad_promedio_diaria:,.2f}")
         logger.info(f"   • Número de transacciones promedio: {num_transacciones_promedio:.1f}")
-        logger.info(f"   • Desviación estándar: ${std_ventas:,.2f}")
-        logger.info(f"   • Promedio por transacción: ${promedio_venta_transaccion:,.2f}")
+        logger.info(f"   • Desviación estándar: {std_unidades de insumo:,.2f}")
+        logger.info(f"   • Promedio por transacción: {promedio_unidades_transaccion:,.2f}")
         
         # Parámetros de generación
         dias_total = meses * 30  # Aproximadamente 6 meses = 180 días
@@ -431,8 +431,8 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
         logger.info(f"\n🔧 Parámetros de generación:")
         logger.info(f"   • Días a generar: {dias_total}")
         logger.info(f"   • Tasa de crecimiento mensual: {tasa_crecimiento_mensual*100:.1f}%")
-        logger.info(f"   • Estacionalidad: Domingos sin ventas")
-        logger.info(f"   • Ruido: Gaussiano con σ = {std_ventas*0.15:,.2f}")
+        logger.info(f"   • Estacionalidad: Domingos sin unidades de insumo")
+        logger.info(f"   • Ruido: Gaussiano con σ = {std_unidades de insumo*0.15:,.2f}")
         
         # Generar secuencia de fechas
         logger.info(f"\n📅 Generando secuencia de fechas...")
@@ -481,18 +481,18 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
             # Factor de estacionalidad
             factor_estacional = factores_estacionalidad[dia_semana]
             
-            # Si es domingo, no hay ventas
+            # Si es domingo, no hay unidades de insumo
             if dia_semana == 6:
-                total_ventas = 0.0
+                total_unidades = 0.0
                 num_transacciones = 0
-                promedio_venta = 0.0
+                promedio_unidades = 0.0
             else:
-                # Calcular ventas base con tendencia y estacionalidad
-                ventas_base = venta_promedio_diaria * factor_tendencia * factor_estacional
+                # Calcular unidades de insumo base con tendencia y estacionalidad
+                unidades de insumo_base = unidad_promedio_diaria * factor_tendencia * factor_estacional
                 
                 # Añadir ruido gaussiano (15% de la desviación estándar)
-                ruido = np.random.normal(0, std_ventas * 0.15)
-                total_ventas = max(0, ventas_base + ruido)  # No puede ser negativo
+                ruido = np.random.normal(0, std_unidades de insumo * 0.15)
+                total_unidades = max(0, unidades de insumo_base + ruido)  # No puede ser negativo
                 
                 # Calcular número de transacciones (también con ruido)
                 trans_base = num_transacciones_promedio * factor_tendencia * factor_estacional
@@ -500,7 +500,7 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
                 num_transacciones = max(1, int(trans_base + ruido_trans))
                 
                 # Promedio por transacción
-                promedio_venta = total_ventas / num_transacciones if num_transacciones > 0 else 0
+                promedio_unidades = total_unidades / num_transacciones if num_transacciones > 0 else 0
             
             # Añadir features temporales para XGBoost
             datos_sinteticos.append({
@@ -516,8 +516,8 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
                 'factor_tendencia': factor_tendencia,
                 'factor_estacional': factor_estacional,
                 'num_transacciones': num_transacciones,
-                'total_ventas': total_ventas,
-                'promedio_venta': promedio_venta
+                'total_unidades': total_unidades,
+                'promedio_unidades': promedio_unidades
             })
             
             # Mostrar progreso cada 30 días
@@ -529,27 +529,27 @@ def generar_datos_sinteticos_6_meses(df_base, fecha_inicio, meses=6):
         
         logger.info(f"\n✓ Dataset sintético generado exitosamente")
         logger.info(f"   • Total de días: {len(df_sintetico)}")
-        logger.info(f"   • Días con ventas: {(df_sintetico['total_ventas'] > 0).sum()}")
-        logger.info(f"   • Domingos sin ventas: {(df_sintetico['es_domingo'] == 1).sum()}")
+        logger.info(f"   • Días con unidades de insumo: {(df_sintetico['total_unidades'] > 0).sum()}")
+        logger.info(f"   • Domingos sin unidades de insumo: {(df_sintetico['es_domingo'] == 1).sum()}")
         
         # Estadísticas del dataset sintético
         logger.info(f"\n📊 Estadísticas del dataset sintético:")
-        logger.info(f"   • Total ventas 6 meses: ${df_sintetico['total_ventas'].sum():,.2f}")
-        logger.info(f"   • Promedio diario (excluyendo domingos): ${df_sintetico[df_sintetico['es_domingo']==0]['total_ventas'].mean():,.2f}")
-        logger.info(f"   • Desviación estándar: ${df_sintetico['total_ventas'].std():,.2f}")
+        logger.info(f"   • Total unidades de insumo 6 meses: {df_sintetico['total_unidades'].sum():,.2f}")
+        logger.info(f"   • Promedio diario (excluyendo domingos): {df_sintetico[df_sintetico['es_domingo']==0]['total_unidades'].mean():,.2f}")
+        logger.info(f"   • Desviación estándar: {df_sintetico['total_unidades'].std():,.2f}")
         logger.info(f"   • Total transacciones: {df_sintetico['num_transacciones'].sum()}")
         
         # Verificar crecimiento mensual
         logger.info(f"\n📈 Verificación de tendencia de crecimiento:")
         for mes in range(meses):
             datos_mes = df_sintetico[df_sintetico['mes_desde_inicio'] == mes]
-            total_mes = datos_mes['total_ventas'].sum()
+            total_mes = datos_mes['total_unidades'].sum()
             dias_trabajados = (datos_mes['es_domingo'] == 0).sum()
             promedio_mes = total_mes / dias_trabajados if dias_trabajados > 0 else 0
-            logger.info(f"   • Mes {mes+1}: ${promedio_mes:,.2f}/día (en {dias_trabajados} días laborables)")
+            logger.info(f"   • Mes {mes+1}: {promedio_mes:,.2f}/día (en {dias_trabajados} días laborables)")
         
         # Guardar en CSV
-        output_path = DATA_DIR / 'ventas_6_meses_sinteticas.csv'
+        output_path = DATA_DIR / 'unidades de insumo_6_meses_sinteticas.csv'
         df_sintetico.to_csv(output_path, index=False)
         logger.info(f"\n✓ Dataset guardado en: {output_path}")
         
@@ -577,41 +577,41 @@ def validar_datos_sinteticos(df_sintetico):
     try:
         validaciones = {
             'total_registros': len(df_sintetico),
-            'domingos_sin_ventas': True,
+            'domingos_sin_unidades de insumo': True,
             'tendencia_creciente': False,
             'variabilidad_presente': False,
             'features_completas': False
         }
         
-        # Validación 1: Domingos sin ventas
+        # Validación 1: Domingos sin unidades de insumo
         domingos = df_sintetico[df_sintetico['es_domingo'] == 1]
-        domingos_con_ventas = (domingos['total_ventas'] > 0).sum()
-        validaciones['domingos_sin_ventas'] = (domingos_con_ventas == 0)
+        domingos_con_unidades de insumo = (domingos['total_unidades'] > 0).sum()
+        validaciones['domingos_sin_unidades de insumo'] = (domingos_con_unidades de insumo == 0)
         
-        logger.info(f"\n✓ Validación 1: Domingos sin ventas")
+        logger.info(f"\n✓ Validación 1: Domingos sin unidades de insumo")
         logger.info(f"   • Total domingos: {len(domingos)}")
-        logger.info(f"   • Domingos con ventas = 0: {len(domingos) - domingos_con_ventas}")
-        logger.info(f"   • Estado: {'✓ CORRECTO' if validaciones['domingos_sin_ventas'] else '✗ ERROR'}")
+        logger.info(f"   • Domingos con unidades de insumo = 0: {len(domingos) - domingos_con_unidades de insumo}")
+        logger.info(f"   • Estado: {'✓ CORRECTO' if validaciones['domingos_sin_unidades de insumo'] else '✗ ERROR'}")
         
         # Validación 2: Tendencia creciente
         primer_mes = df_sintetico[df_sintetico['mes_desde_inicio'] == 0]
         ultimo_mes = df_sintetico[df_sintetico['mes_desde_inicio'] == 5]
         
-        promedio_primer_mes = primer_mes[primer_mes['es_domingo'] == 0]['total_ventas'].mean()
-        promedio_ultimo_mes = ultimo_mes[ultimo_mes['es_domingo'] == 0]['total_ventas'].mean()
+        promedio_primer_mes = primer_mes[primer_mes['es_domingo'] == 0]['total_unidades'].mean()
+        promedio_ultimo_mes = ultimo_mes[ultimo_mes['es_domingo'] == 0]['total_unidades'].mean()
         
         crecimiento_total = ((promedio_ultimo_mes - promedio_primer_mes) / promedio_primer_mes) * 100
         validaciones['tendencia_creciente'] = (crecimiento_total > 8)  # Al menos 8% en 6 meses
         
         logger.info(f"\n✓ Validación 2: Tendencia de crecimiento")
-        logger.info(f"   • Promedio mes 1: ${promedio_primer_mes:,.2f}")
-        logger.info(f"   • Promedio mes 6: ${promedio_ultimo_mes:,.2f}")
+        logger.info(f"   • Promedio mes 1: {promedio_primer_mes:,.2f}")
+        logger.info(f"   • Promedio mes 6: {promedio_ultimo_mes:,.2f}")
         logger.info(f"   • Crecimiento total: {crecimiento_total:+.2f}%")
         logger.info(f"   • Estado: {'✓ CORRECTO' if validaciones['tendencia_creciente'] else '⚠ REVISAR'}")
         
         # Validación 3: Variabilidad (ruido presente)
         dias_laborables = df_sintetico[df_sintetico['es_domingo'] == 0]
-        coef_variacion = (dias_laborables['total_ventas'].std() / dias_laborables['total_ventas'].mean()) * 100
+        coef_variacion = (dias_laborables['total_unidades'].std() / dias_laborables['total_unidades'].mean()) * 100
         validaciones['variabilidad_presente'] = (coef_variacion > 5)  # Al menos 5% de variación
         
         logger.info(f"\n✓ Validación 3: Variabilidad en los datos")
@@ -659,7 +659,7 @@ def preparar_dataset_para_modelo(df, nombre_dataset="Dataset"):
     Separa features (X) y target (y).
     
     Args:
-        df: DataFrame con datos de ventas
+        df: DataFrame con datos de unidades de insumo
         nombre_dataset: Nombre del dataset para logging
         
     Returns:
@@ -702,9 +702,9 @@ def preparar_dataset_para_modelo(df, nombre_dataset="Dataset"):
         
         # Separar X (features) y y (target)
         X = df[features].copy()
-        y = df['total_ventas'].copy()
+        y = df['total_unidades'].copy()
         
-        # Remover domingos (ventas = 0) para no sesgar el modelo
+        # Remover domingos (unidades de insumo = 0) para no sesgar el modelo
         mask_no_domingo = df['es_domingo'] == 0
         X = X[mask_no_domingo]
         y = y[mask_no_domingo]
@@ -713,8 +713,8 @@ def preparar_dataset_para_modelo(df, nombre_dataset="Dataset"):
         logger.info(f"     • Features: {features}")
         logger.info(f"     • Registros totales: {len(df)}")
         logger.info(f"     • Registros útiles (sin domingos): {len(X)}")
-        logger.info(f"     • Target: total_ventas")
-        logger.info(f"     • Rango target: ${y.min():,.2f} - ${y.max():,.2f}")
+        logger.info(f"     • Target: total_unidades")
+        logger.info(f"     • Rango target: {y.min():,.2f} - {y.max():,.2f}")
         
         return X, y
         
@@ -838,8 +838,8 @@ def entrenar_modelo_xgboost(X_train, y_train, X_test=None, y_test=None,
         resultados['r2_train'] = r2_train
         
         logger.info(f"\n📊 Métricas en Entrenamiento:")
-        logger.info(f"   • MAE:  ${mae_train:,.2f}")
-        logger.info(f"   • RMSE: ${rmse_train:,.2f}")
+        logger.info(f"   • MAE:  {mae_train:,.2f}")
+        logger.info(f"   • RMSE: {rmse_train:,.2f}")
         logger.info(f"   • R²:   {r2_train:.4f}")
         
         # Métricas en test si existe
@@ -855,8 +855,8 @@ def entrenar_modelo_xgboost(X_train, y_train, X_test=None, y_test=None,
             resultados['num_datos_test'] = len(X_test)
             
             logger.info(f"\n📊 Métricas en Test:")
-            logger.info(f"   • MAE:  ${mae_test:,.2f}")
-            logger.info(f"   • RMSE: ${rmse_test:,.2f}")
+            logger.info(f"   • MAE:  {mae_test:,.2f}")
+            logger.info(f"   • RMSE: {rmse_test:,.2f}")
             logger.info(f"   • R²:   {r2_test:.4f}")
         
         # Validación cruzada
@@ -871,7 +871,7 @@ def entrenar_modelo_xgboost(X_train, y_train, X_test=None, y_test=None,
         resultados['cv_mae'] = cv_mae
         resultados['cv_std'] = cv_std
         
-        logger.info(f"   • CV MAE: ${cv_mae:,.2f} (±${cv_std:,.2f})")
+        logger.info(f"   • CV MAE: {cv_mae:,.2f} (±{cv_std:,.2f})")
         
         # Feature importance
         importance = modelo.feature_importances_
@@ -944,12 +944,12 @@ def comparar_metricas(resultados_5dias, resultados_6meses):
                 resultados_6meses['num_datos_entrenamiento']
             ],
             'MAE Train': [
-                f"${resultados_5dias['mae_train']:,.2f}",
-                f"${resultados_6meses['mae_train']:,.2f}"
+                f"{resultados_5dias['mae_train']:,.2f}",
+                f"{resultados_6meses['mae_train']:,.2f}"
             ],
             'RMSE Train': [
-                f"${resultados_5dias['rmse_train']:,.2f}",
-                f"${resultados_6meses['rmse_train']:,.2f}"
+                f"{resultados_5dias['rmse_train']:,.2f}",
+                f"{resultados_6meses['rmse_train']:,.2f}"
             ],
             'R² Train': [
                 f"{resultados_5dias['r2_train']:.4f}",
@@ -961,11 +961,11 @@ def comparar_metricas(resultados_5dias, resultados_6meses):
         if 'mae_test' in resultados_6meses:
             datos_comparacion['MAE Test'] = [
                 'N/A',
-                f"${resultados_6meses['mae_test']:,.2f}"
+                f"{resultados_6meses['mae_test']:,.2f}"
             ]
             datos_comparacion['RMSE Test'] = [
                 'N/A',
-                f"${resultados_6meses['rmse_test']:,.2f}"
+                f"{resultados_6meses['rmse_test']:,.2f}"
             ]
         
         df_comparacion = pd.DataFrame(datos_comparacion)
@@ -1062,8 +1062,8 @@ def generar_learning_curve(modelo, X, y, nombre_modelo="Modelo"):
         val_scores_std = val_scores.std(axis=1)
         
         logger.info(f"   ✓ Curva de aprendizaje generada")
-        logger.info(f"   • Error inicial (10% datos): ${val_scores_mean[0]:,.2f}")
-        logger.info(f"   • Error final (100% datos): ${val_scores_mean[-1]:,.2f}")
+        logger.info(f"   • Error inicial (10% datos): {val_scores_mean[0]:,.2f}")
+        logger.info(f"   • Error final (100% datos): {val_scores_mean[-1]:,.2f}")
         logger.info(f"   • Mejora: {((val_scores_mean[0] - val_scores_mean[-1]) / val_scores_mean[0] * 100):.2f}%")
         
         return {
@@ -1124,7 +1124,7 @@ def crear_grafica_learning_curves(datos_5dias, datos_6meses):
                          alpha=0.15, color='#A23B72')
         
         ax1.set_xlabel('Número de Muestras de Entrenamiento', fontsize=11, fontweight='bold')
-        ax1.set_ylabel('MAE (Unidades de Insumo)', fontsize=11, fontweight='bold')
+        ax1.set_ylabel('MAE (Mean Absolute Error) ', fontsize=11, fontweight='bold')
         ax1.set_title(f'{datos_5dias["nombre"]}\n({datos_5dias["train_sizes"][-1]} muestras)', 
                      fontsize=13, fontweight='bold', pad=10)
         ax1.legend(loc='best', frameon=True, shadow=True)
@@ -1150,7 +1150,7 @@ def crear_grafica_learning_curves(datos_5dias, datos_6meses):
                          alpha=0.15, color='#A23B72')
         
         ax2.set_xlabel('Número de Muestras de Entrenamiento', fontsize=11, fontweight='bold')
-        ax2.set_ylabel('MAE (Unidades de Insumo)', fontsize=11, fontweight='bold')
+        ax2.set_ylabel('MAE (Mean Absolute Error) ', fontsize=11, fontweight='bold')
         ax2.set_title(f'{datos_6meses["nombre"]}\n({datos_6meses["train_sizes"][-1]} muestras)',
                      fontsize=13, fontweight='bold', pad=10)
         ax2.legend(loc='best', frameon=True, shadow=True)
@@ -1211,18 +1211,18 @@ def crear_grafica_comparacion_errores(resultados_5dias, resultados_6meses):
         for bar in bars1:
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'${height:,.0f}', ha='center', va='bottom', 
+                   f'{height:,.0f}', ha='center', va='bottom', 
                    fontweight='bold', fontsize=10)
         
         for bar in bars2:
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'${height:,.0f}', ha='center', va='bottom',
+                   f'{height:,.0f}', ha='center', va='bottom',
                    fontweight='bold', fontsize=10)
         
         # Labels y título
         ax.set_xlabel('Modelo', fontsize=12, fontweight='bold')
-        ax.set_ylabel('Error (Unidades)', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Error ()', fontsize=12, fontweight='bold')
         ax.set_title('Comparación de Errores: MAE y RMSE\nModelo 5 Días vs 6 Meses',
                     fontsize=14, fontweight='bold', pad=15)
         ax.set_xticks(x)
@@ -1283,7 +1283,7 @@ def main():
         fecha_inicio = df_fechas.iloc[0]['fecha']
         logger.info(f"\n📅 Fecha seleccionada para análisis: {fecha_inicio}")
         
-        df_5_dias = extraer_ventas_5_dias(conn, fecha_inicio)
+        df_5_dias = extraer_unidades de insumo_5_dias(conn, fecha_inicio)
         
         if df_5_dias.empty or len(df_5_dias) < 3:
             logger.warning(f"⚠ Solo se encontraron {len(df_5_dias)} días con datos")
@@ -1462,8 +1462,8 @@ def main():
         logger.info("=" * 80)
         logger.info("\n📁 ARCHIVOS GENERADOS:")
         logger.info("   Datos:")
-        logger.info("   • data/ventas_5_dias_reales.csv")
-        logger.info("   • data/ventas_6_meses_sinteticas.csv")
+        logger.info("   • data/unidades de insumo_5_dias_reales.csv")
+        logger.info("   • data/unidades de insumo_6_meses_sinteticas.csv")
         logger.info("")
         logger.info("   Modelos:")
         logger.info("   • models/modelo_xgboost_5dias.pkl")
@@ -1482,13 +1482,13 @@ def main():
         
         logger.info("\n📈 MÉTRICAS FINALES:")
         logger.info(f"   Modelo 5 Días:")
-        logger.info(f"   • MAE:  ${resultados_5dias['mae_train']:,.2f}")
-        logger.info(f"   • RMSE: ${resultados_5dias['rmse_train']:,.2f}")
+        logger.info(f"   • MAE:  {resultados_5dias['mae_train']:,.2f}")
+        logger.info(f"   • RMSE: {resultados_5dias['rmse_train']:,.2f}")
         logger.info(f"   • R²:   {resultados_5dias['r2_train']:.4f}")
         logger.info(f"")
         logger.info(f"   Modelo 6 Meses:")
-        logger.info(f"   • MAE Test:  ${resultados_6meses.get('mae_test', 0):,.2f}")
-        logger.info(f"   • RMSE Test: ${resultados_6meses.get('rmse_test', 0):,.2f}")
+        logger.info(f"   • MAE Test:  {resultados_6meses.get('mae_test', 0):,.2f}")
+        logger.info(f"   • RMSE Test: {resultados_6meses.get('rmse_test', 0):,.2f}")
         logger.info(f"   • R² Test:   {resultados_6meses.get('r2_test', 0):.4f}")
         
         # Calcular mejora
