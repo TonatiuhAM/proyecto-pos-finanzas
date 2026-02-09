@@ -1,0 +1,5 @@
+"Contenedor","Muestras","CPU_Min_%","CPU_Max_%","CPU_Prom_%","CPU_P95_%","RAM_Min_MB","RAM_Max_MB","RAM_Prom_MB","RAM_P95_MB","Disco_Read_Inicial_MB","Disco_Read_Final_MB","Disco_Read_Delta_MB","Disco_Write_Inicial_MB","Disco_Write_Final_MB","Disco_Write_Delta_MB","Net_In_Delta_MB","Net_Out_Delta_MB","Estado"
+"pos_backend",7,0.48,9.10,1.94,1.62,496.00,497.80,496.61,497.20,1259.52,1280.00,20.48,2232.32,2232.32,0.00,0.60,0.60,"MEM_ALTO_PROMEDIO,MEM_CRITICO_PICO"
+"pos_database",7,0.00,24.14,7.86,19.96,54.90,56.36,55.85,56.34,259.00,262.00,3.00,16.90,16.90,0.00,0.30,0.40,"OK"
+"pos_frontend",7,0.00,0.19,0.03,0.00,7.91,9.14,8.28,8.59,22.00,27.00,5.00,0.60,0.60,0.00,0.00,0.02,"OK"
+"pos_ml_prediction_api",7,0.09,0.68,0.18,0.10,103.30,104.30,103.60,103.70,864.00,865.00,1.00,257.00,258.00,1.00,0.10,0.01,"MEM_ALTO_PROMEDIO,MEM_CRITICO_PICO"

@@ -1533,3 +1533,522 @@ open results/learning_curves_comparacion.png
 **Fecha de creación del plan**: 28 Enero 2026  
 **Responsable**: Tesista - Sistema de Abastecimiento  
 **Objetivo**: Demostrar mejora de XGBoost con aumento de volumen de datos mediante curvas de aprendizaje
+---
+
+## 🚀 MEJORAS AL SISTEMA DE PRUEBAS DE RENDIMIENTO - 06 Febrero 2026
+
+### Descripción del Proyecto
+
+Mejorar el sistema de pruebas de rendimiento existente (benchmarking y monitoreo de recursos) para el sistema POS en Docker. Se identificaron varios issues durante la última ejecución que requieren atención:
+
+**ESTADO ACTUAL:**
+- ✅ Sistema de benchmarking funcional (10 tests, 20 iteraciones)
+- ✅ Monitoreo de recursos implementado (CPU, RAM, Disk, Network)
+- ✅ Reportes automáticos generados (CSV + TXT)
+- ⚠️ ML Predict muestra latencia sospechosamente baja (1.4ms)
+- ⚠️ Falsos positivos en alertas de memoria
+- ⏸️ Sin pruebas de carga concurrente
+
+**UBICACIÓN:** `/home/tona/dev/proyecto-pos-finanzas/pruebas-rendimiento/`
+
+### Objetivos de Mejora
+
+1. **Investigar ML Service**: Verificar si realmente está ejecutando el modelo o devolviendo respuestas mock
+2. **Ajustar umbrales de alertas**: Corregir detección de memoria alta (falsos positivos)
+3. **Implementar pruebas de carga**: Simular múltiples usuarios concurrentes (10, 50, 100)
+4. **Optimizar consultas SQL**: Implementar paginación en GET /productos si es necesario
+
+---
+
+## 📋 PLAN DE IMPLEMENTACIÓN
+
+### FASE 1: Investigación del ML Service (Prioridad: CRÍTICA)
+
+**Problema:** ML Predict reporta 1.4ms de latencia, casi idéntico al health check (1.0ms). Esto sugiere que no está ejecutando el modelo real.
+
+- [ ] **Paso 1.1: Examinar código del ML Service**
+  - [ ] Leer archivo `ml-prediction-service/app/main.py` completo
+  - [ ] Identificar endpoint `/predict`
+  - [ ] Verificar si carga el modelo de ML real o retorna datos mock
+  - [ ] Buscar logs que confirmen carga del modelo
+
+- [ ] **Paso 1.2: Revisar Dockerfile del ML Service**
+  - [ ] Leer `ml-prediction-service/Dockerfile`
+  - [ ] Verificar que copia el modelo al contenedor
+  - [ ] Verificar que instala todas las dependencias necesarias
+  - [ ] Buscar variables de entorno que puedan activar modo "mock"
+
+- [ ] **Paso 1.3: Inspeccionar logs del contenedor en tiempo real**
+  - [ ] Ejecutar: `docker logs pos_ml_prediction_api --tail 50`
+  - [ ] Buscar mensajes de carga del modelo
+  - [ ] Buscar warnings o errores de importación
+  - [ ] Verificar si hay mensajes como "Mock mode enabled" o similar
+
+- [ ] **Paso 1.4: Prueba manual del endpoint con curl**
+  - [ ] Ejecutar benchmark test 06 (ML Predict) manualmente
+  - [ ] Capturar tiempo real con `time curl ...`
+  - [ ] Verificar respuesta JSON completa
+  - [ ] Comparar estructura con respuesta esperada de modelo real
+
+- [ ] **Paso 1.5: Monitorear recursos durante predicción**
+  - [ ] Ejecutar `docker stats pos_ml_prediction_api` en tiempo real
+  - [ ] Ejecutar 100 requests de predicción seguidas
+  - [ ] Observar si hay picos de CPU (esperado: 50-100% durante inferencia)
+  - [ ] Si CPU no aumenta, confirma que no está ejecutando modelo
+
+- [ ] **Paso 1.6: Documentar hallazgos**
+  - [ ] Crear archivo `pruebas-rendimiento/docs/INVESTIGACION_ML_SERVICE.md`
+  - [ ] Documentar:
+    - ¿Está cargando el modelo?
+    - ¿Retorna datos mock o reales?
+    - ¿Por qué la latencia es tan baja?
+    - Causa raíz del problema
+  - [ ] Proponer solución (código a modificar)
+
+- [ ] **Paso 1.7: Implementar fix si es necesario**
+  - [ ] Si el modelo no se carga: Actualizar código para cargarlo
+  - [ ] Si retorna mock: Cambiar lógica para ejecutar inferencia real
+  - [ ] Añadir logs de debug: "Modelo cargado", "Predicción ejecutada en Xms"
+  - [ ] Rebuild del contenedor: `docker-compose up --build -d pos_ml_prediction_api`
+
+- [ ] **Paso 1.8: Re-ejecutar benchmark y validar**
+  - [ ] Ejecutar: `cd pruebas-rendimiento/scripts && ./benchmark.sh`
+  - [ ] Verificar que ML Predict ahora muestre latencia realista (50-500ms)
+  - [ ] Verificar que CPU del contenedor suba durante predicciones
+  - [ ] Actualizar documentación con resultados corregidos
+
+---
+
+### FASE 2: Ajustar Umbrales de Alertas (Prioridad: ALTA)
+
+**Problema:** El script reporta "MEM_ALTO" para pos_backend usando 497 MB, que es solo 6.14% de RAM del sistema. Esto es normal para Spring Boot.
+
+- [ ] **Paso 2.1: Analizar lógica actual de detección**
+  - [ ] Abrir `pruebas-rendimiento/scripts/funciones_recursos.sh`
+  - [ ] Localizar función que detecta problemas
+  - [ ] Identificar cómo calcula % de memoria (¿contra container limit o sistema?)
+  - [ ] Documentar algoritmo actual
+
+- [ ] **Paso 2.2: Rediseñar umbrales inteligentes**
+  - [ ] Crear nueva función `calcular_umbral_dinamico()`:
+    - Para backend (Java/Spring Boot): 80% del límite del contenedor o 1GB (lo que sea mayor)
+    - Para database: 70% del límite
+    - Para frontend (nginx): 50MB fijo
+    - Para ML Service (Python): 500MB normal, alertar > 1GB
+  - [ ] Considerar memoria base + memoria de trabajo
+  - [ ] Añadir comentarios explicando cada umbral
+
+- [ ] **Paso 2.3: Implementar detección mejorada**
+  - [ ] Modificar función `identificar_problemas()` en `funciones_recursos.sh`
+  - [ ] Cambiar de umbrales fijos a dinámicos por tipo de servicio
+  - [ ] Añadir categorías:
+    - `OK` - Uso normal esperado
+    - `ADVERTENCIA` - Por encima de lo normal pero no crítico
+    - `CRÍTICO` - Uso que puede causar problemas
+  - [ ] Ejemplo:
+    ```bash
+    if [ "$contenedor" = "pos_backend" ]; then
+      umbral_critico=1024  # 1GB
+      umbral_advertencia=800  # 800MB
+    fi
+    ```
+
+- [ ] **Paso 2.4: Mejorar mensajes de alerta**
+  - [ ] Cambiar mensajes genéricos a específicos:
+    - En lugar de: "pos_backend: MEM_ALTO (497 MB)"
+    - Usar: "pos_backend: OK - Memoria normal para Spring Boot (497/8096 MB, 6.14%)"
+  - [ ] Añadir contexto en el reporte:
+    - "✅ Backend: Uso de memoria esperado para aplicación Java"
+    - "⚠️ Database: CPU elevado (24%), posible carga de consultas"
+
+- [ ] **Paso 2.5: Añadir sección de interpretación al reporte**
+  - [ ] Modificar `consolidar_recursos.sh`
+  - [ ] Añadir nueva sección al final del reporte:
+    ```
+    ## 📊 INTERPRETACIÓN DE RESULTADOS
+    
+    ### Memoria:
+    - Backend (497 MB): Normal para Spring Boot JVM
+    - Database (56 MB): Excelente, bien optimizado
+    - Frontend (8 MB): Normal para nginx
+    
+    ### CPU:
+    - Total combinado: ~10% - Sistema con mucho headroom
+    - Database picos de 24%: Aceptable durante queries
+    ```
+
+- [ ] **Paso 2.6: Testing de nuevos umbrales**
+  - [ ] Ejecutar benchmark completo
+  - [ ] Verificar que no haya falsos positivos
+  - [ ] Verificar que sí detecte problemas reales (simular con stress test)
+
+---
+
+### FASE 3: Implementar Pruebas de Carga Concurrente (Prioridad: MEDIA)
+
+**Objetivo:** Simular múltiples usuarios simultáneos para identificar punto de saturación del sistema.
+
+- [ ] **Paso 3.1: Diseñar estrategia de pruebas de carga**
+  - [ ] Definir escenarios:
+    - Escenario 1: 10 usuarios concurrentes (carga baja)
+    - Escenario 2: 50 usuarios concurrentes (carga media)
+    - Escenario 3: 100 usuarios concurrentes (carga alta)
+  - [ ] Definir métricas a capturar:
+    - Throughput (requests/segundo)
+    - Latencia media
+    - Latencia P95 y P99
+    - % de requests exitosos vs fallidos
+    - Punto de saturación (latencia > 2x baseline)
+
+- [ ] **Paso 3.2: Crear script de carga con bash & curl**
+  - [ ] Crear archivo `pruebas-rendimiento/scripts/test_carga.sh`
+  - [ ] Implementar función `ejecutar_request_background()`:
+    ```bash
+    ejecutar_request_background() {
+      local url=$1
+      local output_file=$2
+      local start=$(date +%s%3N)
+      
+      http_code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+      
+      local end=$(date +%s%3N)
+      local duracion=$((end - start))
+      
+      echo "$duracion,$http_code" >> "$output_file"
+    }
+    ```
+
+- [ ] **Paso 3.3: Implementar función de carga concurrente**
+  - [ ] Crear función `ejecutar_carga_concurrente()`:
+    ```bash
+    ejecutar_carga_concurrente() {
+      local num_usuarios=$1
+      local endpoint=$2
+      local duracion_segundos=$3
+      
+      local archivo_resultados="resultados/carga_${num_usuarios}_usuarios.csv"
+      
+      # Lanzar procesos en background
+      for i in $(seq 1 $num_usuarios); do
+        ejecutar_request_background "$endpoint" "$archivo_resultados" &
+      done
+      
+      # Esperar a que terminen todos
+      wait
+      
+      # Calcular estadísticas
+      calcular_throughput "$archivo_resultados"
+    }
+    ```
+
+- [ ] **Paso 3.4: Crear suite de tests de carga**
+  - [ ] Implementar tests para endpoints críticos:
+    - GET /api/productos (lectura)
+    - POST /api/auth/login (autenticación)
+    - POST /api/ordenes-ventas (escritura)
+  - [ ] Cada test ejecutar 3 escenarios (10, 50, 100 usuarios)
+  - [ ] Guardar resultados en CSV separados
+
+- [ ] **Paso 3.5: Implementar análisis de throughput**
+  - [ ] Crear función `calcular_throughput()`:
+    - Contar requests exitosos (HTTP 200)
+    - Contar requests fallidos (HTTP 4xx, 5xx)
+    - Calcular requests/segundo
+    - Calcular latencia media, P95, P99
+    - Identificar punto de saturación
+  - [ ] Guardar métricas en `RESUMEN_CARGA_*.csv`
+
+- [ ] **Paso 3.6: Generar reporte de carga**
+  - [ ] Crear script `consolidar_carga.sh`
+  - [ ] Generar reporte `REPORTE_CARGA_*.txt`:
+    ```
+    ## PRUEBAS DE CARGA CONCURRENTE
+    
+    ### Escenario 1: 10 Usuarios
+    - Throughput: 45 req/s
+    - Latencia media: 15ms
+    - Latencia P95: 28ms
+    - Éxito: 100%
+    
+    ### Escenario 2: 50 Usuarios
+    - Throughput: 180 req/s
+    - Latencia media: 42ms
+    - Latencia P95: 89ms
+    - Éxito: 99.2%
+    
+    ### Escenario 3: 100 Usuarios
+    - Throughput: 220 req/s (saturado)
+    - Latencia media: 350ms
+    - Latencia P95: 1200ms
+    - Éxito: 87.5% (⚠️ fallos detectados)
+    
+    ### Punto de Saturación
+    - Sistema satura con ~80 usuarios concurrentes
+    - Recomendación: Escalar horizontalmente o implementar caché
+    ```
+
+- [ ] **Paso 3.7: Integrar con benchmark principal**
+  - [ ] Modificar `benchmark.sh` para incluir opción:
+    ```bash
+    # Ejecutar con: ./benchmark.sh --con-carga
+    if [ "$1" = "--con-carga" ]; then
+      ./test_carga.sh
+    fi
+    ```
+
+- [ ] **Paso 3.8: Testing de pruebas de carga**
+  - [ ] Ejecutar: `./test_carga.sh`
+  - [ ] Verificar que se lancen procesos en paralelo
+  - [ ] Verificar que no haya race conditions en escritura de CSV
+  - [ ] Validar cálculos de throughput
+
+---
+
+### FASE 4: Optimizaciones Opcionales (Prioridad: BAJA)
+
+**Objetivo:** Implementar mejoras sugeridas por los resultados de benchmarking.
+
+- [ ] **Paso 4.1: Implementar paginación en GET /productos**
+  - [ ] Solo si pruebas de carga muestran problemas con inventarios grandes
+  - [ ] Modificar `InventarioController.java`:
+    ```java
+    @GetMapping
+    public ResponseEntity<Page<ProductoDTO>> getProductos(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(inventarioService.getAllProductos(pageable));
+    }
+    ```
+  - [ ] Actualizar servicio para soportar paginación
+  - [ ] Actualizar frontend para cargar páginas dinámicamente
+
+- [ ] **Paso 4.2: Implementar caché con Caffeine**
+  - [ ] Solo si pruebas de carga muestran lecturas repetitivas costosas
+  - [ ] Añadir dependencia en `backend/pom.xml`:
+    ```xml
+    <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+    </dependency>
+    ```
+  - [ ] Añadir `@EnableCaching` en Application.java
+  - [ ] Añadir `@Cacheable("productos")` en métodos de lectura
+  - [ ] Configurar TTL de caché (5 minutos)
+
+- [ ] **Paso 4.3: Optimizar queries SQL lentas**
+  - [ ] Si EXPLAIN ANALYZE muestra queries > 10ms:
+    - Añadir índices en columnas frecuentemente consultadas
+    - Optimizar JOINs
+    - Considerar vistas materializadas para reportes
+
+- [ ] **Paso 4.4: Implementar rate limiting**
+  - [ ] Para prevenir abuso de API:
+    - Usar Spring Boot Bucket4j
+    - Limitar a 100 requests/minuto por IP
+    - Retornar HTTP 429 cuando se excede límite
+
+---
+
+### FASE 5: Visualización Mejorada (Prioridad: BAJA)
+
+**Objetivo:** Crear gráficas más informativas y dashboard en tiempo real.
+
+- [ ] **Paso 5.1: Generar gráficas con gnuplot**
+  - [ ] Instalar gnuplot si está disponible (verificar primero)
+  - [ ] Crear script `generar_graficas.sh`:
+    - Gráfica de latencias por test
+    - Gráfica de uso de recursos en el tiempo
+    - Gráfica de throughput vs usuarios concurrentes
+  - [ ] Guardar en `results/*.png`
+
+- [ ] **Paso 5.2: Dashboard ASCII en tiempo real**
+  - [ ] Durante ejecución del benchmark, mostrar:
+    ```
+    ╔══════════════════════════════════════════════════╗
+    ║         BENCHMARK EN PROGRESO                    ║
+    ╠══════════════════════════════════════════════════╣
+    ║ Test 03/10: GET /productos                       ║
+    ║ Iteración: [████████████░░░░░░░░] 60%            ║
+    ║ Latencia actual: 12.4ms                          ║
+    ║                                                  ║
+    ║ Recursos:                                        ║
+    ║   Backend:  CPU: 5.2%  RAM: 510MB               ║
+    ║   Database: CPU: 12.8% RAM: 58MB                ║
+    ╚══════════════════════════════════════════════════╝
+    ```
+  - [ ] Actualizar cada 2 segundos
+  - [ ] Usar `tput` para control de terminal
+
+- [ ] **Paso 5.3: Exportar métricas a Prometheus (opcional)**
+  - [ ] Solo si el usuario quiere integración con Grafana
+  - [ ] Crear `prometheus_exporter.sh`:
+    - Parsear resultados de benchmark
+    - Generar formato Prometheus
+    - Exponer en puerto 9090
+  - [ ] Configurar Grafana dashboard
+
+---
+
+### FASE 6: Integración CI/CD (Prioridad: MEDIA)
+
+**Objetivo:** Ejecutar benchmarks automáticamente en cada deploy y detectar regresiones.
+
+- [ ] **Paso 6.1: Crear workflow de GitHub Actions**
+  - [ ] Crear `.github/workflows/performance-tests.yml`:
+    ```yaml
+    name: Performance Tests
+    
+    on:
+      push:
+        branches: [main, develop]
+      pull_request:
+    
+    jobs:
+      benchmark:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - name: Start Docker containers
+            run: docker-compose up -d
+          - name: Wait for services
+            run: sleep 30
+          - name: Run benchmark
+            run: |
+              cd pruebas-rendimiento/scripts
+              ./benchmark.sh
+          - name: Upload results
+            uses: actions/upload-artifact@v3
+            with:
+              name: benchmark-results
+              path: pruebas-rendimiento/resultados/
+    ```
+
+- [ ] **Paso 6.2: Crear baseline de performance**
+  - [ ] Ejecutar benchmark en estado "bueno conocido"
+  - [ ] Guardar métricas en `pruebas-rendimiento/baseline/metricas_baseline.csv`:
+    ```csv
+    test,latencia_p95,throughput_min
+    frontend,1.0,1000
+    login,5.0,100
+    get_productos,20.0,200
+    ```
+
+- [ ] **Paso 6.3: Implementar comparación con baseline**
+  - [ ] Crear script `comparar_con_baseline.sh`:
+    - Leer métricas actuales
+    - Leer baseline
+    - Calcular % de cambio
+    - Si degradación > 20%: EXIT 1 (fail pipeline)
+    - Si mejora > 10%: Sugerir actualizar baseline
+
+- [ ] **Paso 6.4: Generar reporte de regresión**
+  - [ ] Si se detecta regresión, crear `REPORTE_REGRESION.txt`:
+    ```
+    ⚠️ REGRESIÓN DE PERFORMANCE DETECTADA
+    
+    Test: GET /productos
+    Latencia baseline: 13.0ms
+    Latencia actual: 18.5ms
+    Degradación: +42.3% ❌
+    
+    Posibles causas:
+    - Nuevas queries sin índices
+    - Lógica adicional en controlador
+    - Mayor volumen de datos en DB
+    
+    Acción requerida: Investigar commit que causó regresión
+    ```
+
+---
+
+## 📊 MÉTRICAS DE ÉXITO
+
+### ✅ Fase 1 - ML Service:
+- [ ] Se identifica causa raíz de latencia baja
+- [ ] ML Service ejecuta modelo real (latencia 50-500ms)
+- [ ] CPU aumenta durante predicciones
+- [ ] Resultados documentados
+
+### ✅ Fase 2 - Umbrales de Alertas:
+- [ ] Sin falsos positivos de memoria
+- [ ] Alertas son específicas por tipo de servicio
+- [ ] Mensajes incluyen contexto e interpretación
+- [ ] Detección funciona con casos reales
+
+### ✅ Fase 3 - Pruebas de Carga:
+- [ ] Se identifican puntos de saturación (10, 50, 100 usuarios)
+- [ ] Se calcula throughput correctamente
+- [ ] Se detectan fallos bajo carga alta
+- [ ] Reporte de carga generado automáticamente
+
+### ✅ Fase 4 - Optimizaciones:
+- [ ] Paginación implementada (si necesario)
+- [ ] Caché reduce latencias (si necesario)
+- [ ] Queries optimizadas (si necesario)
+
+### ✅ Fase 5 - Visualización:
+- [ ] Gráficas PNG generadas
+- [ ] Dashboard en tiempo real funcional
+
+### ✅ Fase 6 - CI/CD:
+- [ ] Workflow ejecuta benchmarks automáticamente
+- [ ] Detecta regresiones > 20%
+- [ ] Baseline actualizado periódicamente
+
+---
+
+## 📁 ARCHIVOS A CREAR/MODIFICAR
+
+### Nuevos Archivos:
+- `pruebas-rendimiento/docs/INVESTIGACION_ML_SERVICE.md` - Documentación de findings
+- `pruebas-rendimiento/scripts/test_carga.sh` - Script de pruebas de carga
+- `pruebas-rendimiento/scripts/consolidar_carga.sh` - Reporte de carga
+- `pruebas-rendimiento/scripts/comparar_con_baseline.sh` - Detección de regresiones
+- `pruebas-rendimiento/scripts/generar_graficas.sh` - Generación de gráficas
+- `pruebas-rendimiento/baseline/metricas_baseline.csv` - Baseline de performance
+- `.github/workflows/performance-tests.yml` - CI/CD workflow
+
+### Archivos a Modificar:
+- `pruebas-rendimiento/scripts/funciones_recursos.sh` - Umbrales dinámicos
+- `pruebas-rendimiento/scripts/consolidar_recursos.sh` - Mensajes mejorados
+- `pruebas-rendimiento/scripts/benchmark.sh` - Integrar test_carga opcional
+- `ml-prediction-service/app/main.py` - Fix si modelo no carga (TBD)
+- `backend/src/main/java/.../InventarioController.java` - Paginación (opcional)
+
+---
+
+## 🚀 PRÓXIMOS PASOS INMEDIATOS
+
+### Opción A: Investigar ML Service (RECOMENDADO)
+Resolver el issue más crítico primero. Tiempo estimado: 1-2 horas.
+
+### Opción B: Implementar Pruebas de Carga
+Si ML Service funciona correctamente, añadir carga concurrente. Tiempo estimado: 3-4 horas.
+
+### Opción C: Ajustar Umbrales de Alertas
+Corregir falsos positivos. Tiempo estimado: 1 hora.
+
+### Opción D: Todo lo Anterior
+Implementar las 3 fases en orden. Tiempo estimado: 1 día completo.
+
+---
+
+## 📌 ESTADO: 🔄 ESPERANDO DECISIÓN
+
+### Decisión Requerida:
+¿Qué opción prefieres ejecutar primero?
+
+A) Investigar ML Service  
+B) Pruebas de carga  
+C) Ajustar alertas  
+D) Todo en orden (A → C → B)  
+
+**Recomendación:** Opción A (ML Service) - Es el issue más crítico y puede revelar problemas arquitecturales.
+
+---
+
+**Fecha de creación del plan**: 06 Febrero 2026  
+**Responsable**: Equipo de DevOps - Sistema POS  
+**Objetivo**: Mejorar sistema de benchmarking y detección de problemas de performance

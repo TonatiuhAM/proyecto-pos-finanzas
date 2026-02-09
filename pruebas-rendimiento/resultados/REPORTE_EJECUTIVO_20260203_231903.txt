@@ -1,0 +1,48 @@
+========================================
+REPORTE DE PRUEBAS DE RENDIMIENTO
+Sistema: POS y Gestión Integral
+Fecha: 03 de February de 2026 23:19:03
+========================================
+
+CONFIGURACIÓN:
+- Iteraciones por prueba: 20
+- Iteraciones de warmup: 3
+- Total de pruebas ejecutadas: 20
+- Timestamp de ejecución: 20260203_231903
+
+SERVICIOS EVALUADOS:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8084
+- ML Service: http://localhost:8004
+- Base de Datos: PostgreSQL (contenedor: pos_database)
+
+TIPOS DE PRUEBAS REALIZADAS:
+1. Pruebas individuales (requests secuenciales)
+2. Pruebas de consultas SQL (EXPLAIN ANALYZE)
+3. Pruebas de endpoints Backend → BD
+4. Pruebas de endpoints Backend → ML Service
+5. Pruebas end-to-end (flujos completos)
+
+ARCHIVOS GENERADOS:
+
+Archivos CSV individuales:
+  - 01_frontend_carga_20260203_231616.csv
+  - 01_frontend_carga_20260203_231831.csv
+  - 02_login_20260203_231616.csv
+  - 02_login_20260203_231831.csv
+  - 03_bd_consulta_simple_20260203_231616.csv
+  - 03_bd_consulta_simple_20260203_231831.csv
+  - 04_bd_consulta_join_20260203_231616.csv
+  - 04_bd_consulta_join_20260203_231831.csv
+  - 05_bd_consulta_compleja_20260203_231616.csv
+  - 05_bd_consulta_compleja_20260203_231831.csv
+  - 06_backend_api_productos_20260203_231616.csv
+  - 06_backend_api_productos_20260203_231831.csv
+  - 07_backend_api_producto_by_id_20260203_231616.csv
+  - 07_backend_api_producto_by_id_20260203_231831.csv
+  - 08_ml_health_directo_20260203_231616.csv
+  - 08_ml_health_directo_20260203_231831.csv
+  - 09_backend_ml_health_20260203_231616.csv
+  - 09_backend_ml_health_20260203_231831.csv
+  - 10_backend_ml_predict_20260203_231616.csv
+  - 10_backend_ml_predict_20260203_231831.csv
