@@ -1,5 +1,8 @@
 # Archivo: .gitignore
 
+# --- Instrucciones de IA (prompts, sesiones, configuraciones de asistentes) ---
+/IA/
+
 # --- Archivos sensibles ---
 .env
 .env.*
